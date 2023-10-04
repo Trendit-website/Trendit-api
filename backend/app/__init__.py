@@ -32,4 +32,11 @@ def create_app(config_class=Config):
     migrate = Migrate(app, db)
     
     
+    # Register blueprints
+    from app.routes.payment import bp as payment_bp
+    app.register_blueprint(payment_bp)
+    
+    from app.routes.error_handlers import bp as errorHandler_bp
+    app.register_blueprint(errorHandler_bp)
+    
     return app
