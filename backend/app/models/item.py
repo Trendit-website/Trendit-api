@@ -4,7 +4,7 @@ from sqlalchemy.orm import backref
 from datetime import datetime
 
 from app.extensions import db
-from app.models.image import Image
+## from app.models.image import Image
 
 
 
@@ -45,6 +45,7 @@ class Item(db.Model):
         db.session.delete(self)
         db.session.commit()
     
+    '''
     def getThumbImage(self):
         theImage = Image.query.get(self.item_img)
         if theImage:
@@ -65,13 +66,14 @@ class Item(db.Model):
             return theImage.get_path("large")
         else:
             return None
-
+    '''
+    
     def format(self):
         return {
             'id': self.id,
             'name': self.name,
             'description': self.description,
-            'item_img': self.getMediumImage(),
+            # 'item_img': self.getMediumImage(),
             'price': self.price,
             'category': self.category,
             'brand_name': self.brand_name,
