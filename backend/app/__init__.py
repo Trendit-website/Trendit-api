@@ -3,8 +3,8 @@ from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import desc
 from flask_migrate import Migrate
-from flask_login import LoginManager, current_user
 from flask_cors import CORS
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
 
 from app.models.user import Trendit3User
 from app.models.item import Item
@@ -34,19 +34,13 @@ def create_app(config_class=Config):
         )
         return response
     
-    #Login Configuration
-    login_manager = LoginManager()
-    login_manager.init_app(app)
-    login_manager.login_view = 'rsAdmin.login'
-
-    @login_manager.user_loader
-    def load_user(user_id):
-        return Trendit3User.query.get(int(user_id))
     
+    # Setup the Flask-JWT-Extended extension
+    jwt = JWTManager(app)
     
     # Register blueprints
-    from app.routes.payment import bp as payment_bp
-    app.register_blueprint(payment_bp)
+    from app.routes.api import bp as api_bp
+    app.register_blueprint(api_bp)
     
     from app.routes.error_handlers import bp as errorHandler_bp
     app.register_blueprint(errorHandler_bp)

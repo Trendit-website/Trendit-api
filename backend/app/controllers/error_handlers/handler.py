@@ -7,7 +7,7 @@ class ErrorHandlers:
     def bad_request(error):
         return jsonify({
             "success": False,
-            "error": 400,
+            "status_code": 400,
             "message": "Bad request."
         }), 400
 
@@ -15,7 +15,7 @@ class ErrorHandlers:
     def not_found(error):
         return jsonify({
             "success": False,
-            "error": 404,
+            "status_code": 404,
             "message": "resource not found"
         }), 404
 
@@ -23,7 +23,7 @@ class ErrorHandlers:
     def method_not_allowed(error):
         return jsonify({
             "success": False,
-            "error": 405,
+            "status_code": 405,
             "message": "method not allowed"
         }), 405
 
@@ -31,7 +31,7 @@ class ErrorHandlers:
     def unprocessable(error):
         return jsonify({
             "success": False,
-            "error": 422,
+            "status_code": 422,
             "message": "The request was well-formed but was unable to be followed due to semantic errors."
         }), 422
 

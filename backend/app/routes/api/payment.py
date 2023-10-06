@@ -1,5 +1,5 @@
-from app.routes.payment import bp
-from app.controllers.payment.payment import PaymentController
+from app.routes.api import bp
+from app.controllers.api.payment import PaymentController
 
 @bp.route('/payment', methods=['POST'])
 def make_payment():
