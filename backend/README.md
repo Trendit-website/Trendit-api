@@ -26,10 +26,9 @@ pip install -r requirements.txt
 ## Authentication Endpoints
 #### User Registration
 
-**Endpoint:** `/api/signup`
-**HTTP Method:** POST
-**Description:** Register a new user on the Trendit3 platform.
-
+**Endpoint:** `/api/signup`  
+**HTTP Method:** POST  
+**Description:** Register a new user on the Trendit3 platform.  
 
 Include the following JSON data in the request body:
 ```bash
@@ -55,16 +54,16 @@ If registration is successful, you will receive a JSON response with a 201 Creat
 
 If registration fails, you will receive a JSON response with details about the error, including the status code.
 
-**HTTP 400 Bad Request:** Invalid request payload.
-**HTTP 409 Conflict:** User with the same email already exists.
-**HTTP 500 Internal Server Error:** An error occurred while processing the request.
+**HTTP 400 Bad Request:** Invalid request payload.  
+**HTTP 409 Conflict:** User with the same email already exists.  
+**HTTP 500 Internal Server Error:** An error occurred while processing the request.  
 
 
 
 #### User Login
-**Endpoint:** `/api/login`
-**HTTP Method:** POST
-**Description:** Authenticate a user and issue an access token.
+**Endpoint:** `/api/login`  
+**HTTP Method:** POST  
+**Description:** Authenticate a user and issue an access token.  
 
 Include the following JSON data in the request body:
 ```bash
@@ -89,8 +88,8 @@ The response will include an access token for authentication.
 
 If registration fails, you will receive a JSON response with details about the error, including the status code.
 
-**HTTP 401 Unauthorized:** Invalid email or password.
-**HTTP 500 Internal Server Error:** An error occurred while processing the request.
+**HTTP 401 Unauthorized:** Invalid email or password.  
+**HTTP 500 Internal Server Error:** An error occurred while processing the request.  
 
 *Usage*
 - To register a new user, make a POST request to /api/signup with the required user data in the JSON format.
