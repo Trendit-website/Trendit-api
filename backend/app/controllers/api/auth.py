@@ -8,6 +8,7 @@ from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_requir
 
 from app.extensions import db
 from app.models.user import Trendit3User, Address
+from app.models.membership import Membership
 
 class AuthController:
     @staticmethod
@@ -29,8 +30,9 @@ class AuthController:
                 
                 newUser = Trendit3User(username=username, email=email, gender=gender, thePassword=hashedPwd)
                 newUserAddress = Address(country=country, state=state, local_government=local_government, trendit3_user=newUser)
+                newMembership = Membership(trendit3_user=newUser)
                 
-                db.session.add_all([newUser, newUserAddress])
+                db.session.add_all([newUser, newUserAddress, newMembership])
                 db.session.commit()
             except InvalidRequestError:
                 error = True

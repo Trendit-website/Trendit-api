@@ -1,6 +1,5 @@
 from flask import Flask, jsonify, render_template
 from app.routes.error_handlers import bp
-from app.utils.helpers.basic_helpers import urlParts
 
 class ErrorHandlers:
     @staticmethod

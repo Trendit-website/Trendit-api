@@ -1,7 +1,6 @@
 from flask import Flask, jsonify
 from app.routes.error_handlers import bp
-from app.utils.helpers.basic_helpers import urlParts
-from app.controllers.error_handlers.handler import ErrorHandlers
+from app.controllers.error_handlers.handlers import ErrorHandlers
 
 @bp.app_errorhandler(400)
 def bad_request(error):

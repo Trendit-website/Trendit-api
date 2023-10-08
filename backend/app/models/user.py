@@ -16,6 +16,7 @@ class Trendit3User(db.Model):
 
     # Relationships
     address = db.relationship('Address', back_populates="trendit3_user", uselist=False, cascade="all, delete-orphan")
+    membership = db.relationship('Membership', back_populates="trendit3_user", uselist=False, cascade="all, delete-orphan")
     
     @property
     def password(self):

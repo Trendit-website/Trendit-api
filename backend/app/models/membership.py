@@ -7,7 +7,7 @@ class Membership(db.Model):
     
     id = db.Column(db.Integer(), primary_key=True)
     activation_fee_paid = db.Column(db.Boolean, default=False)
-    subscription_paid = db.Column(db.Boolean, default=False)
+    item_upload_paid = db.Column(db.Boolean, default=False)
     
     trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id', ondelete='CASCADE'), unique=True, nullable=False)
     trendit3_user = db.relationship('Trendit3User', back_populates="membership")
