@@ -68,7 +68,7 @@ class Item(db.Model):
             return None
     '''
     
-    def format(self):
+    def to_dict(self):
         return {
             'id': self.id,
             'name': self.name,

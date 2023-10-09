@@ -47,6 +47,14 @@ class Trendit3User(db.Model):
         db.session.delete(self)
         db.session.commit()
     
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'username': self.username,
+            'email': self.email,
+            'gender': self.gender,
+            'date_joined': self.date_joined
+        }
 
 class Address(db.Model):
     __tablename__ = "address"
@@ -61,5 +69,15 @@ class Address(db.Model):
     
     def __repr__(self):
         return f'<address ID: {self.id}, country: {self.country}, LGA: {self.local_government}, person ID: {self.trendit3_user_id}>'
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'country': self.country,
+            'state': self.state,
+            'local_government': self.local_government,
+            'trendit3_user_id': self.trendit3_user_id
+        }
+
     
 

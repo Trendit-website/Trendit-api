@@ -14,3 +14,11 @@ class Membership(db.Model):
     
     def __repr__(self):
         return f'<Membership ID: {self.id}, User ID: {self.user_id}, activation paid: {self.activation_fee_paid}>'
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'activation_fee_paid': self.activation_fee_paid,
+            'item_upload_paid': self.item_upload_paid,
+            'trendit3_user_id': self.trendit3_user_id,
+        }
