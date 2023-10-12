@@ -6,6 +6,10 @@ from app.controllers.api.auth import AuthController
 def signUp():
     return AuthController.signUp()
 
+@bp.route("/verify-email", methods=['POST'])
+def verify_email():
+    return AuthController.verify_email()
+
 @bp.route("/login", methods=['POST'])
 def login():
     return AuthController.login()

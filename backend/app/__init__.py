@@ -1,16 +1,15 @@
 from flask import Flask
 from flask_moment import Moment
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import desc
 from flask_migrate import Migrate
 from flask_cors import CORS
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
+from flask_jwt_extended import JWTManager
 
 from app.models.user import Trendit3User
 from app.models.item import Item
 
 from config import Config
 from app.extensions import db
+from app.extensions import mail
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -37,6 +36,9 @@ def create_app(config_class=Config):
     
     # Setup the Flask-JWT-Extended extension
     jwt = JWTManager(app)
+    
+    # Initialize Flask-Mail
+    mail.init_app(app)
     
     # Register blueprints
     from app.routes.api import bp as api_bp

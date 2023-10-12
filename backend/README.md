@@ -1,5 +1,6 @@
 # Backend - Trendit3
 #### API ENDPOINTS ####
+This document provides information on the API endpoints for the Trendit3 application.
 
 ## Setting up the Backend
 
@@ -27,19 +28,19 @@ pip install -r requirements.txt
 ### User Registration
 
 **Endpoint:** `/api/signup`  
-**HTTP Method:** POST  
+**HTTP Method:** `POST`  
 **Description:** Register a new user on the Trendit3 platform.  
 
 Include the following JSON data in the request body:
 ```json
 {
-  "username": "your_username",
-  "email": "your_email@example.com",
-  "gender": "your_gender",
-  "country": "your_country",
-  "state": "your_state",
-  "local_government": "your_local_government",
-  "password": "your_password"
+  "username": "username",
+  "email": "user_email@example.com",
+  "gender": "user_gender",
+  "country": "user_country",
+  "state": "user_state",
+  "local_government": "user_local_government",
+  "password": "user_password"
 }
 ```
 
@@ -58,10 +59,37 @@ If registration fails, you will receive a JSON response with details about the e
 - **HTTP 500 Internal Server Error:** An error occurred while processing the request.  
 
 
+### User's Email Registration
+**Endpoint:** `/api/verify-email`  
+**Method:** `POST`  
+**Description:** Verify user's email and register the user.  
+
+Include the following JSON data in the request body:
+```javascript
+{
+  "entered_code": "entered_code" // code entered by the user
+  "signup_token": "signup_token", // string (received from the sign up endpoint)
+}
+```
+
+A successful response will look like this:
+```json
+{
+    "status": "success",
+    "message": 'User registered successfully',
+    "status_code": 201,
+}
+```
+
+If Email verification fails, you will receive a JSON response with details about the error, including the status code.
+- **HTTP 400 Bad Request:** Invalid request payload.  
+- **HTTP 409 Conflict:** User with the same email already exists.  
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request.  
+
 
 ### User Login
 **Endpoint:** `/api/login`  
-**HTTP Method:** POST  
+**HTTP Method:** `POST`  
 **Description:** Authenticate a user and issue an access token.  
 
 Include the following JSON data in the request body:
@@ -81,24 +109,46 @@ The response will include an access token for authentication.
     "message": "User logged in successfully",
     "status_code": 200,
     "user_id": 123,
-    "access_token": "user_access_token"
 }
 ```
 
-If registration fails, you will receive a JSON response with details about the error, including the status code.
+If Login fails, you will receive a JSON response with details about the error, including the status code.
 
 - **HTTP 401 Unauthorized:** Invalid email or password.  
 - **HTTP 500 Internal Server Error:** An error occurred while processing the request.  
 
 *Usage*
 - To register a new user, make a POST request to /api/signup with the required user data in the JSON format.
+- To verify a new user, make a POST request to /api/verify-email with the required user data in the JSON format.
 - To log in, make a POST request to /api/login with the user's email and password in the JSON format.
-- Upon successful registration or login, the server will respond with an access token, which you should store securely on the client side and include in the Authorization header of future API requests to authenticate the user.
+- Upon successful registration or login, the server will respond with 200 status code. Se below for details on how to access protected routes.
 
 Please ensure that you handle errors and exceptions gracefully in your frontend application by checking the response status codes and displaying appropriate messages to the user.
 
-Remember to secure the access token and implement proper user session management on the client side for a secure user authentication flow.
+#### Accessing Protected Routes
+- To access a protected endpoints, you need to include the CSRF token in the X-CSRF-TOKEN header of your request. The CSRF token can be retrieved from a non-HTTP-only cookie (csrf_access_token) that is set when user logs in or refresh token.
 
+- Here’s an example using JavaScript:
+```js
+import Cookies from 'js-cookie';
+
+fetch('/api/protected', {
+	method: 'GET',
+  	headers: {
+    	'X-CSRF-TOKEN': Cookies.get('csrf_access_token'),
+  	},
+  	credentials: 'include', // This is required to include the cookie in the request.
+})
+.then(response => response.json())
+.then(data => console.log(data))
+.catch((error) => {
+  	console.error('Error:', error);
+});
+```
+A JWT token (access token) is already stored in an HTTP-only cookie, which is automatically sent with every request. So all you need is include the CSRF token in the X-CSRF-TOKEN header of your request.
+If the JWT token and CSRF token are valid, you will be able to access the protected route. If either token is missing, expired, or invalid, you will receive an error response.
+
+Please note that these tokens are sensitive information and should be handled securely. Do not expose these tokens in publicly accessible areas.
 
 ## Payment Endpoints
 ### Process Payment
@@ -121,7 +171,7 @@ If payment processing is successful, you will receive a JSON response with a 200
   "status": "success",
   "status_code": 200,
   "message": "Payment initialized",
-  "authorization_url": "your_authorization_url"
+  "authorization_url": "user_authorization_url"
 }
 ```
 
@@ -140,7 +190,7 @@ If payment processing fails, you will receive a JSON response with details about
 Include the following JSON data in the request body:
 ```json
 {
-  "reference": "your_transaction_reference"
+  "reference": "user_transaction_reference"
 }
 ```
 
