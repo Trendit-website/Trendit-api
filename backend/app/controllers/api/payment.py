@@ -79,7 +79,7 @@ class PaymentController:
                     msg = 'Payment initialized'
                     authorization_url = response_data['data']['link'] # Get authorization URL from response
                     
-                    transaction = Transaction(tx_ref=payload['tx_ref'], user_id=user_id, payment_type=payment_type)
+                    transaction = Transaction(tx_ref=payload['tx_ref'], user_id=user_id, payment_type=payment_type, status='Pending')
                     db.session.add(transaction)
                     db.session.commit()
                 else:
@@ -148,24 +148,30 @@ class PaymentController:
                 payment_type = transaction.payment_type
                 # if verification was successful
                 if response_data['status'] == 'success':
-                    # Update user's membership status in the database
-                    Trendit3_user = Trendit3User.query.get(user_id)
-                    if payment_type == 'activation_fee':
-                        Trendit3_user.membership.activation_fee_paid = True
-                    elif payment_type == 'item_upload':
-                        Trendit3_user.membership.item_upload_paid = True
-                    
-                    # Record the payment in the database
-                    payment = Payment(trendit3_user_id=user_id, amount=amount, payment_type=payment_type)
-                    db.session.add(payment)
-                    db.session.commit()
+                    if transaction.status != 'Complete':
+                        # Update user's membership status in the database
+                        Trendit3_user = Trendit3User.query.get(user_id)
+                        if payment_type == 'activation_fee':
+                            Trendit3_user.membership.activation_fee_paid = True
+                        elif payment_type == 'item_upload':
+                            Trendit3_user.membership.item_upload_paid = True
+                        
+                        # Record the payment in the database
+                        transaction.status = 'Complete'
+                        payment = Payment(trendit3_user_id=user_id, amount=amount, payment_type=payment_type)
+                        db.session.add(payment)
+                        db.session.commit()
                     
                     status_code = 200
                     activation_fee_paid = Trendit3_user.membership.activation_fee_paid
                     item_upload_paid = Trendit3_user.membership.item_upload_paid
                     msg = 'Payment verified successfully'
                 else:
-                    # Transaction failed, return error message
+                    # Payment was not successful
+                    if transaction.status != 'Failed':
+                        transaction.status = 'Failed' # update the status
+                        db.session.commit()
+                        
                     error = True
                     status_code = 400
                     msg = 'Transaction verification failed: ' + response_data['message']
@@ -241,21 +247,29 @@ class PaymentController:
                     # Extract needed data
                     amount = data['amount']
                     
-                    # Update user's membership status in the database
-                    user = Trendit3User.query.with_for_update().get(user_id)
-                    if payment_type == 'activation_fee':
-                        user.membership.activation_fee_paid = True
-                    elif payment_type == 'item_upload':
-                        user.membership.item_upload_paid = True
-                    
-                    # Record the payment in the database
-                    payment = Payment(trendit3_user_id=user_id, amount=amount, payment_type=payment_type)
-                    db.session.add(payment)
-                    db.session.commit()
+                    if transaction.status != 'Complete':
+                        # Update user's membership status in the database
+                        user = Trendit3User.query.with_for_update().get(user_id)
+                        if payment_type == 'activation_fee':
+                            user.membership.activation_fee_paid = True
+                        elif payment_type == 'item_upload':
+                            user.membership.item_upload_paid = True
+                        
+                        # Record the payment in the database
+                        transaction.status = 'Complete'
+                        payment = Payment(trendit3_user_id=user_id, amount=amount, payment_type=payment_type)
+                        db.session.add(payment)
+                        db.session.commit()
                     
                     return jsonify({'status': 'success'}), 200
                 else:
+                    # Payment was not successful
+                    if transaction.status != 'Failed':
+                        transaction.status = 'Failed' # update the status
+                        db.session.commit()
                     return jsonify({'status': 'failed'}), 200
+            else:
+                return jsonify({'status': 'failed'}), 404
         except Exception as e:
             db.session.rollback()
             logging.exception("An exception occurred during registration.\n", str(e)) # Log the error details for debugging

@@ -28,3 +28,4 @@ class Transaction(db.Model):
     tx_ref = db.Column(db.String(80), unique=True, nullable=False)
     user_id = db.Column(db.String(120), unique=False, nullable=False)
     payment_type = db.Column(db.String(120), unique=False, nullable=False)
+    status = db.Column(db.String(80), unique=False, nullable=False)
