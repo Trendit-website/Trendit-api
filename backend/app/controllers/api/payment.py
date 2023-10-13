@@ -2,6 +2,7 @@ import logging
 import json, requests, hashlib, hmac
 from flask import request, abort, jsonify
 from sqlalchemy.exc import ( DataError, DatabaseError )
+from flask_jwt_extended import get_jwt_identity
 
 from app.extensions import db
 from app.models.user import Trendit3User
@@ -27,10 +28,11 @@ class PaymentController:
             try:
                 # Extract payment info from request
                 data = request.get_json()
-                user_id = int(data.get('user_id'))
+                user_id = int(get_jwt_identity())
                 user_email = data.get('user_email')
                 amount = int(data.get('amount'))
                 payment_type = data.get('payment_type')
+                
                 
                 Trendit3_user = Trendit3User.query.get(user_id)
                 if Trendit3_user is None:
