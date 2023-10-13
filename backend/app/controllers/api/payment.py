@@ -5,7 +5,8 @@ from sqlalchemy.exc import ( DataError, DatabaseError )
 
 from app.extensions import db
 from app.models.user import Trendit3User
-from app.models.payment import Payment
+from app.models.payment import Payment, Transaction
+from app.utils.helpers.basic_helpers import generate_random_string
 from app.utils.helpers.payment_helpers import is_paid
 from config import Config
 
@@ -45,33 +46,40 @@ class PaymentController:
                         'status_code': 409,
                         'message': 'Payment cannot be processed because it has already been made by the user'
                     }), 409
-                
-                # Convert amount to kobo (Paystack accepts amounts in kobo)
-                amount_kobo = amount * 100
+                    
+                # Prepare the payload for the transaction
+                payload = {
+                    "tx_ref": "rave-" + generate_random_string(8),  # This should be a unique reference
+                    "amount": str(amount),
+                    "currency": "NGN",
+                    "redirect_url": "https://trendit3.vercel.app/homepage",
+                    "meta": {
+                        "user_id": user_id,
+                        "payment_type": payment_type,
+                    },
+                    "customer": {
+                        "email": user_email,
+                        "username": Trendit3_user.username,
+                    },
+                }
                 
                 auth_headers ={
-                    "Authorization": "Bearer " + Config.PAYSTACK_SECRET_KEY,
+                    "Authorization": "Bearer {}".format(Config.FLUTTER_SECRET_KEY),
                     "Content-Type": "application/json"
                 }
-                auth_data = {
-                    "email": user_email,
-                    "amount": amount_kobo,
-                    "callback_url": "https://trendit3.vercel.app/homepage",
-                    "metadata": {
-                        "user_id": user_id,
-                        "payment_type": payment_type
-                    }
-                }
-                auth_data = json.dumps(auth_data)
                 
-                # Initialize transaction
-                req = requests.post(Config.PAYSTACK_INITIALIZE_URL, headers=auth_headers, data=auth_data)
-                response = json.loads(req.text)
+                # Initialize the transaction
+                response = requests.post(Config.FLUTTER_INITIALIZE_URL, headers=auth_headers, data=json.dumps(payload))
+                response_data = response.json()
                 
-                if response['status']:
+                if response_data['status'] == 'success':
                     status_code = 200
                     msg = 'Payment initialized'
-                    authorization_url = response['data']['authorization_url'] # Get authorization URL from response
+                    authorization_url = response_data['data']['link'] # Get authorization URL from response
+                    
+                    transaction = Transaction(tx_ref=payload['tx_ref'], user_id=user_id, payment_type=payment_type)
+                    db.session.add(transaction)
+                    db.session.commit()
                 else:
                     error = True
                     status_code = 400
@@ -82,6 +90,9 @@ class PaymentController:
                 msg = 'An error occurred while processing the request.'
                 status_code = 500
                 logging.exception("An exception occurred during registration.\n", str(e)) # Log the error details for debugging
+                db.session.rollback()
+            finally:
+                db.session.close()
             
             if error:
                 return jsonify({
@@ -105,61 +116,61 @@ class PaymentController:
         """
         Verifies a payment for a user using the Paystack API.
 
-        This function extracts the transaction reference from the request, verifies the transaction with Paystack, and checks if the verification was successful. If the verification was successful, it updates the user's membership status in the database, records the payment in the database, and returns a success response with the payment details. If an error occurs at any point, it returns an error response with an appropriate status code and message.
+        This function extracts the transaction ID from the request, verifies the transaction with FlutterWave, and checks if the verification was successful. If the verification was successful, it updates the user's membership status in the database, records the payment in the database, and returns a success response with the payment details. If an error occurs at any point, it returns an error response with an appropriate status code and message.
 
         Returns:
             json, int: A JSON object containing the status of the verification, a status code, a message (and payment details in case of success), and an HTTP status code.
         """
         error = False
         try:
-            # Extract user_id from request
+            # Extract body from request
             data = request.get_json()
             
-            # Verify transaction with Paystack
-            reference = data.get('reference')  # Replace with your actual transaction reference
-            auth_headers = {
-                "Authorization": "Bearer " + Config.PAYSTACK_SECRET_KEY,
+            # Verify transaction with FlutterWave
+            # Extract transaction_id from request body
+            transaction_id = data.get('transaction_id')
+            headers = {
+                "Authorization": "Bearer {}".format(Config.FLUTTER_SECRET_KEY),
                 "Content-Type": "application/json"
             }
-            req = requests.get(Config.PAYSTACK_VERIFY_URL + reference, headers=auth_headers)
-            verification_response = req.json()
+            flutter_response = requests.get(f'https://api.flutterwave.com/v3/transactions/{transaction_id}/verify', headers=headers)
+            response_data = flutter_response.json()
             
-            # Check if verification was successful
-            if verification_response['status'] and verification_response['data']['status'] == 'success':
-                # Transaction was successful
-                # Extract needed data
-                amount = verification_response['data']['amount'] / 100  # Convert from kobo to naira
-                user_id = verification_response['data']['metadata']['user_id']
-                payment_type = verification_response['data']['metadata']['payment_type']
-                
-                # Update user's membership status in the database
-                Trendit3_user = Trendit3User.query.get(user_id)
-                if payment_type == 'activation_fee':
-                    Trendit3_user.membership.activation_fee_paid = True
-                elif payment_type == 'item_upload':
-                    Trendit3_user.membership.item_upload_paid = True
-                
-                # Record the payment in the database
-                payment = Payment(trendit3_user_id=user_id, amount=amount, payment_type=payment_type)
-                db.session.add(payment)
-                
-                db.session.commit()
-                
-                status_code = 200
-                activation_fee_paid = Trendit3_user.membership.activation_fee_paid
-                item_upload_paid = Trendit3_user.membership.item_upload_paid
-                
-                resp = {
-                    'status': 'success',
-                    'message': 'Payment successfully',
-                    'status_code': status_code,
-                    'activation_fee_paid': activation_fee_paid,
-                    'item_upload_paid': item_upload_paid,
-                }
+            # Extract needed data
+            amount = response_data['data']['amount']
+            tx_ref = response_data['data']['tx_ref']
+            
+            transaction = Transaction.query.filter_by(tx_ref=tx_ref).first()
+            if transaction:
+                user_id = transaction.user_id
+                payment_type = transaction.payment_type
+                # if verification was successful
+                if response_data['status'] == 'success':
+                    # Update user's membership status in the database
+                    Trendit3_user = Trendit3User.query.get(user_id)
+                    if payment_type == 'activation_fee':
+                        Trendit3_user.membership.activation_fee_paid = True
+                    elif payment_type == 'item_upload':
+                        Trendit3_user.membership.item_upload_paid = True
+                    
+                    # Record the payment in the database
+                    payment = Payment(trendit3_user_id=user_id, amount=amount, payment_type=payment_type)
+                    db.session.add(payment)
+                    db.session.commit()
+                    
+                    status_code = 200
+                    activation_fee_paid = Trendit3_user.membership.activation_fee_paid
+                    item_upload_paid = Trendit3_user.membership.item_upload_paid
+                    msg = 'Payment verified successfully'
+                else:
+                    # Transaction failed, return error message
+                    error = True
+                    status_code = 400
+                    msg = 'Transaction verification failed: ' + response_data['message']
             else:
-                # Transaction failed, return error message
-                status_code = 400
-                resp = {'status': 'failed', 'status_code': status_code, 'message': 'Transaction verification failed'}
+                error = True
+                status_code = 404
+                msg = 'Transaction not found'
         except DataError:
             error = True
             msg = f"Invalid Entry"
@@ -185,7 +196,13 @@ class PaymentController:
                 'status_code': status_code
             }), status_code
         else:
-            return jsonify(resp), status_code
+            return jsonify({
+                        'status': 'success',
+                        'status_code': status_code,
+                        'message': msg,
+                        'activation_fee_paid': activation_fee_paid,
+                        'item_upload_paid': item_upload_paid,
+                    }), status_code
 
 
     @staticmethod
@@ -199,47 +216,44 @@ class PaymentController:
             json, int: A JSON object containing the status of the webhook handling, and an HTTP status code.
         """
         try:
-            # Get the signature from the request headers
-            signature = request.headers.get('X-Paystack-Signature')
+            signature = request.headers.get('verif-hash') # Get the signature from the request headers
             
-            secret_key = Config.PAYSTACK_SECRET_KEY # Get your Paystack secret key
+            if not signature:
+                return jsonify({'status': 'error', 'message': 'No signature in headers'}), 403
             
-            data = json.loads(request.data) # Get the data from the request
-            print('\n\n-----DATA-----\n', data, '\n--------------\n\n')
+            # Check if the signature is correct
+            if signature != Config.FLUTTER_SECRET_HASH:
+                return jsonify({'status': 'error', 'message': 'Invalid signature'}), 400
             
-            # Create a hash using the secret key and the data
-            hash = hmac.new(secret_key.encode(), msg=request.data, digestmod=hashlib.sha512)
-
-            # Verify the signature
-            if not hmac.compare_digest(hash.hexdigest(), signature):
-                abort(400)
-                
-            # Check if this is a successful payment event
-            if data['event'] == 'charge.success':
-                # Extract needed data
-                amount = data['data']['amount'] / 100  # Convert from kobo to naira
-                user_id = data['data']['metadata']['user_id']
-                payment_type = data['data']['metadata']['payment_type']
-                
-                # Update user's membership status in the database
-                user = Trendit3User.query.with_for_update().get(user_id)
-                if payment_type == 'activation_fee':
-                    user.membership.activation_fee_paid = True
-                elif payment_type == 'item_upload':
-                    user.membership.item_upload_paid = True
-                
-                # Record the payment in the database
-                payment = Payment(trendit3_user_id=user_id, amount=amount, payment_type=payment_type)
-                db.session.add(payment)
-                db.session.commit()
-                
-                return jsonify({
-                    'status': 'success'
-                }), 200
-            else:
-                return jsonify({
-                    'status': 'failed'
-                }), 200
+            payload = request.get_json() # Get the payload from the request
+            data = payload['data']
+            
+            tx_ref = data['tx_ref']
+            transaction = Transaction.query.filter_by(tx_ref=tx_ref).first()
+            if transaction:
+                user_id = transaction.user_id
+                payment_type = transaction.payment_type
+            
+                # Check if this is a successful payment event
+                if data['status'] == 'successful':
+                    # Extract needed data
+                    amount = data['amount']
+                    
+                    # Update user's membership status in the database
+                    user = Trendit3User.query.with_for_update().get(user_id)
+                    if payment_type == 'activation_fee':
+                        user.membership.activation_fee_paid = True
+                    elif payment_type == 'item_upload':
+                        user.membership.item_upload_paid = True
+                    
+                    # Record the payment in the database
+                    payment = Payment(trendit3_user_id=user_id, amount=amount, payment_type=payment_type)
+                    db.session.add(payment)
+                    db.session.commit()
+                    
+                    return jsonify({'status': 'success'}), 200
+                else:
+                    return jsonify({'status': 'failed'}), 200
         except Exception as e:
             db.session.rollback()
             logging.exception("An exception occurred during registration.\n", str(e)) # Log the error details for debugging

@@ -17,8 +17,14 @@ class Payment(db.Model):
     def to_dict(self):
         return {
             'id': self.id,
-            'trendit3_user_id': self.trendit3_user_id,
+            'user_id': self.trendit3_user_id,
             'amount': self.amount,
             'payment_type': self.payment_type,
             'timestamp': self.timestamp
         }
+
+class Transaction(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tx_ref = db.Column(db.String(80), unique=True, nullable=False)
+    user_id = db.Column(db.String(120), unique=False, nullable=False)
+    payment_type = db.Column(db.String(120), unique=False, nullable=False)

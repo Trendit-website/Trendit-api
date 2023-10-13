@@ -1,9 +1,10 @@
+
 # Backend - Trendit3
-#### API ENDPOINTS ####
+
 This document provides information on the API endpoints for the Trendit3 application.
 
-## Setting up the Backend
 
+## Setting up the Backend
 ### Install Dependencies
 
 1. **Python 3.11.5** - Follow instructions to install the latest version of python for your platform in the [python docs](https://docs.python.org/3/using/unix.html#getting-and-installing-the-latest-version-of-python)
@@ -12,8 +13,9 @@ This document provides information on the API endpoints for the Trendit3 applica
 
 3. **PIP Dependencies** - Once your virtual environment is setup and running, install the required dependencies by navigating to the `/backend` directory and running:
 
+
 ```bash
-pip install -r requirements.txt
+  pip install -r requirements.txt
 ```
 
 #### Key Pip Dependencies
@@ -23,6 +25,7 @@ pip install -r requirements.txt
 - [SQLAlchemy](https://www.sqlalchemy.org/) is the Python SQL toolkit and ORM I use to handle the lightweight SQL database. You'll primarily work in `app/__init__.py`and can reference `app/models`.
 
 - [Flask-CORS](https://flask-cors.readthedocs.io/en/latest/#) is the extension used to handle cross-origin requests from our frontend server.
+    
 
 ## Authentication Endpoints
 ### User Registration
@@ -44,12 +47,14 @@ Include the following JSON data in the request body:
 }
 ```
 
-If registration is successful, you will receive a JSON response with a 201 Created status code.
+A verification code will be sent to user's Email. After which you'll get a response with a signup_token and 200 status code.
+The signup token will be used to verify the user's Email in the next enpoint.
 ```json
 {
   "status": "success",
-  "message": "User registered successfully",
-  "status_code": 201
+  "message": "Verification code sent successfully",
+  "status_code": 200,
+  "signup_token": signup_token
 }
 ```
 
@@ -57,7 +62,6 @@ If registration fails, you will receive a JSON response with details about the e
 - **HTTP 400 Bad Request:** Invalid request payload.  
 - **HTTP 409 Conflict:** User with the same email already exists.  
 - **HTTP 500 Internal Server Error:** An error occurred while processing the request.  
-
 
 ### User's Email Registration
 **Endpoint:** `/api/verify-email`  
@@ -80,6 +84,7 @@ A successful response will look like this:
     "status_code": 201,
 }
 ```
+You can then go ahead to redirect user to login page.
 
 If Email verification fails, you will receive a JSON response with details about the error, including the status code.
 - **HTTP 400 Bad Request:** Invalid request payload.  
@@ -101,7 +106,7 @@ Include the following JSON data in the request body:
 ```
 
 If login is successful, you will receive a JSON response with a 200 OK status code. 
-The response will include an access token for authentication.
+The response will include user's id.
 
 ```json
 {
@@ -117,7 +122,7 @@ If Login fails, you will receive a JSON response with details about the error, i
 - **HTTP 401 Unauthorized:** Invalid email or password.  
 - **HTTP 500 Internal Server Error:** An error occurred while processing the request.  
 
-*Usage*
+*Usage:*
 - To register a new user, make a POST request to /api/signup with the required user data in the JSON format.
 - To verify a new user, make a POST request to /api/verify-email with the required user data in the JSON format.
 - To log in, make a POST request to /api/login with the user's email and password in the JSON format.
@@ -145,7 +150,7 @@ fetch('/api/protected', {
   	console.error('Error:', error);
 });
 ```
-A JWT token (access token) is already stored in an HTTP-only cookie, which is automatically sent with every request. So all you need is include the CSRF token in the X-CSRF-TOKEN header of your request.
+A JWT token (access token) is already stored in an HTTP-only cookie, which is automatically sent with every request. So all you need to do is include the CSRF token in the X-CSRF-TOKEN header of your request.
 If the JWT token and CSRF token are valid, you will be able to access the protected route. If either token is missing, expired, or invalid, you will receive an error response.
 
 Please note that these tokens are sensitive information and should be handled securely. Do not expose these tokens in publicly accessible areas.
@@ -190,9 +195,10 @@ If payment processing fails, you will receive a JSON response with details about
 Include the following JSON data in the request body:
 ```json
 {
-  "reference": "user_transaction_reference"
+    "transaction_id": "user_transactiod_id"
 }
 ```
+The transaction_id can be gotten from the arguments in the URL where user was redirected to after successful payment.
 
 If payment verification is successful, you will receive a JSON response with a 200 OK status code. The response will include a message and payment details.
 ```json

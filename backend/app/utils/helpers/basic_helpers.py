@@ -1,3 +1,4 @@
+import random, string
 from flask import request, url_for, abort
 
 
@@ -51,3 +52,7 @@ def int_or_none(s):
         return int(s)
     except:
         return None
+
+def generate_random_string(length):
+    characters = string.ascii_lowercase + string.digits
+    return ''.join(random.choice(characters) for _ in range(length))

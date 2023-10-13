@@ -37,7 +37,6 @@ def payment_history():
     return PaymentController.get_payment_history()
 
 @bp.route('/payment/webhook', methods=['POST'])
-@jwt_required()
 def payment_hook():
     """
     Handles a webhook for a payment.

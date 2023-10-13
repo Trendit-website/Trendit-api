@@ -101,10 +101,10 @@ class AuthController:
         else:
             return jsonify({
                     'status': 'success',
-                    'status_code': 201,
+                    'status_code': 200,
                     'message': 'Verification code sent successfully',
                     'signup_token': signup_token,
-                }), 201
+                }), 200
 
     @staticmethod
     def verify_email():

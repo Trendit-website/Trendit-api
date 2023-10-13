@@ -1,4 +1,4 @@
-import os
+import os, secrets
 from datetime import timedelta
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -23,11 +23,11 @@ class Config:
     JWT_REFRESH_COOKIE_PATH = '/token/refresh'
     JWT_COOKIE_CSRF_PROTECT = True
     
-    # Paystack configurations
-    PAYSTACK_INITIALIZE_URL = "https://api.paystack.co/transaction/initialize"
-    PAYSTACK_VERIFY_URL = "https://api.paystack.co/transaction/verify/"
-    PAYSTACK_SECRET_KEY = "sk_test_0e1d695081997b4bee609e4e65cc01155a1b522d"
-    PAYSTACK_PUBLIC_KEY = "pk_test_13220295e2a9bd77ce8e5e57d8fbe5803600c4ea"
+    # FlutterWave Configurations
+    FLUTTER_INITIALIZE_URL = "https://api.flutterwave.com/v3/payments"
+    FLUTTER_SECRET_KEY = "FLWSECK_TEST-42411bcec771ba0d9a6cfbb21c9a3ca1-X"
+    FLUTTER_PUBLIC_KEY = "FLWPUBK_TEST-0db308be49b1ea25ba4e320ae778f04a-X"
+    FLUTTER_SECRET_HASH = "42cf4e6d9d8c728003ae3361d5268c23"
     
     # mail configurations
     MAIL_SERVER = 'smtp.gmail.com'
