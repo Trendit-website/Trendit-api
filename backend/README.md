@@ -54,7 +54,7 @@ The signup token will be used to verify the user's Email in the next enpoint.
   "status": "success",
   "message": "Verification code sent successfully",
   "status_code": 200,
-  "signup_token": signup_token
+  "signup_token": "signup_token"
 }
 ```
 
@@ -80,7 +80,7 @@ A successful response will look like this:
 ```json
 {
     "status": "success",
-    "message": 'User registered successfully',
+    "message": "User registered successfully",
     "status_code": 201,
 }
 ```
@@ -265,3 +265,162 @@ If fetching the payment history fails, you will receive a JSON response with det
 This endpoint is used for receiving and processing payment-related webhooks from Paystack. It verifies the signature of the webhook request, checks if the event is a successful payment event, and updates the user's membership status in the database.
 
 - Usage: You should configure this endpoint as a webhook endpoint in your Paystack account settings.
+
+## Items Endpoints
+Items is the name used to represent both productS and services uploaded to the Marketplace. So find below the endpoints to interact with items on the Marketplace.
+
+### List All Items
+
+**Endpoint:** `/api/items`  
+**HTTP Method:** GET  
+**Description:** Fetch all items in the database.  
+
+A successful response will look like this:
+```json
+{
+    "status": "success",
+    "message": "Items fetched successfully",
+    "status_code": 200,
+    "items": [item1, item2, ...]
+}
+```
+
+
+### Sending Form Data
+The endpoints to create and update an items will be recieving form data instead of the tranditional JSON data sent with every request.
+
+Here is an example of how to send Form data to the update & create item endpoints:
+
+```javascript
+const formData = new FormData();
+formData.append('item_type', 'item_type');
+formData.append('name', 'item_name');
+// append other fields...
+formData.append('item_img', selectedFile); // where selectedFile is a File object representing the uploaded image
+
+fetch('/api/items/new', {
+  method: 'POST',
+  body: formData,
+  headers: {
+    'Authorization': `Bearer ${token}` // where token is the JWT token for the authenticated user
+  }
+})
+.then(response => response.json())
+.then(data => console.log(data))
+.catch((error) => {
+  console.error('Error:', error);
+});
+
+```
+
+
+### Create a New Item
+
+**Endpoint:** `/api/items/new`  
+**HTTP Method:** POST  
+**Description:** Create a new item. This endpoint requires JWT authentication.
+
+following the example above, you can send form data with the neccessary fields to this endpoint `/api/items/new`:
+```json
+item_type: "product", // either product or service
+name: "Gorgeous Fresh Chips",
+description: "This is a description"
+price: 4000
+category: "Groceries"
+brand_name: "Oraimo"
+size: "small"
+color: "black"
+material: "plastic"
+phone: 09077648550
+item_img: (binary data)
+...
+
+```
+
+Upon successful creation, a 200 OK status code will be returned along with details of the uploaded item. A successful response will look like this:
+```json
+{
+    "status": "success",
+    "message": "Item created successfully",
+    "status_code": 200,
+    "item": {
+        "brand_name": "Oraimo",
+        "category": "Groceries",
+        "colors": "black",
+        "name": "Gorgeous Fresh Chips",
+        "description": "This is a description",
+        "id": 1,
+        "item_img": "url/to/image",
+        "material": "plastic",
+        "phone": "09077648550",
+        "price": 4000,
+        "seller_id": 1, // this is the ID of the user that uploaded
+        "sizes": "small",
+        "slug": "gorgeous-fresh-chips",
+        "total_comments": 0,
+        "total_likes": 0,
+        "views_count": 0,
+        "created_at": "Tue, 17 Oct 2023 01:09:01 GMT",
+        "updated_at": "Tue, 17 Oct 2023 01:09:01 GMT",
+    },
+}
+```
+
+### Update an Item
+
+**Endpoint:** `/api/items/update/<int:item_id>`  
+**HTTP Method:** PUT  
+**Description:** Update an existing item. 
+
+Include the neccessary form data in the request body:
+```
+item_type: "new_item_type" // either product or service
+name: "new item name"
+...
+item_img: (binary data)
+
+```
+
+A successful response will include a 200 OK status code and the details of the updated item:
+```javascript
+{
+    "status": "success",
+    "message": "Item updated successfully",
+    "status_code": 200,
+    "item": {updated item details...}
+}
+
+```
+
+### Get a Single Item
+
+**Endpoint:** `/api/items/<int:item_id>`  
+**HTTP Method:** GET  
+**Description:** Fetch a single item by its ID. 
+
+A successful response will look like this:
+```json
+{
+    "status": "success",
+    "message": "Item fetched successfully",
+    "status_code": 200,
+    "item": {item details...}
+}
+```
+
+### Delete an Item
+
+**Endpoint:** `/api/items/delete/<int:item_id>`  
+**HTTP Method:** DELETE  
+**Description:** Delete an item by its ID. 
+
+A successful response will look like this:
+```json
+{
+    "status": "success",
+    "message": "Item deleted successfully",
+    "status_code": 200
+}
+```
+
+Please remember to handle errors and exceptions gracefully in your frontend application by checking the response status codes and displaying appropriate messages to the user.
