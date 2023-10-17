@@ -104,6 +104,3 @@ def generate_slug(name: str, type: str, existing_obj=None) -> str:
 
     return slug
 
-
-def get_states_lga():
-    pass
