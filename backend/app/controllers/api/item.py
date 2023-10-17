@@ -132,4 +132,66 @@ class ItemController:
                 "message": msg,
                 "item": item
             }), status_code
-    
+
+
+    @staticmethod
+    def get_single_item(item_id):
+        error = False
+        try:
+            item = Item.query.get(item_id)
+            if item is None:
+                return jsonify({
+                    "status": "failed",
+                    "status_code": 404,
+                    'message': 'Item not found'
+                }), 404
+        except Exception as e:
+            error = True
+            status_code = 500
+            msg = "Error fetching item"
+            logging.exception("An exception occurred during fetching of Item.\n", str(e))
+        if error:
+            return jsonify({
+                "status": "failed",
+                "status_code": status_code,
+                "message": msg
+            }), status_code
+        else:
+            return jsonify({
+                "status": "success",
+                "status_code": 200,
+                "message": "Item fetched successfully",
+                "item": item.to_dict()
+            }), 200
+
+
+    @staticmethod
+    def delete_item(item_id):
+        error = False
+        try:
+            item = Item.query.get(item_id)
+            if item is None:
+                return jsonify({
+                    "status": "failed",
+                    "status_code": 404,
+                    'message': 'Item not found'
+                }), 404
+            
+            item.delete()
+        except Exception as e:
+            error = True
+            status_code = 500
+            msg = "Error deleting item"
+            logging.exception("An exception occurred during deletion of Item.\n", str(e))
+        if error:
+            return jsonify({
+                "status": "failed",
+                "status_code": status_code,
+                "message": msg
+            }), status_code
+        else:
+            return jsonify({
+                "status": "success",
+                "status_code": 200,
+                "message": "Item deleted successfully"
+            }), 200

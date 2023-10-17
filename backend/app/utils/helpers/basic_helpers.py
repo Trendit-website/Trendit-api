@@ -93,3 +93,7 @@ def generate_slug(name: str, type: str, existing_obj=None) -> str:
         slug = f"{slug}-{suffix}"
 
     return slug
+
+
+def get_states_lga():
+    pass

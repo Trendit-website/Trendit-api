@@ -22,3 +22,13 @@ def create_item():
 def update_item(item_id):
     return ItemController.update_item(item_id)
 
+
+@bp.route('/items/<int:item_id>', methods=['GET'])
+def get_single_item(item_id):
+    return ItemController.get_single_item(item_id)
+
+
+@bp.route('/items/delete/<int:item_id>', methods=['DELETE'])
+@jwt_required()
+def delete_item(item_id):
+    return ItemController.delete_item(item_id)
