@@ -338,7 +338,7 @@ item_img: (binary data)
 ```
 
 Upon successful creation, a 200 OK status code will be returned along with details of the uploaded item. A successful response will look like this:
-```json
+```javascript
 {
     "status": "success",
     "message": "Item created successfully",
