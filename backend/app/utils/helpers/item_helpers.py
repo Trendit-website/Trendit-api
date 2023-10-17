@@ -54,17 +54,22 @@ def save_item(data, item_id=None):
         if item_id:
             item = Item.query.get(item_id)
         
-        if item_img:
-            item_img = save_image(item_img) # This saves image file, saves the path in db and return the id of the image
-        elif not item_img and item:
+        if item_img.filename != '':
+            try:
+                item_img = save_image(item_img) # This saves image file, saves the path in db and return the id of the image
+            except Exception as e:
+                current_app.logger.error(f"An error occurred while saving image for item {data.get('name')}: {str(e)}")
+                return None
+        elif item_img.filename == '' and item:
             if item.item_img:
                 item_img = item.item_img
             else:
-                item_img = ""
+                item_img = None
         else:
-            item_img = ""
+            item_img = None
         
         if item:
+            item.slug = generate_slug(name, 'item', item)
             item.item_type = item_type
             item.name = name
             item.description = description
@@ -76,7 +81,6 @@ def save_item(data, item_id=None):
             item.color = color
             item.material = material
             item.phone = phone
-            item.slug = generate_slug(name, 'item', item)
             
             item.update()
             return item

@@ -13,7 +13,6 @@ class Item(db.Model):
     item_type  = db.Column(db.String(), nullable=True) # either product or service to be uploaded to market place
     name = db.Column(db.String(100), nullable=False)
     description  = db.Column(db.String(), nullable=True)
-    item_img = db.Column(db.String(), nullable=True)
     price = db.Column(db.Integer, nullable=False)
     category = db.Column(db.String(100), nullable=True)
     brand_name = db.Column(db.String(100), nullable=True)
@@ -23,13 +22,13 @@ class Item(db.Model):
     phone = db.Column(db.String(100), nullable=True)
     views_count = db.Column(db.Integer, default=0)
     slug = db.Column(db.String(), nullable=False, unique=True)
+    item_img = db.Column(db.Integer, db.ForeignKey('image.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     seller_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
     seller = db.relationship('Trendit3User', backref=db.backref('items', lazy='dynamic'))
-    item_likes = db.relationship('LikeLog', backref='item', lazy=True)
-    item_comments = db.relationship('Comment', backref='item', lazy=True)
+    image = db.relationship('Image')
     
 
     def __repr__(self):
@@ -71,8 +70,8 @@ class Item(db.Model):
             'phone': self.phone,
             'slug': self.slug,
             'views_count': self.views_count,
-            'total_likes': len(self.likes),
-            'total_comments': len(self.comments),
+            'total_likes': len(list(self.likes)),
+            'total_comments': len(list(self.comments)),
             'created_at': self.created_at,
             'updated_at': self.updated_at,
             'seller_id': self.seller_id,
