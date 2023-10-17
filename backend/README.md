@@ -320,8 +320,8 @@ fetch('/api/items/new', {
 **HTTP Method:** POST  
 **Description:** Create a new item. This endpoint requires JWT authentication.
 
-following the example above, you can send form data with the neccessary fields to this endpoint `/api/items/new`:
-```json
+following the example above, you can send form data with the necessary fields to this endpoint `/api/items/new`:
+```
 item_type: "product", // either product or service
 name: "Gorgeous Fresh Chips",
 description: "This is a description"
@@ -372,7 +372,7 @@ Upon successful creation, a 200 OK status code will be returned along with detai
 **HTTP Method:** PUT  
 **Description:** Update an existing item. 
 
-Include the neccessary form data in the request body:
+Include the necessary form data in the request body:
 ```
 item_type: "new_item_type" // either product or service
 name: "new item name"
