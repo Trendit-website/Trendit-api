@@ -5,6 +5,16 @@ from slugify import slugify
 from app.models.item import Item
 
 
+def paginate_results(request, results, result_per_page=10):
+    page = request.args.get("page", 1, type=int)
+    start = (page - 1) * result_per_page
+    end = start + result_per_page
+
+    the_results = [result.to_dict() for result in results]
+    current_results = the_results[start:end]
+
+    return current_results
+
 def url_parts(url):
     """
     Splits a URL into its constituent parts.

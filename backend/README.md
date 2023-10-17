@@ -275,15 +275,20 @@ Items is the name used to represent both productS and services uploaded to the M
 **HTTP Method:** GET  
 **Description:** Fetch all items in the database.  
 
+**Query Parameters:**
+- page: The page number to retrieve. Defaults to 1 if not provided.
+
 A successful response will look like this:
-```json
+```javascript
 {
     "status": "success",
     "message": "Items fetched successfully",
     "status_code": 200,
-    "items": [item1, item2, ...]
+    "total_items": 12, // total number of items available
+    "items": [item1, item2, ...] // items on the current page
 }
 ```
+To fetch items from a specific page, include the `page` parameter in your request. For example, to fetch items from page 2, you would send a GET request to `/items?page=2.`
 
 
 ### Sending Form Data

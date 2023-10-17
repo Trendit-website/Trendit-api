@@ -12,8 +12,20 @@ class ItemController:
     def get_items():
         error = False
         try:
-            items = Item.query.all()
-            item_list = [item.to_dict() for item in items]
+            page = request.args.get("page", 1, type=int)
+            items_per_page = 10  # or any other number you prefer
+            pagination = Item.query.order_by(Item.created_at.desc()).paginate(page=page, per_page=items_per_page, error_out=False)
+            
+            items = pagination.items
+            current_items = [item.to_dict() for item in items]
+            
+            if not items:
+                return jsonify({
+                    "status": "failed",
+                    "status_code": 404,
+                    'message': 'There are no product or services yet'
+                }), 404
+                
         except Exception as e:
             error = True
             status_code = 500
@@ -30,7 +42,8 @@ class ItemController:
                 "status": "success",
                 "status_code": 200,
                 "message": "Items fetched successfully",
-                "items": item_list
+                'total_items': pagination.total,
+                "items": current_items,
             }), 200
 
 
