@@ -1,5 +1,8 @@
-import random, string
+import random, string, secrets
 from flask import request, url_for, abort
+from slugify import slugify
+
+from app.models.item import Item
 
 
 def url_parts(url):
@@ -56,3 +59,37 @@ def int_or_none(s):
 def generate_random_string(length):
     characters = string.ascii_lowercase + string.digits
     return ''.join(random.choice(characters) for _ in range(length))
+
+def generate_slug(name: str, type: str, existing_obj=None) -> str:
+    """
+    Generates a unique slug for a given name based on the type of object.
+
+    Parameters:
+    name (str): The name to generate a slug for.
+    type (str): The type of object to generate a slug for (either 'product' or 'category').
+    existing_obj (object): (Optional) The existing object to compare against to ensure uniqueness.
+    
+
+    Returns:
+    str: The unique slug for the object.
+
+    Usage:
+    Call this function passing in the name and type of object you want to generate a slug for. 
+    Optionally, you can pass in an existing object to compare against to ensure uniqueness.
+    """
+    slug = slugify(name)
+    
+    # Check if slug already exists in database
+    if existing_obj:
+        if existing_obj.name == name:
+            return existing_obj.slug
+
+    # Check if slug already exists in database
+    if type == 'item':
+        is_obj = Item.query.filter_by(slug=slug).first()
+    
+    if is_obj:
+        suffix = secrets.token_urlsafe(3)[:6]
+        slug = f"{slug}-{suffix}"
+
+    return slug

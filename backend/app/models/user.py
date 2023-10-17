@@ -78,6 +78,3 @@ class Address(db.Model):
             'local_government': self.local_government,
             'trendit3_user_id': self.trendit3_user_id
         }
-
-    
-

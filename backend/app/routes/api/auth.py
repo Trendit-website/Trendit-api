@@ -1,6 +1,6 @@
 from flask import Flask, jsonify
 from app.routes.api import bp
-from app.controllers.api.auth import AuthController
+from app.controllers.api import AuthController
 
 @bp.route("/signup", methods=['POST'])
 def signUp():
