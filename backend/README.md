@@ -307,7 +307,7 @@ fetch('/api/items/new', {
   method: 'POST',
   body: formData,
   headers: {
-    'Authorization': `Bearer ${token}` // where token is the JWT token for the authenticated user
+      'X-CSRF-TOKEN': Cookies.get('csrf_access_token')
   }
 })
 .then(response => response.json())
