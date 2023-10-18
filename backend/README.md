@@ -308,7 +308,8 @@ fetch('/api/items/new', {
   body: formData,
   headers: {
       'X-CSRF-TOKEN': Cookies.get('csrf_access_token')
-  }
+  },
+  credentials: 'include', // This is required to include the cookie in the request.
 })
 .then(response => response.json())
 .then(data => console.log(data))
