@@ -7,8 +7,11 @@ from flask_jwt_extended import get_jwt_identity
 from app.extensions import db
 from app.models.user import Trendit3User
 from app.models.payment import Payment, Transaction
-from app.utils.helpers.basic_helpers import generate_random_string
-from app.utils.helpers.payment_helpers import is_paid
+from app.models.task import Task
+from app.utils.helpers.response_helpers import error_response, success_response
+from app.utils.helpers.basic_helpers import generate_random_string, console_log
+from app.utils.helpers.payment_helpers import is_paid, initialize_payment
+from app.utils.helpers.task_helpers import get_task_by_ref
 from config import Config
 
 class PaymentController:
@@ -22,95 +25,11 @@ class PaymentController:
         Returns:
             json, int: A JSON object containing the status of the payment, a status code, and a message (and an authorization URL in case of success), and an HTTP status code.
         """
-        error = False
         
-        if request.method == 'POST':
-            try:
-                # Extract payment info from request
-                data = request.get_json()
-                user_id = int(get_jwt_identity())
-                user_email = data.get('user_email')
-                amount = int(data.get('amount'))
-                payment_type = data.get('payment_type')
-                
-                
-                Trendit3_user = Trendit3User.query.get(user_id)
-                if Trendit3_user is None:
-                    return jsonify({
-                        'status': 'failed',
-                        'status_code': 404,
-                        'message': 'User not found'
-                    }), 404
-                
-                if is_paid(user_id, payment_type):
-                    return jsonify({
-                        'status': 'failed',
-                        'status_code': 409,
-                        'message': 'Payment cannot be processed because it has already been made by the user'
-                    }), 409
-                    
-                # Prepare the payload for the transaction
-                payload = {
-                    "tx_ref": "rave-" + generate_random_string(8),  # This should be a unique reference
-                    "amount": str(amount),
-                    "currency": "NGN",
-                    "redirect_url": "https://trendit3.vercel.app/homepage",
-                    "meta": {
-                        "user_id": user_id,
-                        "payment_type": payment_type,
-                    },
-                    "customer": {
-                        "email": user_email,
-                        "username": Trendit3_user.username,
-                    },
-                }
-                
-                auth_headers ={
-                    "Authorization": "Bearer {}".format(Config.FLUTTER_SECRET_KEY),
-                    "Content-Type": "application/json"
-                }
-                
-                # Initialize the transaction
-                response = requests.post(Config.FLUTTER_INITIALIZE_URL, headers=auth_headers, data=json.dumps(payload))
-                response_data = response.json()
-                
-                if response_data['status'] == 'success':
-                    status_code = 200
-                    msg = 'Payment initialized'
-                    authorization_url = response_data['data']['link'] # Get authorization URL from response
-                    
-                    transaction = Transaction(tx_ref=payload['tx_ref'], user_id=user_id, payment_type=payment_type, status='Pending')
-                    db.session.add(transaction)
-                    db.session.commit()
-                else:
-                    error = True
-                    status_code = 400
-                    msg = 'Payment initialization failed'
-                    authorization_url = None
-            except Exception as e:
-                error = True
-                msg = 'An error occurred while processing the request.'
-                status_code = 500
-                logging.exception("An exception occurred during registration.\n", str(e)) # Log the error details for debugging
-                db.session.rollback()
-            finally:
-                db.session.close()
-            
-            if error:
-                return jsonify({
-                    'status': 'failed',
-                    'status_code': status_code,
-                    'message': msg,
-                }), status_code
-            else:
-                return jsonify({
-                    'status': 'success',
-                    'status_code': status_code,
-                    'message': msg,
-                    'authorization_url': authorization_url # Send success response with authorization URL
-                }), status_code
-        else:
-            abort(405)
+        data = request.get_json()
+        user_id = int(get_jwt_identity())
+
+        return initialize_payment(user_id, data)
 
 
     @staticmethod
@@ -146,26 +65,51 @@ class PaymentController:
             if transaction:
                 user_id = transaction.user_id
                 payment_type = transaction.payment_type
+                
+                Trendit3_user = Trendit3User.query.get(user_id)
+                if Trendit3_user is None:
+                    return error_response('User does not exist', 404)
+                        
                 # if verification was successful
                 if response_data['status'] == 'success':
+                    status_code = 200
+                    msg = 'Payment verified successfully'
+                    extra_data = {}
                     if transaction.status != 'Complete':
-                        # Update user's membership status in the database
-                        Trendit3_user = Trendit3User.query.get(user_id)
-                        if payment_type == 'activation_fee':
-                            Trendit3_user.membership.activation_fee_paid = True
-                        elif payment_type == 'item_upload':
-                            Trendit3_user.membership.item_upload_paid = True
-                        
                         # Record the payment in the database
                         transaction.status = 'Complete'
                         payment = Payment(trendit3_user_id=user_id, amount=amount, payment_type=payment_type)
                         db.session.add(payment)
                         db.session.commit()
                     
-                    status_code = 200
-                    activation_fee_paid = Trendit3_user.membership.activation_fee_paid
-                    item_upload_paid = Trendit3_user.membership.item_upload_paid
-                    msg = 'Payment verified successfully'
+                    # Update user's membership status in the database
+                    if payment_type == 'activation_fee':
+                        Trendit3_user.activation_fee(paid=True)
+                        activation_fee_paid = Trendit3_user.membership.activation_fee_paid
+                        
+                        msg = 'Payment verified successfully and Account has been activated'
+                        extra_data.update({
+                            'activation_fee_paid': activation_fee_paid,
+                        })
+                    elif payment_type == 'item_upload':
+                        Trendit3_user.marketplace_upload_fee(paid=True)
+                        item_upload_paid = Trendit3_user.membership.item_upload_paid
+                        
+                        msg = 'Payment verified successfully and Monthly subscription fee accepted'
+                        extra_data.update({
+                            'item_upload_paid': item_upload_paid,
+                        })
+                    elif payment_type == 'task_creation':
+                        task_ref = response_data['data']['meta']['task_ref']
+                        task = get_task_by_ref(task_ref)
+                        task.update(payment_status='Complete')
+                        task_dict = task.to_dict()
+                        
+                        msg = 'Payment verified and Task has been created successfully'
+                        extra_data.update({
+                            'task': task_dict,
+                        })
+                    
                 else:
                     # Payment was not successful
                     if transaction.status != 'Failed':
@@ -193,24 +137,14 @@ class PaymentController:
             error = True
             msg = 'An error occurred while processing the request.'
             status_code = 500
-            logging.exception("An exception occurred during registration.\n", str(e)) # Log the error details for debugging
+            logging.exception("An exception occurred during registration.\n", str(e))
             db.session.rollback()
         finally:
             db.session.close()
         if error:
-            return jsonify({
-                'status': 'failed',
-                'message': msg,
-                'status_code': status_code
-            }), status_code
+            return error_response(msg, status_code)
         else:
-            return jsonify({
-                        'status': 'success',
-                        'status_code': status_code,
-                        'message': msg,
-                        'activation_fee_paid': activation_fee_paid,
-                        'item_upload_paid': item_upload_paid,
-                    }), status_code
+            return success_response(msg, status_code, extra_data)
 
 
     @staticmethod

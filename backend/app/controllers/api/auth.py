@@ -5,11 +5,17 @@ from sqlalchemy.exc import ( IntegrityError, DataError, DatabaseError, InvalidRe
 from werkzeug.security import generate_password_hash
 from flask_jwt_extended import create_access_token, decode_token, set_access_cookies
 from flask_jwt_extended.exceptions import JWTDecodeError
+from jwt import ExpiredSignatureError
 
 from app.extensions import db
-from app.models.user import Trendit3User, Address
+from app.models.user import Trendit3User, Address, Profile, PwdResetToken
 from app.models.membership import Membership
-from app.utils.helpers.auth_helpers import is_email_exist, is_username_exist, generate_email_verification_code, send_verification_email, get_trendit3_user
+from app.models.payment import Wallet
+from app.utils.helpers.basic_helpers import console_log
+from app.utils.helpers.response_helpers import error_response, success_response
+from app.utils.helpers.location_helpers import get_currency_code, get_currency_info
+from app.utils.helpers.auth_helpers import generate_email_verification_code, send_code_to_email, save_pwd_reset_token
+from app.utils.helpers.user_helpers import is_email_exist, is_username_exist, get_trendit3_user
 
 class AuthController:
     @staticmethod
@@ -27,33 +33,20 @@ class AuthController:
             password = data.get('password')
             
             if is_email_exist(email):
-                return jsonify({
-                    'status': 'failed',
-                    'status_code': 409,
-                    'message': 'Email already Taken'
-                }), 409
+                return error_response('Email already taken', 409)
                 
             if is_username_exist(username):
-                return jsonify({
-                    'status': 'failed',
-                    'status_code': 409,
-                    'message': 'Username already Taken'
-                }), 409
+                return error_response('Username already Taken', 409)
             
-            hashedPwd = generate_password_hash(password, "pbkdf2:sha256")
+            hashed_pwd = generate_password_hash(password, "pbkdf2:sha256")
             
             # Generate a random six-digit number
             verification_code = generate_email_verification_code()
-            print('\n\n',verification_code,'\n')
             
             try:
-                send_verification_email(email, verification_code) # send verification code to user's email
+                send_code_to_email(email, verification_code) # send verification code to user's email
             except Exception as e:
-                return jsonify({
-                    'status': 'failed',
-                    'status_code': 500,
-                    'message': f'An error occurred while sending the verification email: {str(e)}'
-                }), 500
+                return error_response(f'An error occurred while sending the verification email: {str(e)}', 500)
             
             # Create a JWT that includes the user's info and the verification code
             expires = timedelta(minutes=30)
@@ -64,10 +57,9 @@ class AuthController:
                 'country': country,
                 'state': state,
                 'local_government': local_government,
-                'hashedPwd': hashedPwd,
+                'hashed_pwd': hashed_pwd,
                 'verification_code': verification_code
             }, expires_delta=expires)
-            
         except InvalidRequestError:
             error = True
             msg = f"Invalid request"
@@ -86,25 +78,18 @@ class AuthController:
             status_code = 500
         except Exception as e:
             error = True
-            msg = 'An error occurred while processing the request.'
-            # Log the error details for debugging
-            logging.exception("An exception occurred during registration.")
-            
             status_code = 500
+            msg = 'An error occurred while processing the request.'
+            logging.exception(f"An exception occurred during registration. {e}") # Log the error details for debugging
         
         if error:
-            return jsonify({
-                    'status': 'failed',
-                    'status_code': status_code,
-                    'message': msg
-                }), status_code
+            return error_response(msg, status_code)
         else:
-            return jsonify({
-                    'status': 'success',
-                    'status_code': 200,
-                    'message': 'Verification code sent successfully',
-                    'signup_token': signup_token,
-                }), 200
+            extra_data = {
+                'signup_token': signup_token,
+            }
+            return success_response('Verification code sent successfully', 200, extra_data)
+
 
     @staticmethod
     def verify_email():
@@ -120,27 +105,46 @@ class AuthController:
             username = user_info['username']
             email = user_info['email']
             gender = user_info['gender']
-            hashedPwd = user_info['hashedPwd']
+            hashed_pwd = user_info['hashed_pwd']
             country = user_info['country']
             state = user_info['state']
             local_government = user_info['local_government']
             
+            currency_info = get_currency_info(country)
+            
+            if currency_info is None:
+                return jsonify({
+                    'status': 'failed',
+                    'status_code': 500,
+                    'message': 'Error getting the currency of user\'s country',
+                }), 500
+            
             if entered_code == user_info['verification_code']:
                 # The entered code matches the one in the JWT, so create the user
-                newUser = Trendit3User(username=username, email=email, gender=gender, thePassword=hashedPwd)
-                newUserAddress = Address(country=country, state=state, local_government=local_government, trendit3_user=newUser)
+                newUser = Trendit3User(username=username, email=email, gender=gender, thePassword=hashed_pwd)
+                newUserAddress = Address(country=country, state=state, local_government=local_government, currency_code=currency_info['code'], trendit3_user=newUser)
                 newMembership = Membership(trendit3_user=newUser)
+                newUserProfile = Profile(trendit3_user=newUser)
+                newUserWallet = Wallet(trendit3_user=newUser, currency_name=currency_info['name'], currency_code=currency_info['code'])
                 
-                db.session.add_all([newUser, newUserAddress, newMembership])
+                db.session.add_all([newUser, newUserAddress, newUserProfile, newMembership, newUserWallet])
                 db.session.commit()
+                
+                user_data = newUser.to_dict()
             else:
                 error = True
                 msg = 'Verification code is incorrect'
                 status_code = 400
+        except ExpiredSignatureError:
+            error = True
+            msg = f"The Verification code has expired. Please request a new one."
+            status_code = 401
+            db.session.rollback()
         except JWTDecodeError:
             error = True
-            msg = f"Verification link has expired"
+            msg = f"Verification code has expired. Please request a new one."
             status_code = 401
+            db.session.rollback()
         except InvalidRequestError:
             error = True
             msg = f"Invalid request"
@@ -163,62 +167,168 @@ class AuthController:
             db.session.rollback()
         except Exception as e:
             error = True
-            msg = 'An error occurred while processing the request.'
-            logging.exception("An exception occurred during registration.") # Log the error details for debugging
             status_code = 500
+            msg = 'An error occurred while processing the request.'
+            logging.exception(f"An exception occurred during registration. {e}") # Log the error details for debugging
             db.session.rollback()
         finally:
             db.session.close()
         if error:
-            return jsonify({
-                    'status': 'failed',
-                    'status_code': status_code,
-                    'message': msg,
-                }), status_code
+            return error_response(msg, status_code)
         else:
-            return jsonify({
-                    'status': 'success',
-                    'status_code': 201,
-                    'message': 'User registered successfully',
-                }), 201
+            extra_data = {'user_data': user_data}
+            return success_response('User registered successfully', 201, extra_data)
+
 
     @staticmethod
     def login():
         error = False
         
-        if request.method == 'POST':
+        try:
             data = request.get_json()
             email_username = data.get('email_username')
             pwd = data.get('password')
             
-            # get user from db with the email.
+            # get user from db with the email/username.
             user = get_trendit3_user(email_username)
             
             if user:
                 if user.verify_password(pwd):
                     # User authentication successful
                     access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=2880))
-                    # Create response
-                    resp = make_response(jsonify({
-                        'status': 'success',
-                        'message': 'User logged in successfully',
-                        'status code': 200,
+                    extra_data = {
                         'user_id': user.id,
-                    }), 200)
+                        'user_data': user.to_dict()
+                    }
+                    # Create response
+                    resp = make_response(success_response('User logged in successfully', 200, extra_data))
+                    
                     # Set access token in a secure HTTP-only cookie
                     set_access_cookies(resp, access_token)
                     return resp
                 else:
-                    return jsonify({
-                        'status': 'failed',
-                        'message': 'Password is incorrect',
-                        'status_code': 401,
-                    }), 401
+                    return error_response('Password is incorrect', 401)
             else:
-                return jsonify({
-                    'status': 'failed',
-                    'message': 'Email/username is incorrect or doesn\'t exist',
-                    'status code': 401,
-                }), 401
+                return error_response('Email/username is incorrect or doesn\'t exist', 401)
+        except Exception as e:
+            error = True
+            logging.exception(f"An exception occurred trying to login: {e}") # Log the error details for debugging
+            return error_response('An error occurred while processing the request.', 500)
+
+
+    @staticmethod
+    def forgot_password():
+        error = False
+        
+        try:
+            data = request.get_json()
+            email_username = data.get('email')
+            
+            # get user from db with the email/username.
+            user = get_trendit3_user(email_username)
+            
+            if user:
+                # Generate a random six-digit number
+                reset_code = generate_email_verification_code()
+                
+                # Create a JWT that includes the user's info and the verification code
+                expires = timedelta(minutes=15)
+                reset_token = create_access_token(identity={
+                    'username': user.username,
+                    'email': user.email,
+                    'reset_code': reset_code
+                }, expires_delta=expires)
+                
+                pwd_reset_token = save_pwd_reset_token(reset_token, user)
+                
+                if pwd_reset_token is None:
+                    return error_response('Error saving the reset token in the database', 500)
+                
+                try:
+                    send_code_to_email(user.email, reset_code, code_type='pwd_reset') # send reset code to user's email
+                except Exception as e:
+                    console_log('EXCEPTION', f'An error occurred while sending the reset code: {str(e)}')
+                    return error_response(f'An error occurred while sending the reset code to the email address', 500)
+                
+                status_code = 200
+                msg = 'Password reset code sent successfully'
+                extra_data = { 'reset_token': reset_token, 'email': user.email, }
+            else:
+                error = True
+                status_code = 404
+                msg = 'email or username isn\'t registered with us'
+        except Exception as e:
+            error = True
+            status_code = 500
+            msg = 'An error occurred while processing the request.'
+            logging.exception(f"An exception occurred processing the request. {e}") # Log the error details for debugging
+        finally:
+            db.session.close()
+        if error:
+            return error_response(msg, status_code)
         else:
-            abort(405)
+            return success_response(msg, status_code, extra_data)
+
+
+    @staticmethod
+    def reset_password():
+        error = False
+        
+        try:
+            data = request.get_json()
+            reset_token = data.get('reset_token')
+            entered_code = data.get('entered_code')
+            new_password = data.get('new_password')
+            hashed_pwd = generate_password_hash(new_password, "pbkdf2:sha256")
+            
+            try:
+                # Decode the JWT and extract the user's info and the reset code
+                decoded_token = decode_token(reset_token)
+                token_data = decoded_token['sub']
+            except ExpiredSignatureError:
+                return error_response("The reset code has expired. Please request a new one.", 401)
+            except Exception as e:
+                return error_response("An error occurred while processing the request.", 500)
+            
+            if not decoded_token:
+                return error_response('Invalid or expired reset code', 401)
+            
+            # Check if the reset token exists in the database
+            pwd_reset_token = PwdResetToken.query.filter_by(reset_token=reset_token).first()
+            if not pwd_reset_token:
+                return error_response('The Reset code not found. Please check your mail for the correct code and try again.', 404)
+            
+            if pwd_reset_token.used:
+                return error_response('The Reset Code has already been used', 403)
+            
+            # Check if the entered code matches the one in the JWT
+            if entered_code != token_data['reset_code']:
+                return error_response('The wrong password Reset Code was provided. Please check your mail for the correct code and try again.', 400)
+            
+            # Reset token is valid, update user password
+            # get user from db with the email.
+            user = get_trendit3_user(token_data['email'])
+            user.update(thePassword=hashed_pwd)
+            
+            # Reset token is valid, mark it as used
+            pwd_reset_token.update(used=True)
+            status_code = 200
+            msg = 'Password changed successfully'
+        except JWTDecodeError:
+            error = True
+            msg = f"Invalid or expired reset code"
+            status_code = 401
+            db.session.rollback()
+        except Exception as e:
+            error = True
+            status_code = 500
+            msg = 'An error occurred while processing the request.'
+            db.session.rollback()
+            logging.exception(f"An exception occurred processing the request: {e}")
+        finally:
+            db.session.close()
+        if error:
+            return error_response(msg, status_code)
+        else:
+            return success_response(msg, status_code)
+

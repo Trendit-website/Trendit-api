@@ -1,4 +1,4 @@
-import random, string, secrets
+import random, string, secrets, logging
 from flask import request, url_for, abort
 from slugify import slugify
 
@@ -104,3 +104,9 @@ def generate_slug(name: str, type: str, existing_obj=None) -> str:
 
     return slug
 
+def console_log(label='Label', data=None):
+    
+    print(f'\n\n{label:-^50}\n', data, f'\n{"//":-^50}\n\n')
+
+def log_exception(label='EXCEPTION', data='Nothing'):
+    logging.exception(f"\n\n{label:-^50}\n An exception occurred during registration.\n", str(data)) # Log the error details for debugging

@@ -64,7 +64,7 @@ class ItemController:
 
             new_item = save_item(data) # Save the item
             if new_item:
-                status_code = 200
+                status_code = 201
                 msg = "Item Created successfully"
                 item = new_item.to_dict()
             else:

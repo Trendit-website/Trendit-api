@@ -35,3 +35,8 @@ class Config:
     MAIL_USE_TLS = True
     MAIL_USERNAME = 'olowu2018@gmail.com'
     MAIL_PASSWORD = 'doyi bkzc mcpq cvcv'
+    
+    # Cloudinary configurations
+    CLOUDINARY_CLOUD_NAME = "dcozguaw3"
+    CLOUDINARY_API_KEY = "798295575458768"
+    CLOUDINARY_API_SECRET = "HwXtPdaC5M1zepKZUriKCYZ9tsI"

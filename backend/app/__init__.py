@@ -6,6 +6,7 @@ from flask_jwt_extended import JWTManager
 
 from app.models.user import Trendit3User
 from app.models.item import Item
+from app.utils.helpers.location_helpers import get_currency_code, get_currency_info
 
 from config import Config
 from app.extensions import db
@@ -46,5 +47,14 @@ def create_app(config_class=Config):
     
     from app.routes.error_handlers import bp as errorHandler_bp
     app.register_blueprint(errorHandler_bp)
+    
+    @app.route("/test", methods=['GET'])
+    def test():
+        currency = get_currency_info('nigeria')
+        
+        if currency is None:
+            return 'None'
+        else:
+            return currency
     
     return app

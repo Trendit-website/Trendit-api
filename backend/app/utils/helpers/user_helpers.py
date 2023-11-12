@@ -9,17 +9,7 @@ def get_user_info(userId):
         userInfo = {}
     else:
         trendit3_user = Trendit3User.query.filter(Trendit3User.id == userId).first()
-        address = Address.query.filter(Address.trendit3_user_id == userId).first()
-        
-        userInfo = {
-            'username': trendit3_user.username,
-            'email': trendit3_user.email,
-            'gender': trendit3_user.gender,
-            'date_joined': trendit3_user.date_joined,
-            'country': address.country,
-            'state': address.state,
-            'local_government': address.local_government,
-        }
+        userInfo = trendit3_user.to_dict()
     
     for key in userInfo:
         if userInfo[key] is None:
@@ -27,23 +17,41 @@ def get_user_info(userId):
     
     return userInfo
 
-def validateEmail(email, existingEmail):
-    if email != existingEmail:
-        user = Trendit3User.query.filter(Trendit3User.email == email).first()
-        if user:
-            return 'Email already registered'
-        else:
-            return 'Email not registered'
-    else:
-        return 'Email not registered'
 
-def validateUsername(username, existingUsername):
-    if username != existingUsername:
-        user = Trendit3User.query.filter(Trendit3User.username == username).first()
-        if user:
-            return 'Username already registered'
-        else:
-            return 'Username not registered'
+def is_username_exist(username, user=None):
+    if user:
+        # Query the database to check if the email is available, excluding the user's own email
+        Trendit3_user = Trendit3User.query.filter(Trendit3User.username == username, Trendit3User.id != user.id).first()
     else:
-        return 'Username not registered'
+        Trendit3_user = Trendit3User.query.filter(Trendit3User.username == username).first()
+        
+    if Trendit3_user is None:
+        return False
+    else:
+        return True
+
+
+def is_email_exist(email, user=None):
+    Trendit3_user = None
+    
+    if user:
+        # Query the database to check if the email is available, excluding the user's own email
+        Trendit3_user = Trendit3User.query.filter(Trendit3User.email == email, Trendit3User.id != user.id).first()
+    else:
+        Trendit3_user = Trendit3User.query.filter(Trendit3User.email == email).first()
+    
+    if Trendit3_user is None:
+        return False
+    else:
+        return True
+
+
+def get_trendit3_user(email_username):
+    # get user from db with the email or username.
+    if is_username_exist(email_username):
+        return Trendit3User.query.filter(Trendit3User.username == email_username).first()
+    elif is_email_exist(email_username):
+        return Trendit3User.query.filter(Trendit3User.email == email_username).first()
+    else:
+        return None
 

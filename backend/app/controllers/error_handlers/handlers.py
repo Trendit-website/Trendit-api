@@ -5,7 +5,7 @@ class ErrorHandlers:
     @staticmethod
     def bad_request(error):
         return jsonify({
-            "success": False,
+            "status": 'failed',
             "status_code": 400,
             "message": "Bad request."
         }), 400
@@ -13,7 +13,7 @@ class ErrorHandlers:
     @staticmethod
     def not_found(error):
         return jsonify({
-            "success": False,
+            "status": 'failed',
             "status_code": 404,
             "message": "resource not found"
         }), 404
@@ -21,7 +21,7 @@ class ErrorHandlers:
     @staticmethod
     def method_not_allowed(error):
         return jsonify({
-            "success": False,
+            "status": 'failed',
             "status_code": 405,
             "message": "method not allowed"
         }), 405
@@ -29,7 +29,7 @@ class ErrorHandlers:
     @staticmethod
     def unprocessable(error):
         return jsonify({
-            "success": False,
+            "status": 'failed',
             "status_code": 422,
             "message": "The request was well-formed but was unable to be followed due to semantic errors."
         }), 422
@@ -37,7 +37,7 @@ class ErrorHandlers:
     @staticmethod
     def internal_server_error(error):
         return jsonify({
-            "success": False,
+            "status": 'failed',
             'error': 500,
             "message": "Internal server error"
         }), 500
