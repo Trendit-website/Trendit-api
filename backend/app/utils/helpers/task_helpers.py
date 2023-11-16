@@ -1,12 +1,39 @@
-import sys
+import sys, logging
 from flask import request, jsonify, current_app
 from sqlalchemy import desc, func, text
 from flask_jwt_extended import get_jwt_identity
 
 from app.extensions import db
 from app.models.task import Task, AdvertTask, EngagementTask, TaskPerformance
-from app.utils.helpers.basic_helpers import generate_slug, generate_random_string
+from app.utils.helpers.basic_helpers import generate_slug, generate_random_string, console_log
 from app.utils.helpers.img_helpers import save_image
+
+def get_tasks_dict_grouped_by(field, task_type):
+    tasks_dict = {}
+    
+    try:
+        if task_type == 'advert':
+            tasks = AdvertTask.query.filter_by(payment_status='Complete').all()
+        elif task_type == 'engagement':
+            tasks = EngagementTask.query.filter_by(payment_status='Complete').all()
+        else:
+            raise ValueError(f"Invalid task_type: {task_type}")
+
+        for task in tasks:
+            key = getattr(task, field)
+            if key not in tasks_dict:
+                tasks_dict[key] = {
+                    'total': 0,
+                    'tasks': [],
+                }
+            tasks_dict[key]['total'] += 1
+            tasks_dict[key]['tasks'].append(task.to_dict())
+    except AttributeError as e:
+        raise ValueError(f"Invalid field: {field}")
+    except Exception as e:
+        raise e
+
+    return tasks_dict
 
 
 def get_task_by_ref(task_ref):
@@ -80,7 +107,52 @@ def save_task(data, task_ref=None, task_id=None, payment_status='Pending'):
         else:
             return None
     except Exception as e:
-        current_app.logger.error(f"An error occurred while saving Task {data.get('task_type')}: {str(e)}")
+        logging.exception(f"An exception occurred trying to save Task {data.get('task_type')}:\n", str(e))
         db.session.rollback()
-        print(f'\n\n{"sys excInfo":-^30}\n', sys.exc_info(), f'\n{"///":-^30}\n\n')
+        console_log('sys excInfo', sys.exc_info())
         return None
+
+
+def save_performed_task(data, pt_id=None, status='Pending'):
+    try:
+        user_id = int(get_jwt_identity())
+        task_id = int(data.get('task_id', 0))
+        reward_money = float(data.get('reward_money'))
+        screenshot = request.files['screenshot']
+        
+        task = Task.query.get(task_id)
+        if task is None:
+            raise ValueError("Task not found.")
+        
+        task_type = task.type
+        
+        performed_task = None
+        if pt_id:
+            performed_task = TaskPerformance.query.get(pt_id)
+            
+        if screenshot.filename != '':
+            try:
+                screenshot_id = save_image(screenshot)
+            except Exception as e:
+                current_app.logger.error(f"An error occurred while saving Screenshot: {str(e)}")
+                raise Exception("Error saving Screenshot.")
+        elif screenshot.filename == '' and task:
+            if task.media_id:
+                screenshot_id = task.media_id
+            else:
+                raise Exception("No screenshot provided.")
+        else:
+            raise Exception("No screenshot provided.")
+        
+        if performed_task:
+            performed_task.update(user_id=user_id, task_id=task_id, task_type=task_type, reward_money=reward_money, proof_screenshot_id=screenshot_id, status=status)
+            
+            return performed_task
+        else:
+            new_performed_task = TaskPerformance.create_task_performance(user_id=user_id, task_id=task_id, task_type=task_type, reward_money=reward_money, proof_screenshot_id=screenshot_id, status=status)
+            
+            return new_performed_task
+    except Exception as e:
+        logging.exception("An exception occurred trying to save performed task:\n", str(e))
+        db.session.rollback()
+        raise e

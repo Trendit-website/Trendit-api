@@ -1,6 +1,6 @@
 import logging
-import json, requests, hashlib, hmac
-from flask import request, abort, jsonify
+import requests
+from flask import request, jsonify
 from sqlalchemy.exc import ( DataError, DatabaseError )
 from flask_jwt_extended import get_jwt_identity
 
@@ -9,14 +9,14 @@ from app.models.user import Trendit3User
 from app.models.payment import Payment, Transaction
 from app.models.task import Task
 from app.utils.helpers.response_helpers import error_response, success_response
-from app.utils.helpers.basic_helpers import generate_random_string, console_log
-from app.utils.helpers.payment_helpers import is_paid, initialize_payment
+from app.utils.helpers.basic_helpers import console_log
+from app.utils.helpers.payment_helpers import initialize_payment, credit_wallet
 from app.utils.helpers.task_helpers import get_task_by_ref
 from config import Config
 
 class PaymentController:
     @staticmethod
-    def process_payment():
+    def process_payment(payment_type):
         """
         Processes a payment for a user.
 
@@ -29,7 +29,7 @@ class PaymentController:
         data = request.get_json()
         user_id = int(get_jwt_identity())
 
-        return initialize_payment(user_id, data)
+        return initialize_payment(user_id, data, payment_type)
 
 
     @staticmethod
@@ -66,8 +66,8 @@ class PaymentController:
                 user_id = transaction.user_id
                 payment_type = transaction.payment_type
                 
-                Trendit3_user = Trendit3User.query.get(user_id)
-                if Trendit3_user is None:
+                trendit3_user = Trendit3User.query.get(user_id)
+                if trendit3_user is None:
                     return error_response('User does not exist', 404)
                         
                 # if verification was successful
@@ -75,6 +75,7 @@ class PaymentController:
                     status_code = 200
                     msg = 'Payment verified successfully'
                     extra_data = {}
+                    
                     if transaction.status != 'Complete':
                         # Record the payment in the database
                         transaction.status = 'Complete'
@@ -82,33 +83,61 @@ class PaymentController:
                         db.session.add(payment)
                         db.session.commit()
                     
-                    # Update user's membership status in the database
-                    if payment_type == 'activation_fee':
-                        Trendit3_user.activation_fee(paid=True)
-                        activation_fee_paid = Trendit3_user.membership.activation_fee_paid
-                        
-                        msg = 'Payment verified successfully and Account has been activated'
-                        extra_data.update({
-                            'activation_fee_paid': activation_fee_paid,
-                        })
-                    elif payment_type == 'item_upload':
-                        Trendit3_user.marketplace_upload_fee(paid=True)
-                        item_upload_paid = Trendit3_user.membership.item_upload_paid
-                        
-                        msg = 'Payment verified successfully and Monthly subscription fee accepted'
-                        extra_data.update({
-                            'item_upload_paid': item_upload_paid,
-                        })
-                    elif payment_type == 'task_creation':
-                        task_ref = response_data['data']['meta']['task_ref']
-                        task = get_task_by_ref(task_ref)
-                        task.update(payment_status='Complete')
-                        task_dict = task.to_dict()
-                        
-                        msg = 'Payment verified and Task has been created successfully'
-                        extra_data.update({
-                            'task': task_dict,
-                        })
+                        # Update user's membership status in the database
+                        if payment_type == 'account-activation-fee':
+                            trendit3_user.activation_fee(paid=True)
+                            activation_fee_paid = trendit3_user.membership.activation_fee_paid
+                            
+                            msg = 'Payment verified successfully and Account has been activated'
+                            extra_data.update({
+                                'activation_fee_paid': activation_fee_paid,
+                            })
+                        elif payment_type == 'membership-fee':
+                            trendit3_user.membership_fee(paid=True)
+                            membership_fee_paid = trendit3_user.membership.membership_fee_paid
+                            
+                            msg = 'Payment verified successfully and Monthly subscription fee accepted'
+                            extra_data.update({
+                                'membership_fee_paid': membership_fee_paid,
+                            })
+                        elif payment_type == 'task_creation':
+                            task_ref = response_data['data']['meta']['task_ref']
+                            task = get_task_by_ref(task_ref)
+                            task.update(payment_status='Complete')
+                            task_dict = task.to_dict()
+                            
+                            msg = 'Payment verified and Task has been created successfully'
+                            extra_data.update({
+                                'task': task_dict,
+                            })
+                        elif payment_type == 'credit-wallet':
+                            # Credit user's wallet
+                            try:
+                                credit_wallet(user_id, amount)
+                            except ValueError as e:
+                                msg = f'Error crediting wallet. Please Try To Verify Again: {e}'
+                                return error_response(msg, 400)
+                            
+                            status_code = 200
+                            msg = 'Wallet Credited successfully'
+                            extra_data.update({'user': trendit3_user.to_dict()})
+                    
+                    elif transaction.status == 'Complete':
+                        if payment_type == 'account-activation-fee':
+                            msg = 'Payment verified successfully and Account is already activated'
+                            extra_data.update({'activation_fee_paid': trendit3_user.membership.activation_fee_paid})
+                        elif payment_type == 'membership-fee':
+                            msg = 'Payment verified successfully and Membership fee already accepted'
+                            extra_data.update({'membership_fee_paid': trendit3_user.membership.membership_fee_paid,})
+                        elif payment_type == 'task_creation':
+                            task_ref = response_data['data']['meta']['task_ref']
+                            task = get_task_by_ref(task_ref)
+                            task_dict = task.to_dict()
+                            msg = 'Payment verified and Task has already been created successfully'
+                            extra_data.update({'task': task_dict})
+                        elif payment_type == 'credit-wallet':
+                            msg = 'Payment verified and Wallet already credited'
+                            extra_data.update({'user': trendit3_user.to_dict()})
                     
                 else:
                     # Payment was not successful
@@ -184,10 +213,10 @@ class PaymentController:
                     if transaction.status != 'Complete':
                         # Update user's membership status in the database
                         user = Trendit3User.query.with_for_update().get(user_id)
-                        if payment_type == 'activation_fee':
+                        if payment_type == 'account-activation-fee':
                             user.membership.activation_fee_paid = True
-                        elif payment_type == 'item_upload':
-                            user.membership.item_upload_paid = True
+                        elif payment_type == 'membership-fee':
+                            user.membership.membership_fee_paid = True
                         
                         # Record the payment in the database
                         transaction.status = 'Complete'
@@ -217,19 +246,17 @@ class PaymentController:
         """
         Fetches the payment history for a user.
 
-        This function extracts the user_id from the request, checks if the user exists, and if so, fetches the user's payment history from the database and returns it. If an error occurs at any point, it returns an error response with an appropriate status code and message.
+        This function extracts the current_user_id from the jwt identity, checks if the user exists, and if so, fetches the user's payment history from the database and returns it. If an error occurs at any point, it returns an error response with an appropriate status code and message.
 
         Returns:
             json, int: A JSON object containing the status of the request, a status code, a message (and payment history in case of success), and an HTTP status code.
         """
         error = False
         try:
-            # Extract user_id from request
-            data = request.get_json()
-            user_id = int(data.get('user_id'))
+            current_user_id = get_jwt_identity()
             
             # Check if user exists
-            user = Trendit3User.query.get(user_id)
+            user = Trendit3User.query.get(current_user_id)
             if user is None:
                 return jsonify({
                     'status': 'failed',
@@ -238,7 +265,7 @@ class PaymentController:
                 }), 404
             
             # Fetch payment history from the database
-            payments = Payment.query.filter_by(trendit3_user_id=user_id).all()
+            payments = Payment.query.filter_by(trendit3_user_id=current_user_id).all()
             
             # Convert payment history to JSON
             payment_history = [payment.to_dict() for payment in payments]

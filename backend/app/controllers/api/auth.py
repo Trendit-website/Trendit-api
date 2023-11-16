@@ -1,6 +1,6 @@
-import sys, random, logging
+import logging
 from datetime import timedelta
-from flask import request, abort, jsonify, make_response
+from flask import request, jsonify, make_response
 from sqlalchemy.exc import ( IntegrityError, DataError, DatabaseError, InvalidRequestError, )
 from werkzeug.security import generate_password_hash
 from flask_jwt_extended import create_access_token, decode_token, set_access_cookies
@@ -8,14 +8,14 @@ from flask_jwt_extended.exceptions import JWTDecodeError
 from jwt import ExpiredSignatureError
 
 from app.extensions import db
-from app.models.user import Trendit3User, Address, Profile, PwdResetToken
+from app.models.user import Trendit3User, Address, Profile, PwdResetToken, ReferralHistory
 from app.models.membership import Membership
 from app.models.payment import Wallet
 from app.utils.helpers.basic_helpers import console_log
 from app.utils.helpers.response_helpers import error_response, success_response
-from app.utils.helpers.location_helpers import get_currency_code, get_currency_info
+from app.utils.helpers.location_helpers import get_currency_info
 from app.utils.helpers.auth_helpers import generate_email_verification_code, send_code_to_email, save_pwd_reset_token
-from app.utils.helpers.user_helpers import is_email_exist, is_username_exist, get_trendit3_user
+from app.utils.helpers.user_helpers import is_email_exist, is_username_exist, get_trendit3_user, referral_code_exists
 
 class AuthController:
     @staticmethod
@@ -31,12 +31,16 @@ class AuthController:
             state = data.get('state')
             local_government = data.get('local_government')
             password = data.get('password')
+            referrer_code = request.args.get('referrer_code') # get code of referrer
             
             if is_email_exist(email):
                 return error_response('Email already taken', 409)
                 
             if is_username_exist(username):
                 return error_response('Username already Taken', 409)
+            
+            if referrer_code and not referral_code_exists(referrer_code):
+                return error_response('Referrer code is invalid', 404)
             
             hashed_pwd = generate_password_hash(password, "pbkdf2:sha256")
             
@@ -46,11 +50,12 @@ class AuthController:
             try:
                 send_code_to_email(email, verification_code) # send verification code to user's email
             except Exception as e:
+                logging.exception(f"Error sending Email: {str(e)}")
                 return error_response(f'An error occurred while sending the verification email: {str(e)}', 500)
             
             # Create a JWT that includes the user's info and the verification code
             expires = timedelta(minutes=30)
-            signup_token = create_access_token(identity={
+            identity = {
                 'username': username,
                 'email': email,
                 'gender': gender,
@@ -59,23 +64,27 @@ class AuthController:
                 'local_government': local_government,
                 'hashed_pwd': hashed_pwd,
                 'verification_code': verification_code
-            }, expires_delta=expires)
-        except InvalidRequestError:
+            }
+            if referrer_code:
+                identity.update({'referrer_code': referrer_code})
+            
+            signup_token = create_access_token(identity=identity, expires_delta=expires)
+            extra_data = {'signup_token': signup_token}
+        except InvalidRequestError as e:
             error = True
             msg = f"Invalid request"
             status_code = 400
-        except IntegrityError:
-            error = True
-            msg = f"User already exists."
-            status_code = 409
-        except DataError:
+            logging.exception(f"Invalid Request Error occurred: {str(e)}")
+        except DataError as e:
             error = True
             msg = f"Invalid Entry"
             status_code = 400
-        except DatabaseError:
+            logging.exception(f"Data Error occurred: {str(e)}")
+        except DatabaseError as e:
             error = True
             msg = f"Error connecting to the database"
             status_code = 500
+            logging.exception(f"Database Error occurred: {str(e)}")
         except Exception as e:
             error = True
             status_code = 500
@@ -85,9 +94,55 @@ class AuthController:
         if error:
             return error_response(msg, status_code)
         else:
-            extra_data = {
-                'signup_token': signup_token,
-            }
+            return success_response('Verification code sent successfully', 200, extra_data)
+
+
+    @staticmethod
+    def resend_email_verification_code():
+        error = False
+        
+        try:
+            data = request.get_json()
+            signup_token = data.get('signup_token')
+            
+            # Decode the JWT and extract the user's info and the verification code
+            decoded_token = decode_token(signup_token)
+            user_info = decoded_token['sub']
+            email = user_info['email']
+            
+            # Generate a random six-digit number
+            new_verification_code = generate_email_verification_code()
+            
+            user_info.update({'verification_code': new_verification_code})
+            
+            try:
+                send_code_to_email(email, new_verification_code) # send verification code to user's email
+            except Exception as e:
+                logging.exception(f"Error sending Email: {str(e)}")
+                return error_response(f'Try again. An error occurred resending the verification email: {str(e)}', 500)
+            
+            # Create a JWT that includes the user's info and the verification code
+            expires = timedelta(minutes=30)
+            signup_token = create_access_token(identity=user_info, expires_delta=expires)
+            extra_data = {'signup_token': signup_token}
+        except ExpiredSignatureError as e:
+            error = True
+            msg = f"The Signup token has expired. Please try signing up again."
+            status_code = 401
+            logging.exception(f"Expired Signature Error: {e}")
+        except JWTDecodeError as e:
+            error = True
+            msg = f"The Signup token has expired or corrupted. Please try signing up again."
+            status_code = 401
+            logging.exception(f"JWT Decode Error: {e}")
+        except Exception as e:
+            error = True
+            status_code = 500
+            msg = 'An error occurred trying to resend verification code.'
+            logging.exception(f"An exception occurred resending verification code. {e}") # Log the error details for debugging
+        if error:
+            return error_response(msg, status_code)
+        else:
             return success_response('Verification code sent successfully', 200, extra_data)
 
 
@@ -131,40 +186,52 @@ class AuthController:
                 db.session.commit()
                 
                 user_data = newUser.to_dict()
+                
+                if 'referrer_code' in user_info:
+                    referrer_code = user_info['referrer_code']
+                    profile = Profile.query.filter(Profile.referral_code == referrer_code).first()
+                    referrer = profile.trendit3_user
+                    referral_history = ReferralHistory.create_referral_history(username=username, status='Registered', trendit3_user=referrer, date_joined=newUser.date_joined)
             else:
                 error = True
                 msg = 'Verification code is incorrect'
                 status_code = 400
-        except ExpiredSignatureError:
+        except ExpiredSignatureError as e:
             error = True
             msg = f"The Verification code has expired. Please request a new one."
             status_code = 401
             db.session.rollback()
-        except JWTDecodeError:
+            logging.exception(f"Expired Signature Error: {e}")
+        except JWTDecodeError as e:
             error = True
-            msg = f"Verification code has expired. Please request a new one."
+            msg = f"Verification code has expired or corrupted. Please request a new one."
             status_code = 401
             db.session.rollback()
-        except InvalidRequestError:
+            logging.exception(f"JWT Decode Error: {e}")
+        except InvalidRequestError as e:
             error = True
             msg = f"Invalid request"
             status_code = 400
             db.session.rollback()
-        except IntegrityError:
+            logging.exception(f"Invalid Request Error: {e}")
+        except IntegrityError as e:
             error = True
             msg = f"User already exists."
             status_code = 409
             db.session.rollback()
-        except DataError:
+            logging.exception(f"Integrity Error: {e}")
+        except DataError as e:
             error = True
             msg = f"Invalid Entry"
             status_code = 400
             db.session.rollback()
-        except DatabaseError:
+            logging.exception(f"Data Error: {e}")
+        except DatabaseError as e:
             error = True
             msg = f"Error connecting to the database"
             status_code = 500
             db.session.rollback()
+            logging.exception(f"Database Error: {e}")
         except Exception as e:
             error = True
             status_code = 500

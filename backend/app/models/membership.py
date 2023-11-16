@@ -7,7 +7,7 @@ class Membership(db.Model):
     
     id = db.Column(db.Integer(), primary_key=True)
     activation_fee_paid = db.Column(db.Boolean, default=False)
-    item_upload_paid = db.Column(db.Boolean, default=False)
+    membership_fee_paid = db.Column(db.Boolean, default=False)
     
     trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id', ondelete='CASCADE'), unique=True, nullable=False)
     trendit3_user = db.relationship('Trendit3User', back_populates="membership")
@@ -15,10 +15,19 @@ class Membership(db.Model):
     def __repr__(self):
         return f'<Membership ID: {self.id}, User ID: {self.user_id}, activation paid: {self.activation_fee_paid}>'
     
+    def update(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+        db.session.commit()
+    
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
     def to_dict(self):
         return {
             'id': self.id,
             'activation_fee_paid': self.activation_fee_paid,
-            'item_upload_paid': self.item_upload_paid,
+            'membership_fee_paid': self.membership_fee_paid,
             'trendit3_user_id': self.trendit3_user_id,
         }

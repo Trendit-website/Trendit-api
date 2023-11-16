@@ -10,13 +10,13 @@ class Task(db.Model):
     type = db.Column(db.String(50), nullable=False)
     platform = db.Column(db.String(80), nullable=False)
     fee = db.Column(db.Float, nullable=False)
-    media_id = db.Column(db.String(255), nullable=True)
+    media_id = db.Column(db.Integer, db.ForeignKey('image.id'), nullable=True)
     task_ref = db.Column(db.String(120), unique=True, nullable=False)
     payment_status = db.Column(db.String(80), nullable=False)
     
     @classmethod
-    def create_task(cls, user_id, type, platform, fee, task_ref, payment_status, media_path=None, **kwargs):
-        task = cls(user_id=user_id, type=type, platform=platform, fee=fee, task_ref=task_ref, payment_status=payment_status, media_path=media_path, **kwargs)
+    def create_task(cls, user_id, type, platform, fee, task_ref, payment_status, media_id=None, **kwargs):
+        task = cls(user_id=user_id, type=type, platform=platform, fee=fee, task_ref=task_ref, payment_status=payment_status, media_id=media_id, **kwargs)
         
         # Set additional attributes from kwargs
         for key, value in kwargs.items():
@@ -46,14 +46,37 @@ class Task(db.Model):
             return None
     
     def to_dict(self):
+        advert_task_dict = {}
+        advert_task = AdvertTask.query.get(self.id)
+        if advert_task:
+            advert_task_dict.update({
+                'posts_count': advert_task.posts_count,
+                'target_country': advert_task.target_country,
+                'target_state': advert_task.target_state,
+                'gender': advert_task.gender,
+                'caption': advert_task.caption,
+                'hashtags': advert_task.hashtags,
+            })
+        
+        engagement_task_dict = {}
+        engagement_task = EngagementTask.query.get(self.id)
+        if engagement_task:
+            engagement_task_dict.update({
+                'goal': engagement_task.goal,
+                'account_link': engagement_task.account_link,
+                'engagements_count': engagement_task.engagements_count,
+            })
+            
         return {
             'id': self.id,
             'user_id': self.user_id,
             'type': self.type,
             'platform': self.platform,
-            'media_path': self.media_id,
+            'media_path': self.get_task_media(),
             'task_reference': self.task_ref,
-            'payment_status': self.payment_status
+            'payment_status': self.payment_status,
+            **advert_task_dict,
+            **engagement_task_dict 
         }
 
 class AdvertTask(Task):
@@ -74,15 +97,15 @@ class AdvertTask(Task):
             'user_id': self.user_id,
             'type': self.type,
             'platform': self.platform,
-            'media_path': self.media_path,
+            'media_path': self.get_task_media(),
+            'task_reference': self.task_ref,
+            'payment_status': self.payment_status,
             'posts_count': self.posts_count,
             'target_country': self.target_country,
             'target_state': self.target_state,
             'gender': self.gender,
             'caption': self.caption,
             'hashtags': self.hashtags,
-            'task_reference': self.task_ref,
-            'payment_status': self.payment_status
         }
 
 
@@ -101,12 +124,12 @@ class EngagementTask(Task):
             'user_id': self.user_id,
             'type': self.type,
             'platform': self.platform,
-            'media_path': self.media_path,
+            'media_path': self.get_task_media(),
+            'task_reference': self.task_ref,
+            'payment_status': self.payment_status,
             'goal': self.goal,
             'account_link': self.account_link,
             'engagements_count': self.engagements_count,
-            'task_reference': self.task_ref,
-            'payment_status': self.payment_status
         }
 
 
@@ -115,29 +138,51 @@ class TaskPerformance(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
     task_id = db.Column(db.Integer, nullable=False)  # either an AdvertTask id or an EngagementTask id
     task_type = db.Column(db.String(80), nullable=False)  # either 'advert' or 'engagement'
-    proof_screenshot_path = db.Column(db.String(120), nullable=False)
-    status = db.Column(db.String(80), default='pending')
+    reward_money = db.Column(db.Float(), default=00.00, nullable=False)
+    proof_screenshot_id = db.Column(db.Integer, db.ForeignKey('image.id'), nullable=False)
+    status = db.Column(db.String(80), default='Pending')
     
     def __repr__(self):
-        return f'<ID: {self.id}, User ID: {self.user_id}, Task ID: {self.task_id}, Task Type: {self.task_type}, status: {self.status}>'
+        return f'<ID: {self.id}, User ID: {self.user_id}, Task ID: {self.task_id}, Task Type: {self.task_type}, Status: {self.status}>'
     
-    def insert(self):
-        db.session.add(self)
+    
+    @classmethod
+    def create_task_performance(cls, user_id, task_id, task_type, reward_money, proof_screenshot_id, status):
+        task = cls(user_id=user_id, task_id=task_id, task_type=task_type, reward_money=reward_money, proof_screenshot_id=proof_screenshot_id, status=status)
+        
+        db.session.add(task)
         db.session.commit()
-
-    def update(self):
+        
+        return task
+    
+    def update(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
         db.session.commit()
-
+    
+    
     def delete(self):
         db.session.delete(self)
         db.session.commit()
 
+    
+    def get_proof_screenshot(self):
+        if self.proof_screenshot_id:
+            theImage = Image.query.get(self.proof_screenshot_id)
+            if theImage:
+                return theImage.get_path("original")
+            else:
+                return None
+        else:
+            return None
+    
     def to_dict(self):
         return {
             'id': self.id,
             'user_id': self.user_id,
             'task_id': self.task_id,
             'task_type': self.task_type,
-            'proof_screenshot_path': self.proof_screenshot_path,
+            'reward_money': self.reward_money,
+            'proof_screenshot_path': self.get_proof_screenshot(),
             'status': self.status,
         }

@@ -26,11 +26,11 @@ def get_currency_info(country):
         
         return currency_info
     except requests.exceptions.RequestException as e:
-        console_log('Request failed', e)
+        console_log('Request failed', str(e))
     except IndexError:
         console_log('IndexError', 'Country not found')
     except Exception as e:
-        console_log('An error occurred', e)
+        console_log('An error occurred', str(e))
 
     return None  # Return None if there was an error
 

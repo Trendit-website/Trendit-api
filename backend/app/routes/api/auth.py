@@ -27,7 +27,7 @@ def resend_code():
     code_type = request.args.get('code_type', 'email-signup')
     
     if code_type == 'email-signup':
-        return AuthController.signUp()
+        return AuthController.resend_email_verification_code()
     if code_type == 'email-edit':
         return ProfileController.user_email_edit()
     if code_type == 'pwd-reset':

@@ -1,5 +1,6 @@
 from app.extensions import db
-from app.models.user import Trendit3User, Address
+from app.models.user import Trendit3User, Address, Profile
+from app.utils.helpers.basic_helpers import generate_random_string
 
 
 def get_user_info(userId):
@@ -55,3 +56,16 @@ def get_trendit3_user(email_username):
     else:
         return None
 
+
+def generate_referral_code(length=6):
+    while True:
+        code = generate_random_string(length)
+        # Check if the code already exists in the database
+        if not referral_code_exists(code):
+            return code
+
+def referral_code_exists(code):
+    profile = Profile.query.filter(Profile.referral_code == code).first()
+    if profile:
+        return True
+    return False

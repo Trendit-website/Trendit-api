@@ -7,15 +7,16 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 ## postgresql://postgres:zeddy@localhost:5432/robin_sale
 class Config:
     # other app configurations
-    SECRET_KEY = os.urandom(32)
+    SECRET_KEY = os.environ.get('SECRET_KEY') or os.urandom(32)
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'postgresql://postgres:zeddy@localhost:5432/trendit3'
     #SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'postgresql://trendit3_user:WXyn8pubfYkYkG5pwuTHwCDDIZR7b3Bp@dpg-ckmg2qqv7m0s739krnvg-a.oregon-postgres.render.com/trendit3'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     STATIC_DIR = 'app/static'
     UPLOADS_DIR = 'app/static/uploads'
+    DOMAIN_NAME = 'www.trendit3.com'
     
     # JWT configurations
-    JWT_SECRET_KEY = "super-secret" # Change This
+    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY') or "super-secret" # Change This
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=30)
     JWT_TOKEN_LOCATION = ['cookies']
     JWT_COOKIE_SECURE = False  # Set to True in a production environment

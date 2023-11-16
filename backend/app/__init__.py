@@ -6,7 +6,9 @@ from flask_jwt_extended import JWTManager
 
 from app.models.user import Trendit3User
 from app.models.item import Item
+from app.models.task import Task, AdvertTask, EngagementTask
 from app.utils.helpers.location_helpers import get_currency_code, get_currency_info
+from app.utils.helpers.basic_helpers import console_log
 
 from config import Config
 from app.extensions import db
@@ -50,11 +52,16 @@ def create_app(config_class=Config):
     
     @app.route("/test", methods=['GET'])
     def test():
-        currency = get_currency_info('nigeria')
         
-        if currency is None:
-            return 'None'
+        task = Task.query.filter_by(id=2).first()
+        console_log('task', task)
+        key = getattr(task, 'platformx')
+        console_log('key', key)
+                    
+        
+        if task is None:
+            return key
         else:
-            return currency
+            return 'no task'
     
     return app

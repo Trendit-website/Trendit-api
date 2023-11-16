@@ -74,6 +74,7 @@ def initialize_payment(user_id, data, payment_type=None, meta_data=None):
             authorization_url = response_data['data']['link'] # Get authorization URL from response
             extra_data = {
                 'authorization_url': authorization_url,
+                'payment_type': payment_type
             }
         else:
             error = True
@@ -101,7 +102,7 @@ def is_paid(user_id, payment_type):
 
     Args:
         user_id (int): The ID of the user to check.
-        payment_type (str): The type of payment to check. Can be 'activation_fee' or 'item_upload'.
+        payment_type (str): The type of payment to check. Can be 'activation_fee' or 'membership_fee'.
 
     Returns:
         bool: True if the user has paid the specified fee, False otherwise.
@@ -111,10 +112,10 @@ def is_paid(user_id, payment_type):
     
     Trendit3_user = Trendit3User.query.get(user_id)
     
-    if payment_type == 'activation_fee':
+    if payment_type == 'account-activation-fee':
         paid = Trendit3_user.membership.activation_fee_paid
-    elif payment_type == 'item_upload':
-        paid = Trendit3_user.membership.item_upload_paid
+    elif payment_type == 'membership-fee':
+        paid = Trendit3_user.membership.membership_fee_paid
     
     return paid
 
@@ -122,6 +123,7 @@ def is_paid(user_id, payment_type):
 
 def debit_wallet(user_id, amount):
     user = Trendit3User.query.get(user_id)
+    console_log('USER', user)
     
     if user is None:
         raise ValueError("User not found.")
@@ -131,14 +133,15 @@ def debit_wallet(user_id, amount):
     if wallet is None:
         raise ValueError("User does not have a wallet.")
 
-    if wallet.balance < amount:
+    current_balance = wallet.balance
+    if current_balance < amount:
         raise ValueError("Insufficient balance.")
 
-    # Debit the wallet
-    wallet.balance -= amount
     
     try:
-        # Commit the changes to the database
+        # Debit the wallet
+        wallet.balance -= amount
+        
         db.session.commit()
         return 'Wallet debited successful'
     except Exception as e:
@@ -158,10 +161,10 @@ def credit_wallet(user_id, amount):
     if wallet is None:
         raise ValueError("User does not have a wallet.")
 
-    # Credit the wallet
-    wallet.balance += amount
 
     try:
+        # Credit the wallet
+        wallet.balance += amount
         db.session.commit()
         return 'wallet credited successfully'
     except Exception as e:
