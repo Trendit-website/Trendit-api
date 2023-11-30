@@ -15,30 +15,29 @@ import {
 } from "@chakra-ui/react";
 
 import Loader from "../../Loader";
-import {
-  setIsLinked,
-  selectIsLinked,
-} from "../../Redux-files/slices/linkedslice";
+
 import History from "./History";
 import { useSelector, useDispatch } from "react-redux";
 
 const GenerateLink = () => {
-  const isLinked = useSelector(selectIsLinked);
+  // const isLinked = useSelector(selectIsLinked);
   const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.user);
 
   const [isLoading, setIsLoading] = useState(false);
   const [isCopied, setIsCopied] = useState(false); 
+  const isLinked = true
+
   
  
   // Function to handle button click
   const handleButtonClick = () => {
     setIsLoading(true); // Show spinner
-    setTimeout(() => {
-      setIsLoading(false); // Hide spinner after 2 seconds
-      setIsLinked(true);
-      dispatch(setIsLinked(true));
-    }, 3000);
+    // setTimeout(() => {
+    //   setIsLoading(false); // Hide spinner after 2 seconds
+    //   setIsLinked(true);
+    //   dispatch(setIsLinked(true));
+    // }, 3000);
   };
 
   const toast = useToast(); 

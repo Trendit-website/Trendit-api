@@ -22,7 +22,7 @@ import {
   HStack,
 } from "@chakra-ui/react";
 
-import NGN from "assets/images/naira.jpg"
+import NGN from "../../assets/images/naira.jpg"
 import CountryCode from './UpdatePhoneNo'
 import locationData from "../../pages/SignUp/LocationArray";
 

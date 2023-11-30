@@ -15,7 +15,7 @@ import {
     FormLabel,
     HStack,
   } from "@chakra-ui/react";
-  import NGN from "assets/images/naira.jpg"
+  import NGN from "../../assets/images/naira.jpg"
 
 const Code =()=>{
 

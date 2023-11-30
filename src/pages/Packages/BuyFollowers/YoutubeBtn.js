@@ -1,4 +1,4 @@
-import IG from "assets/SocialMediaLogo/Youtube.png";
+import IG from "../../../assets/SocialMediaLogo/Youtube.png";
 import {
   Flex,
   Box,

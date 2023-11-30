@@ -1,5 +1,5 @@
 import Registration from './Registration'
-import Footer from "components/Footer";
+import Footer from "../../components/Footer";
 import { Container } from "@chakra-ui/react";
 
 const SignUp =()=>{

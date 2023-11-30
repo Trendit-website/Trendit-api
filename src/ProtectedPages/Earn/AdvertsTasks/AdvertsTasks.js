@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import {Goback } from '../Earnhome'
 import ADtasks from './AdsList'
 import EngagementTasks from '../EngagementTasks/EngagementTasklist'
-import {colors} from 'components/colors'
+import {colors} from '../../../components/colors'
 
 
 

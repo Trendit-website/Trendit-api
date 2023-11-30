@@ -17,7 +17,7 @@ import {
 } from "@chakra-ui/react";
 import { Link, NavLink } from "react-router-dom";
 import { ChevronDownIcon, HamburgerIcon, CloseIcon } from "@chakra-ui/icons";
-import { LogoJPG } from "constants/image_assets";
+import { LogoJPG } from "../constants/image_assets";
 
 const NAV_ITEMS = [
   {

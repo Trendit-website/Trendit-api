@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom'; 
-import {colors} from 'components/colors'
+import {colors} from '../../../components/colors'
 
 
 import {
@@ -22,11 +22,11 @@ import {
 import { Goback } from "../../Earn/Earnhome";
 import Loader from "../../../Loader";
 import { useSelector, useDispatch } from 'react-redux';
-import { setIsLinked, selectIsLinked } from '../../../Redux-files/slices/linkedslice';
+// import { setIsLinked, selectIsLinked } from '../../../Redux-files/slices/linkedslice';
 
 const LinkAcct = () => {
 
-    const isLinked = useSelector(selectIsLinked);
+    // const isLinked = useSelector(selectIsLinked);
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
@@ -34,8 +34,9 @@ const LinkAcct = () => {
   const [isButtonActive, setIsButtonActive] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const isLinked = true
  
-  console.log(isLinked);
+  // console.log(isLinked);
 
   // Function to handle input changes
   const handleInputChange = (e) => {
@@ -44,14 +45,14 @@ const LinkAcct = () => {
     setIsButtonActive(value.trim() !== "");
   };
 
-  useEffect(() => {
-    if (isLinked) {
-      // If isLinked is true, wait for a brief moment and then redirect
-      setTimeout(() => {
-        navigate("/earn/adverts-tasks");
-      }, 5000); // Adjust the delay time as needed
-    }
-  }, [isLinked,  navigate]);
+  // useEffect(() => {
+  //   if (isLinked) {
+  //     // If isLinked is true, wait for a brief moment and then redirect
+  //     setTimeout(() => {
+  //       navigate("/earn/adverts-tasks");
+  //     }, 5000); // Adjust the delay time as needed
+  //   }
+  // }, [isLinked,  navigate]);
 
  // Function to handle button click
 const handleButtonClick = () => {
@@ -59,12 +60,12 @@ const handleButtonClick = () => {
     setTimeout(() => {
       setIsLoading(false); // Hide spinner after 2 seconds
       setShowModal(true); // Show modal with default content
-      if (inputValue === "Trendit3") {
-        setIsLinked(true); // Set isLinked to true after showing the modal
-        dispatch(setIsLinked(true));
-      } else {
-        setIsLinked(false);
-      }
+      // if (inputValue === "Trendit3") {
+      //   setIsLinked(true); // Set isLinked to true after showing the modal
+      //   dispatch(setIsLinked(true));
+      // } else {
+      //   setIsLinked(false);
+      // }
     }, 3000);
   };
   

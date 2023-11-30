@@ -19,7 +19,7 @@ import {
   Button,
   FormControl,
 } from "@chakra-ui/react";
-import { LogoJPG } from "constants/image_assets";
+import { LogoJPG } from "../constants/image_assets";
 
 
 const Footer =() =>{

@@ -10,9 +10,9 @@ import {
   Td,
   TableContainer,
 } from "@chakra-ui/react";
-import ScrollToTop from "components/scrolltop";
+import ScrollToTop from "../../components/scrolltop";
 import Loader from "../../Loader";
-import Pagination from "components/Pagination";
+import Pagination from "../../components/Pagination";
 
 const History = ({
   apiEndpoint = "https://jsonplaceholder.typicode.com/posts",

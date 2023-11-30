@@ -2,16 +2,17 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Box, Flex, Heading, Image, Text, Divider } from "@chakra-ui/react";
 
-import Whatsapp from "assets/SocialMediaLogo/Whatsapp.png";
+import Whatsapp from "../../../assets/SocialMediaLogo/Whatsapp.png";
 
-import Appstore from "assets/SocialMediaLogo/Appstore.png";
-import GooglePlay from "assets/SocialMediaLogo/Googleplay.png";
-import GroupIcon from "assets/SocialMediaLogo/grp1.png";
-import GroupIcon2 from "assets/SocialMediaLogo/group2.png";
-import Discord from "assets/SocialMediaLogo/Discord.jpg";
-import Audiomack from "assets/SocialMediaLogo/Audiomack.png";
-import Telegram from "assets/SocialMediaLogo/Telegram.png";
-import Youtube from "assets/SocialMediaLogo/Youtube.png";
+import Appstore from "../../../assets/SocialMediaLogo/Appstore.png";
+import GooglePlay from "../../../assets/SocialMediaLogo/Googleplay.png";
+import GroupIcon from "../../../assets/SocialMediaLogo/grp1.png";
+import GroupIcon2 from "../../../assets/SocialMediaLogo/group2.png";
+import Discord from "../../../assets/SocialMediaLogo/Discord.jpg";
+import Audiomack from "../../../assets/SocialMediaLogo/Audiomack.png";
+import Telegram from "../../../assets/SocialMediaLogo/Telegram.png";
+import Youtube from "../../../assets/SocialMediaLogo/Youtube.png";
+import { useGetEngagementTasksQuery } from "../../../services/routes/taskRoute";
 
 
 
@@ -154,7 +155,8 @@ export const contentArray = [
 
 function EngagementTasklist() {
  
-
+  const {data} = useGetEngagementTasksQuery();
+  // console.log(data)
   return (
     <Box mb={10}>
       {contentArray.map((content, index) => (

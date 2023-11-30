@@ -11,7 +11,7 @@ import {
 
 import { useFetch } from "../../React-query-hook/hook"; // Import the useFetch hook
 import Loader from "../../Loader";
-import Pagination from "components/Pagination";
+import Pagination from "../../components/Pagination";
 
 const ProductCard = ({ product }) => (
   <Box

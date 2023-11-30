@@ -1,5 +1,5 @@
 
-import IG from "assets/SocialMediaLogo/IG.png";
+import IG from "../../../assets/SocialMediaLogo/IG.png";
 import {
   Flex,
   Box,

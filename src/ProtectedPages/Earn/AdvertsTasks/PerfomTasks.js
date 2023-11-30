@@ -19,8 +19,8 @@ import {
   ModalCloseButton,
 } from "@chakra-ui/react";
 import { Container, Box, Heading, Text } from "@chakra-ui/react";
-import img from "assets/bg.jpg";
-import Loader from 'Loader'
+import img from "../../../assets/bg.jpg";
+import Loader from '../../../Loader'
 import { useLocation, useParams } from "react-router-dom";
 
 

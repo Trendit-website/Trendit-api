@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Box, Flex, Text, Heading, Button } from "@chakra-ui/react";
-import {colors} from 'components/colors'
+import {colors} from '../../components/colors'
 import {Link} from "react-router-dom"
 import { ArrowForwardIcon } from "@chakra-ui/icons";
 import {

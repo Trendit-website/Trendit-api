@@ -14,7 +14,7 @@ import {
   InputGroup,
   InputRightElement,
 } from "@chakra-ui/react";
-import Footer from "components/Footer";
+import Footer from "../../components/Footer";
 import { Center, HStack } from "@chakra-ui/react";
 import { Spinner } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
@@ -23,7 +23,7 @@ import { ArrowBackIcon } from "@chakra-ui/icons";
 
 import Loader from "../../Loader";
 
-import Onboard from "assets/images/onboard.png";
+import Onboard from "../../assets/images/onboard.png";
 
 const ForgotPasswordPage = () => {
   const [currentStep, setCurrentStep] = useState(1);

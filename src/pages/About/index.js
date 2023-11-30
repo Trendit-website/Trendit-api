@@ -7,7 +7,7 @@ import Individuals from "../Homepage/Individuals";
 import Hero from "../About/Hero";
 
 
-import Footer from "components/Footer";
+import Footer from "../../components/Footer";
 
 const Homepage = () => {
   return (

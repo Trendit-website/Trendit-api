@@ -1,5 +1,5 @@
 
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import {
   Box,
@@ -23,8 +23,9 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { FiMenu, FiBell, FiChevronDown, FiSearch } from "react-icons/fi";
-import { NavLink, useLocation, useMatch, Outlet } from "react-router-dom";
+import { NavLink, useLocation, useMatch, Outlet, useNavigate } from "react-router-dom";
 import Logo from "../../src/assets/images/logo.png";
+import { logout } from "../services/slices/authSlice";
 
 const LinkItems = [
   { name: "Home", icon: "solar:cart-4-bold", path: "/homepage" },
@@ -53,6 +54,7 @@ const LinkItems = [
 ];
 
 const SidebarContent = ({ onClose, ...rest }) => {
+
   return (
     <Box
       transition="3s ease"
@@ -107,6 +109,13 @@ const NavItem = ({ icon, children, path, onClose, ...rest }) => {
     );
   };
 
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/log-in");
+  }
+
   return (
     <Box>
       <NavLink
@@ -157,6 +166,12 @@ const NavItem = ({ icon, children, path, onClose, ...rest }) => {
 
 const MobileNav = ({ onOpen, ...rest }) => {
   const user = useSelector((state) => state.auth.user);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/log-in");
+  }
 
   return (
     <Container
@@ -256,7 +271,7 @@ const MobileNav = ({ onOpen, ...rest }) => {
               >
                 <MenuItem>Change Profile pics</MenuItem>
                 <MenuItem>Change password</MenuItem>
-                <MenuItem>Log out</MenuItem>
+                <MenuItem onClick={handleLogout}>Log out</MenuItem>
               </MenuList>
             </Menu>
           </Flex>

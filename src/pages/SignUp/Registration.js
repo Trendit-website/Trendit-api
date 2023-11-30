@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { ArrowForwardIcon } from "@chakra-ui/icons";
 import locationData from "./LocationArray";
 
-
 import {
   Button,
   FormControl,
@@ -15,7 +14,7 @@ import {
   Image,
   Container,
 } from "@chakra-ui/react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ArrowBackIcon } from "@chakra-ui/icons";
 
 import { Center, Heading } from "@chakra-ui/react";
@@ -26,150 +25,24 @@ import { Box, InputGroup, InputRightElement, VStack } from "@chakra-ui/react";
 import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
 import { Spinner } from "@chakra-ui/react";
 
-import Onboard from "assets/images/onboard.png";
+import Onboard from "../../assets/images/onboard.png";
+import { useRegisterMutation, useResendCodeMutation, useVerifyEmailMutation } from "../../services/routes/authRoute";
+import toast from "react-hot-toast";
+import { isStrongPassword, isValidEmail } from "../../utils";
+import { is } from "date-fns/locale";
 
 function SignUpComponent() {
+  const navigate = useNavigate();
+  const [register, { isLoading }] = useRegisterMutation();
+  const [verifyEmail, {isLoading: mailLoading}] = useVerifyEmailMutation();
+  const [resendCode, {isLoading: codeLoad}] = useResendCodeMutation()
   const [currentStep, setCurrentStep] = useState(1);
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password1, setPassword1] = useState("");
   const [password2, setPassword2] = useState("");
-
-  // Add error state variables
-  const [usernameError, setUsernameError] = useState("");
-  const [emailError, setEmailError] = useState("");
-  const [passwordError, setPasswordError] = useState("");
-
-  // Function to clear error messages after a delay
-  const clearErrors = () => {
-    setTimeout(() => {
-      setUsernameError("");
-      setEmailError("");
-      setPasswordError("");
-    }, 12000); // 3000 milliseconds (3 seconds)
-  };
-
-  // Function to proceed to the next registration step
-  const NewMail = "Trendit3@gmail.com"; //relace with actual function to check if mail does not exist
-
-  const handleNextStep = () => {
-    if (currentStep === 1) {
-      // Check for empty fields
-      if (!username || !email || !password1 || !password2) {
-        console.log("Empty field detected.");
-        // Display a generic error if any field is empty
-        setUsernameError(!username ? "Please fill in this field." : "");
-        setEmailError(!email ? "Please fill in this field." : "");
-        setPasswordError(!password1 ? "Please fill in this field." : "");
-        // Check if password2 is empty and display an error
-        if (!password2) {
-          setPasswordError("Please fill in this field.");
-        }
-
-        // Clear errors after 3 seconds
-        clearErrors();
-        return;
-      }
-
-      // Add authentication and error handling for username and email
-      if (!isValidUsername(username)) {
-        console.log("Invalid username.");
-        setUsernameError("Username is already taken.");
-        // Clear errors after 3 seconds
-        clearErrors();
-      } else if (!isValidEmail(email)) {
-        console.log("Invalid email.");
-        setEmailError("Invalid email address.");
-        // Clear errors after 3 seconds
-        clearErrors();
-      } else if (NewMail !== email) {
-        console.log("Invalid email.");
-        setEmailError(
-          "This email has been registered already. Use a new email address"
-        );
-        // Clear errors after 3 seconds
-        clearErrors();
-      } else if (!isValidPassword(password1)) {
-        console.log("Invalid password.");
-        setPasswordError(
-          "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number and a special character"
-        );
-        // Clear errors after 3 seconds
-        clearErrors();
-      } else if (password1 !== password2) {
-        console.log("Passwords do not match.");
-        setPasswordError("Passwords do not match.");
-        // Clear errors after 3 seconds
-        clearErrors();
-      } else {
-        console.log("Validation passed. Proceeding to the next step.");
-        setCurrentStep(currentStep + 1);
-      }
-    }
-
-    if (currentStep === 2) {
-      if (!selectedGender) {
-        setgenderError("Please select your gender.");
-        return;
-      }
-
-      if (!selectedCountry) {
-        setCountryError("Please select a country.");
-        return;
-      }
-
-      if (!selectedState) {
-        setStateError("Please select a state.");
-        return;
-      }
-
-      if (!selectedCity) {
-        setCityError("Please select a city.");
-        return;
-      }
-      setIsLoading(true); // Show loader
-
-      setTimeout(() => {
-        setCurrentStep(currentStep + 1); // Proceed to Step 3 after 3 seconds
-        setIsLoading(false); // Hide loader
-      }, 3000); // 3 seconds delay
-    }
-  };
-
-  // Function to go back to the previous step
-
-  const handlePreviousStep = () => {
-    setCurrentStep(currentStep - 1);
-  };
-
-  // Define the allowed username
-  const allowedUsername = "Trendit3";
-
-  // Function to simulate username validation
-  const isValidUsername = (username) => {
-    if (username !== allowedUsername) {
-      setUsernameError("Username is not allowed.");
-      return false;
-    }
-    return true;
-  };
-
-  // Function to validate email
-  const isValidEmail = (email) => {
-    // Implement your email validation logic here
-    const emailPattern = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
-    return emailPattern.test(email);
-  };
-
-  const isValidPassword = (password) => {
-    // Implement your password validation logic here
-    // Return true if valid, false otherwise
-    const passwordRegex = /^(?=.*\d)(?=.*[@#$%^&+=!])(?=.*[a-zA-Z]).{8,}$/;
-    return passwordRegex.test(password);
-  };
-
-  // States to handle the second step
+  const [token, setToken] = useState("");
   const [selectedCountry, setSelectedCountry] = useState(""); // State to store the selected country
   const [selectedState, setSelectedState] = useState(""); // State to store the selected state
   const [selectedCity, setSelectedCity] = useState("");
@@ -178,6 +51,23 @@ function SignUpComponent() {
   const [stateError, setStateError] = useState("");
   const [cityError, setCityError] = useState("");
   const [genderError, setgenderError] = useState("");
+  const [pin, setPin] = useState(["", "", "", "", "", ""]);
+  const [error, setError] = useState("");
+  const [isResending, setIsResending] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
+
+
+
+ 
+
+  // Function to go back to the previous step
+
+  const handlePreviousStep = () => {
+    setCurrentStep(currentStep - 1);
+  };
+
+
+
 
   // Function to handle gender selection
   const handleGenderChange = (event) => {
@@ -221,12 +111,8 @@ function SignUpComponent() {
   };
 
   // States to handle the code verificaation step
- 
-  const [pin, setPin] = useState(["", "", "", "", "", ""]);
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [isResending, setIsResending] = useState(false);
-  const [resendSuccess, setResendSuccess] = useState(false);
+
+
 
   const handlePinChange = (e, index) => {
     const updatedPin = [...pin];
@@ -267,40 +153,106 @@ function SignUpComponent() {
   }, [resendSuccess]);
 
   // Define the specific six-digit PIN that should be matched
-  const correctPin = "123456"; // Replace with your specific PIN
   // Function to check if the pin matches before verying users
-  const handleVerifyButton = () => {
-    const enteredPin = pin.join(""); // Combine the array into a string
-    setError(""); // Clear any previous error
-    setIsLoading(true); // Set isLoading to true
-
-    // Simulate some asynchronous operation (e.g., API call)
-    setTimeout(() => {
-      if (enteredPin === correctPin) {
-        setIsLoading(false); // Deactivate the loading spinner
-        setCurrentStep(currentStep + 1);
-        logInputs();
+  const handleNextStep = async () => {
+    if (currentStep === 1) {
+      // Check for empty fields
+      if (
+        !username.trim() ||
+        !email.trim() ||
+        !password1.trim() ||
+        !password2.trim()
+      ) {
+        toast.error("Please fill all fields");
+      } else if (!isValidEmail(email)) {
+        toast.error("Invalid email address");
+      } else if (isStrongPassword(password1 || password2)) {
+        toast.error("Please enter a strong password");
+      } else if (password1 !== password2) {
+        toast.error("Passwords do not match");
       } else {
-        setError("Incorrect PIN. Please try again.");
-        setIsLoading(false); // Deactivate the loading spinner
+        setCurrentStep((curr) => curr + 1);
       }
-    }, 2000); // Simulate a 2-second delay
+    }
+
+    if (currentStep === 2) {
+      if (!selectedGender.trim()) {
+        toast.error("Please select your gender.");
+        return;
+      }
+
+      if (!selectedCountry.trim()) {
+        toast.error("Please select a country.");
+        return;
+      }
+
+      if (!selectedState.trim()) {
+        toast.error("Please select a state.");
+        return;
+      }
+
+      if (!selectedCity.trim()) {
+        toast.error("Please select a city.");
+        return;
+      }
+
+      const data = {
+        username,
+        email,
+        password: password1,
+        gender: selectedGender,
+        local_government: selectedCity,
+        country: selectedCountry,
+        state: selectedState,
+      };
+
+      try {
+        const res = await register(data).unwrap();
+        toast.success(res.message);
+        setToken(res.signup_token);
+        console.log(res)
+        setTimeout(() => {
+          setCurrentStep(currentStep + 1); // Proceed to Step 3 after 3 seconds
+        }, 3000);
+      } catch (error) {
+        console.log(error);
+      }
+
+    }
+  };
+
+  const handleVerifyEmail =async () => {
+    const entered_code = pin.join(""); // Combine the array into a string
+    setError("");
+
+    try {
+      console.log({signup_token:token, entered_code: parseInt(entered_code)})
+      const res = await verifyEmail({signup_token:token, entered_code: parseInt(entered_code)}).unwrap();
+      console.log(res);
+      navigate("/log-in");
+    } catch (error) {
+      console.log(error)
+      toast.error(error.data.message);
+      
+    }
+    
+
   };
 
   // Function to handle resending of code
-  const handleResendClick = () => {
-    // Implement your resend logic here
-    setIsResending(true); // Activate the loading spinner for resend
-    setTimeout(() => {
-      // Simulate a resend process (e.g., sending a new code)
-      setIsResending(false); // Deactivate the loading spinner for resend
-      setResendSuccess(true); // Set resend success to true
-      setPin(["", "", "", "", "", ""]); // Clear the PIN input
-      setError("");
+  const handleResendClick = async() => {
+    const data = {
+      signup_token: token,
+    }
+    try {
+      const res = await resendCode(data).unwrap();
+      console.log(res);
+    } catch (error) {
+      toast.error(error.data.message);
+    }
 
-      // Start the countdown timer
-    }, 2000); // Simulate a 2-second resend process
-  };
+  }
+   
 
   // Function to collect and log step 1 and step 2 input values into console
   const logInputs = () => {
@@ -362,9 +314,6 @@ function SignUpComponent() {
                 />
 
                 {/* Display username error */}
-                <Text color="#CB29BE" fontSize="14px">
-                  {usernameError}
-                </Text>
               </FormControl>
               <FormControl fontFamily="clash grotesk">
                 <FormLabel color="#808080">Email Address</FormLabel>
@@ -377,9 +326,6 @@ function SignUpComponent() {
                   onChange={(e) => setEmail(e.target.value)}
                 />
                 {/* Display email error */}
-                <Text color="#CB29BE" fontSize="14px">
-                  {emailError}
-                </Text>
               </FormControl>
               <FormControl fontFamily="clash grotesk">
                 <FormLabel color="#808080">Password</FormLabel>
@@ -407,9 +353,6 @@ function SignUpComponent() {
                   </InputRightElement>
                 </InputGroup>
                 {/* Display password error */}
-                <Text color="#CB29BE" fontSize="14px">
-                  {passwordError}
-                </Text>
               </FormControl>
               <FormControl fontFamily="clash grotesk">
                 <FormLabel color="#808080">Confirm Password</FormLabel>
@@ -437,9 +380,6 @@ function SignUpComponent() {
                   </InputRightElement>
                 </InputGroup>
                 {/* Display password error */}
-                <Text color="#CB29BE" fontSize="14px">
-                  {passwordError}
-                </Text>
               </FormControl>
             </VStack>
           </Flex>
@@ -627,10 +567,10 @@ function SignUpComponent() {
                     variant="unstyled"
                     style={{ color: "#CB29BE" }}
                     onClick={handleResendClick}
-                    isDisabled={isResending || resendSuccess}
+                    isDisabled={codeLoad && true}
                     fontWeight="400"
                   >
-                    {isResending ? (
+                    {codeLoad ? (
                       <Spinner size="sm" color="white" />
                     ) : (
                       "Resend"
@@ -654,20 +594,16 @@ function SignUpComponent() {
           </Flex>
         );
 
-
-        case 4:
-          // Fourth step (dummy text)
-          return (
-                 
-
-            <Box
+      case 4:
+        // Fourth step (dummy text)
+        return (
+          <Box
             color="white"
             bg="black"
             textAlign="center"
-          
             mx="auto"
-            mt='100'
-            height='100vh'
+            mt="100"
+            height="100vh"
             fontFamily="clash grotesk"
             width={{ base: "80%", md: "500px" }}
           >
@@ -701,16 +637,14 @@ function SignUpComponent() {
                 display="flex"
                 justifyContent="center"
                 as={Link}
-                to='/log-in'
+                to="/log-in"
               >
                 Go to profile <ArrowForwardIcon ml={3} />
               </Button>
             </Center>
           </Box>
+        );
 
-
-          );
-  
       default:
         return;
     }
@@ -747,20 +681,19 @@ function SignUpComponent() {
             justifyContent="center"
             fontFamily="clash grotesk"
           >
-          {currentStep > 1 && currentStep < 4 && (
-  <ArrowBackIcon
-    color="white"
-    fontSize="30px"
-    position="absolute"
-    left={{ base: "10px", md: "30%" }}
-    top={{ base: "80px", md: "120px" }}
-    cursor="pointer"
-    onClick={handlePreviousStep}
-  />
-)}
+            {currentStep > 1 && currentStep < 4 && (
+              <ArrowBackIcon
+                color="white"
+                fontSize="30px"
+                position="absolute"
+                left={{ base: "10px", md: "30%" }}
+                top={{ base: "80px", md: "120px" }}
+                cursor="pointer"
+                onClick={handlePreviousStep}
+              />
+            )}
 
-           {currentStep < 3  && (
-
+            {currentStep < 3 && (
               <Button
                 onClick={handleNextStep}
                 bg="#CB29BE"
@@ -785,7 +718,7 @@ function SignUpComponent() {
               </Button>
             )}
 
-{currentStep === 3  && (
+            {currentStep === 3 && (
               <Button
                 bg="#CB29BE"
                 color="white"
@@ -795,11 +728,11 @@ function SignUpComponent() {
                 width={{ base: "80%", md: "500px" }}
                 _hover={{ bg: "#CB29BE", opacity: "0.9" }}
                 fontFamily="clash grotesk"
-                onClick={handleVerifyButton}
+                onClick={handleVerifyEmail}
                 isDisabled={!isPinFilled()}
-                mb={{base: '300px', md: '0'}}
+                mb={{ base: "300px", md: "0" }}
               >
-                {isLoading ? (
+                {mailLoading ? (
                   <>
                     <Loader />
                     Authenticating code....
@@ -811,25 +744,25 @@ function SignUpComponent() {
             )}
           </Box>
           {currentStep < 3 && (
-          <Text
-            textAlign="center"
-            color="white"
-            fontFamily="clash grotesk"
-            mb={40}
-          >
-            Already have an account ?{" "}
-            <Button
-              variant="unstyled"
-              style={{ color: "#CB29BE" }}
-              as={Link}
-              to="/log-in"
-              fontWeight="400"
+            <Text
+              textAlign="center"
+              color="white"
+              fontFamily="clash grotesk"
+              mb={40}
             >
-              {" "}
-              Log in{" "}
-            </Button>
-          </Text>
-           )}
+              Already have an account ?{" "}
+              <Button
+                variant="unstyled"
+                style={{ color: "#CB29BE" }}
+                as={Link}
+                to="/log-in"
+                fontWeight="400"
+              >
+                {" "}
+                Log in{" "}
+              </Button>
+            </Text>
+          )}
         </Box>
       </Grid>
     </Container>
