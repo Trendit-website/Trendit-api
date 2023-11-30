@@ -4,7 +4,6 @@ from datetime import timedelta
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
-## postgresql://postgres:zeddy@localhost:5432/robin_sale
 class Config:
     # other app configurations
     SECRET_KEY = os.environ.get('SECRET_KEY') or os.urandom(32)
@@ -14,6 +13,9 @@ class Config:
     STATIC_DIR = 'app/static'
     UPLOADS_DIR = 'app/static/uploads'
     DOMAIN_NAME = 'www.trendit3.com'
+    CLIENT_ORIGIN = os.environ.get('CLIENT_ORIGIN') or 'http://localhost:3000'
+    TASKS_PER_PAGE = os.environ.get('TASKS_PER_PAGE') or 10
+    ITEMS_PER_PAGE = os.environ.get('ITEMS_PER_PAGE') or 10
     
     # JWT configurations
     JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY') or "super-secret" # Change This
@@ -24,20 +26,22 @@ class Config:
     JWT_REFRESH_COOKIE_PATH = '/token/refresh'
     JWT_COOKIE_CSRF_PROTECT = True
     
-    # FlutterWave Configurations
-    FLUTTER_INITIALIZE_URL = "https://api.flutterwave.com/v3/payments"
-    FLUTTER_SECRET_KEY = "FLWSECK_TEST-42411bcec771ba0d9a6cfbb21c9a3ca1-X"
-    FLUTTER_PUBLIC_KEY = "FLWPUBK_TEST-0db308be49b1ea25ba4e320ae778f04a-X"
-    FLUTTER_SECRET_HASH = "42cf4e6d9d8c728003ae3361d5268c23"
+    # Paystack Configurations
+    PAYSTACK_API_URL = os.environ.get('PAYSTACK_API_URL') or "https://api.paystack.co"
+    PAYSTACK_INITIALIZE_URL = os.environ.get('PAYSTACK_INITIALIZE_URL') or "https://api.paystack.co/transaction/initialize"
+    PAYSTACK_COUNTIES_URL = os.environ.get('PAYSTACK_COUNTIES_URL') or "https://api.paystack.co/country"
+    PAYSTACK_STATES_URL = os.environ.get('PAYSTACK_STATES_URL') or "https://api.paystack.co/address_verification/states"
+    PAYSTACK_SECRET_KEY = os.environ.get('PAYSTACK_SECRET_KEY') or "sk_test_a8784e4f50809b0ee5cba711046090b0df20d413"
+    PAYSTACK_PUBLIC_KEY = os.environ.get('PAYSTACK_PUBLIC_KEY') or "pk_test_b6409653e947befe40cbacc78f7338de0e0764c3"
     
     # mail configurations
     MAIL_SERVER = 'smtp.gmail.com'
     MAIL_PORT = 587
     MAIL_USE_TLS = True
-    MAIL_USERNAME = 'olowu2018@gmail.com'
-    MAIL_PASSWORD = 'doyi bkzc mcpq cvcv'
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME') or 'olowu2018@gmail.com'
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD') or 'doyi bkzc mcpq cvcv'
     
     # Cloudinary configurations
-    CLOUDINARY_CLOUD_NAME = "dcozguaw3"
-    CLOUDINARY_API_KEY = "798295575458768"
-    CLOUDINARY_API_SECRET = "HwXtPdaC5M1zepKZUriKCYZ9tsI"
+    CLOUDINARY_CLOUD_NAME = os.environ.get('CLOUDINARY_CLOUD_NAME') or "dcozguaw3"
+    CLOUDINARY_API_KEY = os.environ.get('CLOUDINARY_API_KEY') or "798295575458768"
+    CLOUDINARY_API_SECRET = os.environ.get('CLOUDINARY_API_SECRET') or "HwXtPdaC5M1zepKZUriKCYZ9tsI"

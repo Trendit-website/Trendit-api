@@ -3,57 +3,21 @@ from flask import request, jsonify
 from flask_jwt_extended import get_jwt_identity
 
 from app.extensions import db
-from app.models.user import Trendit3User
 from app.models.task import TaskPerformance, Task
 from app.utils.helpers.task_helpers import save_performed_task
 from app.utils.helpers.response_helpers import error_response, success_response
 from app.utils.helpers.basic_helpers import generate_random_string, console_log
 
 
-class TaskPerformanceController:
+class AdminTaskPerformanceController:
     @staticmethod
-    def perform_task():
+    def get_all_performed_tasks():
         error = False
         
         try:
-            data = request.form.to_dict()
-            task = Task.query.get(int(data.get('task_id', '')))
-            if task is None:
-                return error_response('Task not found', 404)
-            
-            new_performed_task = save_performed_task(data)
-            
-            if new_performed_task is None:
-                return error_response('Error performing task', 500)
-            
-            status_code = 201
-            msg = 'Task Performed successfully'
-            extra_data = {'performed_task': new_performed_task.to_dict()}
-        except ValueError as e:
-            error =  True
-            msg = str(e)
-            status_code = 404
-            logging.exception("An exception occurred trying to create performed tasks:\n", str(e))
-        except Exception as e:
-            error = True
-            msg = f'Error performing task: {e}'
-            status_code = 500
-            logging.exception("An exception occurred trying to create performed tasks:\n", str(e))
-        if error:
-            return error_response(msg, status_code)
-        else:
-            return success_response(msg, status_code, extra_data)
-    
-    
-    @staticmethod
-    def get_current_user_performed_tasks():
-        error = False
-        
-        try:
-            current_user_id = int(get_jwt_identity())
-            performed_tasks = TaskPerformance.query.filter(TaskPerformance.user_id == current_user_id).all()
+            performed_tasks = TaskPerformance.query.all()
             pt_dict = [pt.to_dict() for pt in performed_tasks]
-            msg = 'All Tasks Performed by current user fetched successfully'
+            msg = 'All Performed Tasks fetched successfully'
             status_code = 200
             extra_data = {
                 'total': len(pt_dict),
@@ -75,14 +39,13 @@ class TaskPerformanceController:
         error = False
         
         try:
-            current_user_id = int(get_jwt_identity())
-            performed_task = TaskPerformance.query.filter(TaskPerformance.id == pt_id, TaskPerformance.user_id == current_user_id).first()
+            performed_task = TaskPerformance.query.get(pt_id)
             if performed_task is None:
                 return error_response('Performed task not found', 404)
             
             pt_dict = performed_task.to_dict()
             
-            msg = 'Task Performed by current user fetched successfully'
+            msg = 'Performed Task fetched successfully'
             status_code = 200
             extra_data = {
                 'performed_task': pt_dict
@@ -104,9 +67,7 @@ class TaskPerformanceController:
         
         try:
             data = request.form.to_dict()
-            
-            current_user_id = int(get_jwt_identity())
-            performed_task = TaskPerformance.query.filter(TaskPerformance.id == pt_id, TaskPerformance.user_id == current_user_id).first()
+            performed_task = TaskPerformance.query.get(pt_id)
             
             if performed_task is None:
                 return error_response('Performed task not found', 404)
@@ -139,9 +100,7 @@ class TaskPerformanceController:
         error = False
         
         try:
-            current_user_id = int(get_jwt_identity())
-            performed_task = TaskPerformance.query.filter(TaskPerformance.id == pt_id, TaskPerformance.user_id == current_user_id).first()
-            
+            performed_task = TaskPerformance.query.get(pt_id)
             if performed_task is None:
                 return error_response('Performed task not found', 404)
             

@@ -2,7 +2,7 @@ from sqlalchemy.orm import backref
 from datetime import datetime
 
 from app.extensions import db
-from app.models.image import Image
+from app.models import Media
 
 
 
@@ -22,13 +22,13 @@ class Item(db.Model):
     phone = db.Column(db.String(100), nullable=True)
     views_count = db.Column(db.Integer, default=0)
     slug = db.Column(db.String(), nullable=False, unique=True)
-    item_img = db.Column(db.Integer, db.ForeignKey('image.id'), nullable=True)
+    item_img = db.Column(db.Integer, db.ForeignKey('media.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     seller_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
     seller = db.relationship('Trendit3User', backref=db.backref('items', lazy='dynamic'))
-    image = db.relationship('Image')
+    media = db.relationship('Media')
     
 
     def __repr__(self):
@@ -47,9 +47,9 @@ class Item(db.Model):
     
     def get_item_img(self):
         if self.item_img:
-            theImage = Image.query.get(self.item_img)
+            theImage = Media.query.get(self.item_img)
             if theImage:
-                return theImage.get_path("original")
+                return theImage.get_path()
             else:
                 return None
         else:

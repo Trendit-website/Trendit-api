@@ -12,8 +12,8 @@ def perform_task():
 
 @bp.route('/performed-tasks', methods=['GET'])
 @jwt_required()
-def get_all_performed_tasks():
-    return TaskPerformanceController.get_all_performed_tasks()
+def get_current_user_performed_tasks():
+    return TaskPerformanceController.get_current_user_performed_tasks()
 
 
 @bp.route('/performed-tasks/<int:pt_id>', methods=['GET'])

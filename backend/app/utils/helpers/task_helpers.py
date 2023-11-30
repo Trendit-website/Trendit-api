@@ -5,10 +5,10 @@ from flask_jwt_extended import get_jwt_identity
 
 from app.extensions import db
 from app.models.task import Task, AdvertTask, EngagementTask, TaskPerformance
-from app.utils.helpers.basic_helpers import generate_slug, generate_random_string, console_log
-from app.utils.helpers.img_helpers import save_image
+from app.utils.helpers.basic_helpers import generate_random_string, console_log
+from app.utils.helpers.media_helpers import save_media
 
-def get_tasks_dict_grouped_by(field, task_type):
+def get_tasks_dict_grouped_by_field(field, task_type):
     tasks_dict = {}
     
     try:
@@ -52,9 +52,12 @@ def save_task(data, task_ref=None, task_id=None, payment_status='Pending'):
     try:
         user_id = int(get_jwt_identity())
         task_type = data.get('task_type', '')
-        platform = data.get('platform', '')
+        platform = data.get('platform', '').lower()
         fee = data.get('amount', '')
-        posts_count = int(data.get('posts_count', ''))
+        
+        posts_count_str = data.get('posts_count', '')
+        posts_count = int(posts_count_str) if posts_count_str and posts_count_str.isdigit() else 0
+        
         target_country = data.get('target_country', '')
         target_state = data.get('target_state', '')
         gender = data.get('gender', '')
@@ -64,7 +67,10 @@ def save_task(data, task_ref=None, task_id=None, payment_status='Pending'):
         
         goal = data.get('goal','')
         account_link = data.get('account_link', '')
-        engagements_count = int(data.get('engagements_count', ''))
+        
+        engagements_count_str = data.get('engagements_count', '')
+        engagements_count = int(engagements_count_str) if engagements_count_str and engagements_count_str.isdigit() else 0
+
         task_ref = task_ref or f"task-{generate_random_string(8)}"
         
         task = None
@@ -73,9 +79,9 @@ def save_task(data, task_ref=None, task_id=None, payment_status='Pending'):
         
         if media.filename != '':
             try:
-                media_id = save_image(media)
+                media_id = save_media(media)
             except Exception as e:
-                current_app.logger.error(f"An error occurred while saving image for Task: {str(e)}")
+                current_app.logger.error(f"An error occurred while saving media for Task: {str(e)}")
                 return None
         elif media.filename == '' and task:
             if task.media_id:
@@ -87,21 +93,21 @@ def save_task(data, task_ref=None, task_id=None, payment_status='Pending'):
         
         if task_type == 'advert':
             if task:
-                task.update(user_id=user_id, type=task_type, platform=platform, fee=fee, media_id=media_id, task_ref=task_ref, payment_status=payment_status, posts_count=posts_count, target_country=target_country, target_state=target_state, gender=gender, caption=caption, hashtags=hashtags)
+                task.update(trendit3_user_id=user_id, type=task_type, platform=platform, fee=fee, media_id=media_id, task_ref=task_ref, payment_status=payment_status, posts_count=posts_count, target_country=target_country, target_state=target_state, gender=gender, caption=caption, hashtags=hashtags)
                 
                 return task
             else:
-                new_task = AdvertTask.create_task(user_id=user_id, type=task_type, platform=platform, fee=fee, media_id=media_id, task_ref=task_ref, payment_status=payment_status, posts_count=posts_count, target_country=target_country, target_state=target_state, gender=gender, caption=caption, hashtags=hashtags)
+                new_task = AdvertTask.create_task(trendit3_user_id=user_id, type=task_type, platform=platform, fee=fee, media_id=media_id, task_ref=task_ref, payment_status=payment_status, posts_count=posts_count, target_country=target_country, target_state=target_state, gender=gender, caption=caption, hashtags=hashtags)
                 
                 return new_task
             
         elif task_type == 'engagement':
             if task:
-                task.update(user_id=user_id, type=task_type, platform=platform, fee=fee, media_id=media_id, task_ref=task_ref, payment_status=payment_status, goal=goal, account_link=account_link, engagements_count=engagements_count)
+                task.update(trendit3_user_id=user_id, type=task_type, platform=platform, fee=fee, media_id=media_id, task_ref=task_ref, payment_status=payment_status, goal=goal, account_link=account_link, engagements_count=engagements_count)
                 
                 return task
             else:
-                new_task = EngagementTask.create_task(user_id=user_id, type=task_type, platform=platform, fee=fee, media_id=media_id, task_ref=task_ref, payment_status=payment_status, goal=goal, account_link=account_link, engagements_count=engagements_count)
+                new_task = EngagementTask.create_task(trendit3_user_id=user_id, type=task_type, platform=platform, fee=fee, media_id=media_id, task_ref=task_ref, payment_status=payment_status, goal=goal, account_link=account_link, engagements_count=engagements_count)
                 
                 return new_task
         else:
@@ -132,7 +138,7 @@ def save_performed_task(data, pt_id=None, status='Pending'):
             
         if screenshot.filename != '':
             try:
-                screenshot_id = save_image(screenshot)
+                screenshot_id = save_media(screenshot)
             except Exception as e:
                 current_app.logger.error(f"An error occurred while saving Screenshot: {str(e)}")
                 raise Exception("Error saving Screenshot.")

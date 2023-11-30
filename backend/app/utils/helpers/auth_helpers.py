@@ -41,6 +41,7 @@ def save_pwd_reset_token(reset_token, user=None):
             new_pwd_reset_token = PwdResetToken.create_token(reset_token=reset_token, trendit3_user_id=user.id)
             return new_pwd_reset_token
     except Exception as e:
+        console_log('RESET EXCEPTION', str(e))
         current_app.logger.error(f"An error occurred saving Reset token in the database: {str(e)}")
         db.session.rollback()
         db.session.close()

@@ -1,4 +1,4 @@
-from app.models.image import Image
+from app.models.media import Media
 from app.models.item import Item
 from app.models.membership import Membership
 from app.models.payment import Payment, Transaction

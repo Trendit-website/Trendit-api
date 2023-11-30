@@ -10,7 +10,7 @@ from app.models.user import Trendit3User, Address, Profile
 from app.utils.helpers.basic_helpers import console_log
 from app.utils.helpers.location_helpers import get_currency_info
 from app.utils.helpers.user_helpers import get_user_info
-from app.utils.helpers.img_helpers import save_image
+from app.utils.helpers.media_helpers import save_media
 from app.utils.helpers.user_helpers import is_username_exist, is_email_exist
 from app.utils.helpers.auth_helpers import send_code_to_email, generate_email_verification_code
 
@@ -75,7 +75,7 @@ class ProfileController:
             
             if profile_picture.filename != '':
                 try:
-                    profile_picture_id = save_image(profile_picture) # This saves image file, saves the path in db and return the id of the image
+                    profile_picture_id = save_media(profile_picture) # This saves image file, saves the path in db and return the id of the image
                 except Exception as e:
                     current_app.logger.error(f"An error occurred while saving image for item {data.get('name')}: {str(e)}")
                     return None

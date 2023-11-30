@@ -2,21 +2,24 @@ from app.extensions import db
 from sqlalchemy.orm import backref
 from datetime import datetime
 
-from app.models.image import Image
+from app.models import Media
 
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
     type = db.Column(db.String(50), nullable=False)
     platform = db.Column(db.String(80), nullable=False)
     fee = db.Column(db.Float, nullable=False)
-    media_id = db.Column(db.Integer, db.ForeignKey('image.id'), nullable=True)
+    media_id = db.Column(db.Integer, db.ForeignKey('media.id'), nullable=True)
     task_ref = db.Column(db.String(120), unique=True, nullable=False)
     payment_status = db.Column(db.String(80), nullable=False)
+    date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    
+    trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
+    trendit3_user = db.relationship('Trendit3User', backref=db.backref('tasks', lazy='dynamic'))
     
     @classmethod
-    def create_task(cls, user_id, type, platform, fee, task_ref, payment_status, media_id=None, **kwargs):
-        task = cls(user_id=user_id, type=type, platform=platform, fee=fee, task_ref=task_ref, payment_status=payment_status, media_id=media_id, **kwargs)
+    def create_task(cls, trendit3_user_id, type, platform, fee, task_ref, payment_status, media_id=None, **kwargs):
+        task = cls(trendit3_user_id=trendit3_user_id, type=type, platform=platform, fee=fee, task_ref=task_ref, payment_status=payment_status, media_id=media_id, **kwargs)
         
         # Set additional attributes from kwargs
         for key, value in kwargs.items():
@@ -37,9 +40,9 @@ class Task(db.Model):
 
     def get_task_media(self):
         if self.media_id:
-            theImage = Image.query.get(self.media_id)
-            if theImage:
-                return theImage.get_path("original")
+            theMedia = Media.query.get(self.media_id)
+            if theMedia:
+                return theMedia.get_path()
             else:
                 return None
         else:
@@ -69,7 +72,7 @@ class Task(db.Model):
             
         return {
             'id': self.id,
-            'user_id': self.user_id,
+            'creator_id': self.trendit3_user_id,
             'type': self.type,
             'platform': self.platform,
             'media_path': self.get_task_media(),
@@ -78,6 +81,7 @@ class Task(db.Model):
             **advert_task_dict,
             **engagement_task_dict 
         }
+
 
 class AdvertTask(Task):
     id = db.Column(db.Integer, db.ForeignKey('task.id'), primary_key=True)
@@ -89,12 +93,12 @@ class AdvertTask(Task):
     hashtags = db.Column(db.Text, nullable=False)
     
     def __repr__(self):
-        return f'<ID: {self.id}, User ID: {self.user_id}, Platform: {self.platform}, Posts Count: {self.posts_count}>'
+        return f'<ID: {self.id}, User ID: {self.trendit3_user_id}, Platform: {self.platform}, Posts Count: {self.posts_count}>'
     
     def to_dict(self):
         return {
             'id': self.id,
-            'user_id': self.user_id,
+            'creator_id': self.trendit3_user_id,
             'type': self.type,
             'platform': self.platform,
             'media_path': self.get_task_media(),
@@ -116,12 +120,12 @@ class EngagementTask(Task):
     engagements_count = db.Column(db.Integer, nullable=False)
     
     def __repr__(self):
-        return f'<ID: {self.id}, User ID: {self.user_id}, Goal: {self.goal}, Platform: {self.platform}>'
+        return f'<ID: {self.id}, User ID: {self.trendit3_user_id}, Goal: {self.goal}, Platform: {self.platform}>'
     
     def to_dict(self):
         return {
             'id': self.id,
-            'user_id': self.user_id,
+            'creator_id': self.trendit3_user_id,
             'type': self.type,
             'platform': self.platform,
             'media_path': self.get_task_media(),
@@ -135,16 +139,18 @@ class EngagementTask(Task):
 
 class TaskPerformance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
     task_id = db.Column(db.Integer, nullable=False)  # either an AdvertTask id or an EngagementTask id
     task_type = db.Column(db.String(80), nullable=False)  # either 'advert' or 'engagement'
     reward_money = db.Column(db.Float(), default=00.00, nullable=False)
-    proof_screenshot_id = db.Column(db.Integer, db.ForeignKey('image.id'), nullable=False)
+    proof_screenshot_id = db.Column(db.Integer, db.ForeignKey('media.id'), nullable=False)
     status = db.Column(db.String(80), default='Pending')
+    date_completed = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     
     def __repr__(self):
         return f'<ID: {self.id}, User ID: {self.user_id}, Task ID: {self.task_id}, Task Type: {self.task_type}, Status: {self.status}>'
     
+    user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
+    trendit3_user = db.relationship('Trendit3User', backref=db.backref('performed_tasks', lazy='dynamic'))
     
     @classmethod
     def create_task_performance(cls, user_id, task_id, task_type, reward_money, proof_screenshot_id, status):
@@ -168,7 +174,7 @@ class TaskPerformance(db.Model):
     
     def get_proof_screenshot(self):
         if self.proof_screenshot_id:
-            theImage = Image.query.get(self.proof_screenshot_id)
+            theImage = Media.query.get(self.proof_screenshot_id)
             if theImage:
                 return theImage.get_path("original")
             else:
@@ -185,4 +191,5 @@ class TaskPerformance(db.Model):
             'reward_money': self.reward_money,
             'proof_screenshot_path': self.get_proof_screenshot(),
             'status': self.status,
+            'date_completed': self.date_completed
         }

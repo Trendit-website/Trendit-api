@@ -1,11 +1,11 @@
 import requests, logging
-from flask import json, jsonify
+from flask import json
 from flask_jwt_extended import get_jwt_identity
 
 from app.extensions import db
-from app.models.payment import Payment, Transaction, Wallet
+from app.models.payment import Payment, Transaction
 from app.models.user import Trendit3User
-from app.utils.helpers.basic_helpers import generate_random_string, console_log
+from app.utils.helpers.basic_helpers import console_log
 from app.utils.helpers.response_helpers import error_response, success_response
 from config import Config
 
@@ -29,10 +29,11 @@ def initialize_payment(user_id, data, payment_type=None, meta_data=None):
             return error_response('User not found', 404)
         
         # get payment info
-        amount = data.get('amount')
+        amount = int(data.get('amount'))
         payment_type = payment_type or data.get('payment_type')
         meta = {
             "user_id": user_id,
+            "username": Trendit3_user.username,
             "payment_type": payment_type,
         }
         if meta_data:
@@ -42,36 +43,36 @@ def initialize_payment(user_id, data, payment_type=None, meta_data=None):
         if is_paid(user_id, payment_type):
             return error_response('Payment cannot be processed because it has already been made by the user', 409)
         
-        # Prepare the payload for the transaction
-        payload = {
-            "tx_ref": "rave-" + generate_random_string(8),  # This should be a unique reference
-            "amount": str(amount),
-            "currency": "NGN",
-            "redirect_url": "https://trendit3.vercel.app/homepage",
-            "meta": meta,
-            "customer": {
-                "email": Trendit3_user.email,
-                "username": Trendit3_user.username,
-            },
+        
+        # Convert amount to kobo (Paystack accepts amounts in kobo)
+        amount_kobo = amount * 100
+        auth_data = {
+            "email": Trendit3_user.email,
+            "amount": amount_kobo,
+            "callback_url": "https://trendit3.vercel.app/homepage",
+            "metadata": meta,
         }
         
         auth_headers ={
-            "Authorization": "Bearer {}".format(Config.FLUTTER_SECRET_KEY),
+            "Authorization": "Bearer {}".format(Config.PAYSTACK_SECRET_KEY),
             "Content-Type": "application/json"
         }
         
         # Initialize the transaction
-        response = requests.post(Config.FLUTTER_INITIALIZE_URL, headers=auth_headers, data=json.dumps(payload))
+        response = requests.post(Config.PAYSTACK_INITIALIZE_URL, headers=auth_headers, data=json.dumps(auth_data))
         response_data = response.json()
+        console_log('response_data', response_data)
+        response_data = json.loads(response.text)
+        console_log('response_data', response_data)
         
-        if response_data['status'] == 'success':
-            transaction = Transaction(tx_ref=payload['tx_ref'], user_id=user_id, payment_type=payment_type, status='Pending')
+        if response_data['status']:
+            transaction = Transaction(tx_ref=response_data['data']['reference'], user_id=user_id, payment_type=payment_type, status='Pending')
             db.session.add(transaction)
             db.session.commit()
             
             status_code = 200
             msg = 'Payment initialized'
-            authorization_url = response_data['data']['link'] # Get authorization URL from response
+            authorization_url = response_data['data']['authorization_url'] # Get authorization URL from response
             extra_data = {
                 'authorization_url': authorization_url,
                 'payment_type': payment_type
@@ -118,7 +119,6 @@ def is_paid(user_id, payment_type):
         paid = Trendit3_user.membership.membership_fee_paid
     
     return paid
-
 
 
 def debit_wallet(user_id, amount):
@@ -171,3 +171,7 @@ def credit_wallet(user_id, amount):
         # Handle the exception appropriately (rollback, log the error, etc.)
         db.session.rollback()
         raise e
+
+
+def payment_recorded(reference):
+    return bool(Payment.query.filter_by(tx_ref=reference).first())

@@ -1,4 +1,6 @@
-from flask import Flask, jsonify, request
+from flask import request
+from flask_jwt_extended import jwt_required
+
 from app.routes.api import bp
 from app.controllers.api import AuthController, ProfileController
 
@@ -33,3 +35,7 @@ def resend_code():
     if code_type == 'pwd-reset':
         return AuthController.forgot_password()
 
+@bp.route('/logout', methods=['DELETE'])
+@jwt_required()
+def logout():
+    return AuthController.logout()

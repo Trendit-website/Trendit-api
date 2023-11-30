@@ -1,7 +1,8 @@
 import logging
-from flask import request, jsonify
+from flask import request
 from flask_jwt_extended import get_jwt_identity
 
+from config import Config
 from app.models.item import Item
 from app.utils.helpers.item_helpers import save_item
 from app.utils.helpers.payment_helpers import is_paid
@@ -14,7 +15,7 @@ class ItemController:
         error = False
         try:
             page = request.args.get("page", 1, type=int)
-            items_per_page = 10  # or any other number you prefer
+            items_per_page = int(Config.ITEMS_PER_PAGE)
             pagination = Item.query.order_by(Item.created_at.desc()).paginate(page=page, per_page=items_per_page, error_out=False)
             
             items = pagination.items
@@ -22,10 +23,12 @@ class ItemController:
             extra_data = {
                 'total_items': pagination.total,
                 "items": current_items,
+                "current_page": pagination.page,
+                "total_pages": pagination.pages,
             }
             
             if not items:
-                return error_response('There are no product or services yet', 404)
+                return success_response('There are no product or services yet', 200, extra_data)
                 
         except Exception as e:
             error = True

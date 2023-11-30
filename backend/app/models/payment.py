@@ -7,11 +7,12 @@ class Payment(db.Model):
     __tablename__ = "payment"
 
     id = db.Column(db.Integer(), primary_key=True)
-    trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
+    tx_ref = db.Column(db.String(80), unique=True, nullable=False)
     amount = db.Column(db.Float(), nullable=False)
     payment_type = db.Column(db.String(50), nullable=False)  # 'task_fee', 'activation_fee' or 'monthly_fee'
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
+    trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
     user = db.relationship('Trendit3User')
     
     def to_dict(self):

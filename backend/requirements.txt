@@ -25,6 +25,7 @@ MarkupSafe
 packaging
 Pillow
 psycopg2
+pycountry
 PyJWT
 python-slugify
 pytz

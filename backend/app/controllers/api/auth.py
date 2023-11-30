@@ -3,7 +3,7 @@ from datetime import timedelta
 from flask import request, jsonify, make_response
 from sqlalchemy.exc import ( IntegrityError, DataError, DatabaseError, InvalidRequestError, )
 from werkzeug.security import generate_password_hash
-from flask_jwt_extended import create_access_token, decode_token, set_access_cookies
+from flask_jwt_extended import create_access_token, decode_token, set_access_cookies, unset_jwt_cookies
 from flask_jwt_extended.exceptions import JWTDecodeError
 from jwt import ExpiredSignatureError
 
@@ -68,7 +68,7 @@ class AuthController:
             if referrer_code:
                 identity.update({'referrer_code': referrer_code})
             
-            signup_token = create_access_token(identity=identity, expires_delta=expires)
+            signup_token = create_access_token(identity=identity, expires_delta=expires, additional_claims={'type': 'signup'})
             extra_data = {'signup_token': signup_token}
         except InvalidRequestError as e:
             error = True
@@ -123,7 +123,7 @@ class AuthController:
             
             # Create a JWT that includes the user's info and the verification code
             expires = timedelta(minutes=30)
-            signup_token = create_access_token(identity=user_info, expires_delta=expires)
+            signup_token = create_access_token(identity=user_info, expires_delta=expires, additional_claims={'type': 'signup'})
             extra_data = {'signup_token': signup_token}
         except ExpiredSignatureError as e:
             error = True
@@ -262,11 +262,8 @@ class AuthController:
             if user:
                 if user.verify_password(pwd):
                     # User authentication successful
-                    access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=2880))
-                    extra_data = {
-                        'user_id': user.id,
-                        'user_data': user.to_dict()
-                    }
+                    access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=2880), additional_claims={'type': 'access'})
+                    extra_data = {}
                     # Create response
                     resp = make_response(success_response('User logged in successfully', 200, extra_data))
                     
@@ -363,6 +360,7 @@ class AuthController:
             # Check if the reset token exists in the database
             pwd_reset_token = PwdResetToken.query.filter_by(reset_token=reset_token).first()
             if not pwd_reset_token:
+                console_log('DB reset token', pwd_reset_token)
                 return error_response('The Reset code not found. Please check your mail for the correct code and try again.', 404)
             
             if pwd_reset_token.used:
@@ -399,3 +397,12 @@ class AuthController:
         else:
             return success_response(msg, status_code)
 
+    @staticmethod
+    def logout():
+        try:
+            resp = make_response(success_response('User logged out successfully', 200))
+            unset_jwt_cookies(resp)
+            return resp
+        except Exception as e:
+            resp = make_response(error_response(f'Log out failed: {e}', 500))
+            return resp

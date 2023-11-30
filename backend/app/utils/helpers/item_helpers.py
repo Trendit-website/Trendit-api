@@ -6,7 +6,7 @@ from flask_jwt_extended import get_jwt_identity
 from app.extensions import db
 from app.models.item import Item
 from app.utils.helpers.basic_helpers import generate_slug
-from app.utils.helpers.img_helpers import save_image
+from app.utils.helpers.media_helpers import save_media
 
 
 def item_check(item_id):
@@ -56,7 +56,7 @@ def save_item(data, item_id=None):
         
         if item_img.filename != '':
             try:
-                item_img = save_image(item_img) # This saves image file, saves the path in db and return the id of the image
+                item_img = save_media(item_img) # This saves image file, saves the path in db and return the id of the image
             except Exception as e:
                 current_app.logger.error(f"An error occurred while saving image for item {data.get('name')}: {str(e)}")
                 return None
