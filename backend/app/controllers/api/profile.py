@@ -12,7 +12,7 @@ from app.utils.helpers.location_helpers import get_currency_info
 from app.utils.helpers.user_helpers import get_user_info
 from app.utils.helpers.media_helpers import save_media
 from app.utils.helpers.user_helpers import is_username_exist, is_email_exist
-from app.utils.helpers.auth_helpers import send_code_to_email, generate_email_verification_code
+from app.utils.helpers.auth_helpers import send_code_to_email, generate_six_digit_code
 
 class ProfileController:
     @staticmethod
@@ -163,7 +163,7 @@ class ProfileController:
                     'message': 'Email already Taken'
                 }), 409
                 
-            verification_code = generate_email_verification_code() # Generate a random six-digit number
+            verification_code = generate_six_digit_code() # Generate a random six-digit number
             console_log('VERIFICATION CODE', verification_code)
             
             try:

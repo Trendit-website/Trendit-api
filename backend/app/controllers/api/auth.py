@@ -8,13 +8,13 @@ from flask_jwt_extended.exceptions import JWTDecodeError
 from jwt import ExpiredSignatureError
 
 from app.extensions import db
-from app.models.user import Trendit3User, Address, Profile, PwdResetToken, ReferralHistory
+from app.models.user import Trendit3User, Address, Profile, OneTimeToken, ReferralHistory
 from app.models.membership import Membership
 from app.models.payment import Wallet
 from app.utils.helpers.basic_helpers import console_log
 from app.utils.helpers.response_helpers import error_response, success_response
 from app.utils.helpers.location_helpers import get_currency_info
-from app.utils.helpers.auth_helpers import generate_email_verification_code, send_code_to_email, save_pwd_reset_token
+from app.utils.helpers.auth_helpers import generate_six_digit_code, send_code_to_email, save_pwd_reset_token, save_2fa_token
 from app.utils.helpers.user_helpers import is_email_exist, is_username_exist, get_trendit3_user, referral_code_exists
 
 class AuthController:
@@ -45,7 +45,7 @@ class AuthController:
             hashed_pwd = generate_password_hash(password, "pbkdf2:sha256")
             
             # Generate a random six-digit number
-            verification_code = generate_email_verification_code()
+            verification_code = generate_six_digit_code()
             
             try:
                 send_code_to_email(email, verification_code) # send verification code to user's email
@@ -111,7 +111,7 @@ class AuthController:
             email = user_info['email']
             
             # Generate a random six-digit number
-            new_verification_code = generate_email_verification_code()
+            new_verification_code = generate_six_digit_code()
             
             user_info.update({'verification_code': new_verification_code})
             
@@ -143,7 +143,7 @@ class AuthController:
         if error:
             return error_response(msg, status_code)
         else:
-            return success_response('Verification code sent successfully', 200, extra_data)
+            return success_response('New Verification code sent successfully', 200, extra_data)
 
 
     @staticmethod
@@ -261,19 +261,100 @@ class AuthController:
             
             if user:
                 if user.verify_password(pwd):
-                    # User authentication successful
-                    access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=2880), additional_claims={'type': 'access'})
-                    extra_data = {}
-                    # Create response
-                    resp = make_response(success_response('User logged in successfully', 200, extra_data))
+                    # Generate a random six-digit number
+                    two_FA_code = generate_six_digit_code()
                     
-                    # Set access token in a secure HTTP-only cookie
-                    set_access_cookies(resp, access_token)
-                    return resp
+                    # Create a JWT that includes the user's info and the reset code
+                    expires = timedelta(minutes=15)
+                    two_FA_token = create_access_token(identity={
+                        'username': user.username,
+                        'email': user.email,
+                        'two_FA_code': two_FA_code
+                    }, expires_delta=expires)
+                    
+                    the_two_FA_token = save_2fa_token(two_FA_token, user)
+                    
+                    if the_two_FA_token is None:
+                        return error_response('Error saving the 2FA token to the database', 500)
+                    
+                    try:
+                        send_code_to_email(user.email, two_FA_code, code_type='2FA') # send 2FA code to user's email
+                    except Exception as e:
+                        console_log('EXCEPTION', f'An error occurred while sending the 2 factor Authentication code: {str(e)}')
+                        return error_response(f'An error occurred sending the 2FA code to the email address', 500)
+                    
+                    status_code = 200
+                    msg = '2 Factor Authentication code sent successfully'
+                    extra_data = { 'two_FA_token': two_FA_token }
+                    
                 else:
                     return error_response('Password is incorrect', 401)
             else:
                 return error_response('Email/username is incorrect or doesn\'t exist', 401)
+        except Exception as e:
+            error = True
+            status_code = 500
+            msg = f'An error occurred while processing the request.'
+            logging.exception(f"An exception occurred trying to login: {e}") # Log the error details for debugging
+        finally:
+            db.session.close()
+        if error:
+            return error_response(msg, status_code)
+        else:
+            return success_response(msg, status_code, extra_data)
+
+
+    @staticmethod
+    def verify_2fa():
+        error = False
+        try:
+            data = request.get_json()
+            two_FA_token = data.get('two_FA_token')
+            entered_code = data.get('entered_code')
+            
+            
+            try:
+                # Decode the JWT and extract the user's info and the 2FA code
+                decoded_token = decode_token(two_FA_token)
+                token_data = decoded_token['sub']
+            except ExpiredSignatureError:
+                return error_response("The 2FA code has expired. Please try again.", 401)
+            except Exception as e:
+                return error_response("An error occurred while processing the request.", 500)
+            
+            if not decoded_token:
+                return error_response('Invalid or expired 2FA code', 401)
+            
+            # Check if the 2FA token exists in the database
+            the_two_FA_token = OneTimeToken.query.filter_by(token=two_FA_token).first()
+            if not the_two_FA_token:
+                console_log('DB 2FA token', the_two_FA_token)
+                return error_response('The 2FA code not found. Please check your mail for the correct code and try again.', 404)
+            
+            if the_two_FA_token.used:
+                return error_response('The 2FA Code has already been used', 403)
+            
+            # Check if the entered code matches the one in the JWT
+            if int(entered_code) != int(token_data['two_FA_code']):
+                return error_response('The wrong 2FA Code was provided. Please check your mail for the correct code and try again.', 400)
+            
+            # 2FA token is valid, log user in
+            # User authentication successful
+            # get user from db with the email/username.
+            user = get_trendit3_user(token_data['email'])
+            access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=2880), additional_claims={'type': 'access'})
+            extra_data = {}
+            
+            # Create response
+            resp = make_response(success_response('User logged in successfully', 200, extra_data))
+            
+            # Set access token in a secure HTTP-only cookie
+            set_access_cookies(resp, access_token)
+            
+            # 2FA token is valid, mark it as used
+            the_two_FA_token.update(used=True)
+            
+            return resp
         except Exception as e:
             error = True
             logging.exception(f"An exception occurred trying to login: {e}") # Log the error details for debugging
@@ -293,9 +374,9 @@ class AuthController:
             
             if user:
                 # Generate a random six-digit number
-                reset_code = generate_email_verification_code()
+                reset_code = generate_six_digit_code()
                 
-                # Create a JWT that includes the user's info and the verification code
+                # Create a JWT that includes the user's info and the reset code
                 expires = timedelta(minutes=15)
                 reset_token = create_access_token(identity={
                     'username': user.username,
@@ -358,7 +439,7 @@ class AuthController:
                 return error_response('Invalid or expired reset code', 401)
             
             # Check if the reset token exists in the database
-            pwd_reset_token = PwdResetToken.query.filter_by(reset_token=reset_token).first()
+            pwd_reset_token = OneTimeToken.query.filter_by(token=reset_token).first()
             if not pwd_reset_token:
                 console_log('DB reset token', pwd_reset_token)
                 return error_response('The Reset code not found. Please check your mail for the correct code and try again.', 404)
@@ -367,7 +448,7 @@ class AuthController:
                 return error_response('The Reset Code has already been used', 403)
             
             # Check if the entered code matches the one in the JWT
-            if entered_code != token_data['reset_code']:
+            if int(entered_code) != int(token_data['reset_code']):
                 return error_response('The wrong password Reset Code was provided. Please check your mail for the correct code and try again.', 400)
             
             # Reset token is valid, update user password

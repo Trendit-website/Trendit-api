@@ -22,7 +22,7 @@ class Trendit3User(db.Model):
     address = db.relationship('Address', back_populates="trendit3_user", uselist=False, cascade="all, delete-orphan")
     membership = db.relationship('Membership', back_populates="trendit3_user", uselist=False, cascade="all, delete-orphan")
     wallet = db.relationship('Wallet', back_populates="trendit3_user", uselist=False, cascade="all, delete-orphan")
-    pwd_reset_token = db.relationship('PwdResetToken', back_populates="trendit3_user", uselist=False, cascade="all, delete-orphan")
+    otp_token = db.relationship('OneTimeToken', back_populates="trendit3_user", uselist=False, cascade="all, delete-orphan")
     
     @property
     def password(self):
@@ -182,23 +182,23 @@ class Address(db.Model):
         }
 
 
-class PwdResetToken(db.Model):
-    __tablename__ = "password_reset_token"
+class OneTimeToken(db.Model):
+    __tablename__ = "one_time_token"
     
     id = db.Column(db.Integer, primary_key=True)
-    reset_token = db.Column(db.String(900), nullable=True, unique=True)
+    token = db.Column(db.String(), nullable=True, unique=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     used = db.Column(db.Boolean, default=False)
 
     trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id', ondelete='CASCADE'))
-    trendit3_user = db.relationship('Trendit3User', back_populates="pwd_reset_token")
+    trendit3_user = db.relationship('Trendit3User', back_populates="otp_token")
     
     def __repr__(self):
         return f'<ID: {self.id}, user ID: {self.trendit3_user_id}, code: ******, used: {self.used}>'
     
     @classmethod
-    def create_token(cls, reset_token, trendit3_user_id):
-        token = cls(reset_token=reset_token, trendit3_user_id=trendit3_user_id)
+    def create_token(cls, token, trendit3_user_id):
+        token = cls(token=token, trendit3_user_id=trendit3_user_id)
         
         db.session.add(token)
         db.session.commit()
@@ -212,7 +212,7 @@ class PwdResetToken(db.Model):
     def to_dict(self):
         return {
             'id': self.id,
-            'code': self.reset_token,
+            'token': self.token,
             'created_at': self.created_at,
             'used': self.used,
             'user_id': self.trendit3_user_id,

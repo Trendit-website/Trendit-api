@@ -1,8 +1,7 @@
 {% extends 'base/base.html' %}
 {% block title %} Email Verification Code {% endblock %}
-{% block content %}
 
-
+{% block internalCSS %}
 <style>
     .container {
         height: 100%;
@@ -39,6 +38,11 @@
         letter-spacing: 20px;
     }
 </style>
+{% endblock %}
+
+
+{% block content %}
+
 
 <div class="container">
     <div class="card">

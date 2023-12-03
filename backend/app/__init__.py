@@ -23,7 +23,7 @@ def create_app(config_class=Config):
     migrate = Migrate(app, db)
     
     # Set up CORS. Allow '*' for origins.
-    cors = CORS(app, resources={r"/*": {"origins": Config.CLIENT_ORIGIN}}, supports_credentials=True)
+    cors = CORS(app, resources={r"/*": {"origins": Config.CLIENT_ORIGINS}}, supports_credentials=True)
 
     # Use the after_request decorator to set Access-Control-Allow
     @app.after_request

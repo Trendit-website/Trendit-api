@@ -16,6 +16,11 @@ def verify_email():
 def login():
     return AuthController.login()
 
+@bp.route('/verify-2fa', methods=['POST'])
+def verify_2fa():
+    return AuthController.verify_2fa()
+
+
 @bp.route("/forgot-password", methods=['POST'])
 def forgot_password():
     return AuthController.forgot_password()
@@ -23,6 +28,7 @@ def forgot_password():
 @bp.route("/reset-password", methods=['POST'])
 def reset_password():
     return AuthController.reset_password()
+
 
 @bp.route("/resend-code", methods=['POST'])
 def resend_code():
