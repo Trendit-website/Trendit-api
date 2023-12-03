@@ -367,7 +367,7 @@ class AuthController:
         
         try:
             data = request.get_json()
-            email_username = data.get('email')
+            email_username = data.get('email_username')
             
             # get user from db with the email/username.
             user = get_trendit3_user(email_username)
