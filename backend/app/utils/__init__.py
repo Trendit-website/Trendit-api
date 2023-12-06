@@ -966,7 +966,7 @@ class AppJSON:
     def get_local_governments(cls, state_name):
         naija_states = cls.naija_states
         for state in naija_states['states']:
-            if state['name'] == state_name:
+            if state['name'].lower() == state_name.lower():
                 return state['local_governments']
         return []
     

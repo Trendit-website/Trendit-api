@@ -442,7 +442,7 @@ class AuthController:
             pwd_reset_token = OneTimeToken.query.filter_by(token=reset_token).first()
             if not pwd_reset_token:
                 console_log('DB reset token', pwd_reset_token)
-                return error_response('The Reset code not found. Please check your mail for the correct code and try again.', 404)
+                return error_response('The Reset token not found.', 404)
             
             if pwd_reset_token.used:
                 return error_response('The Reset Code has already been used', 403)
@@ -477,6 +477,7 @@ class AuthController:
             return error_response(msg, status_code)
         else:
             return success_response(msg, status_code)
+
 
     @staticmethod
     def logout():

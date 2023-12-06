@@ -5,7 +5,6 @@ Trendit³ is a dynamic and innovative platform that provides users with an oppor
 
 This document provides information on the API endpoints for the Trendit³ application.
 
-
 ## Setting up the Backend
 ### Install Dependencies
 
@@ -28,6 +27,18 @@ This document provides information on the API endpoints for the Trendit³ applic
 
 - [Flask-CORS](https://flask-cors.readthedocs.io/en/latest/#) is the extension used to handle cross-origin requests from our frontend server.
     
+### Response Structure:
+
+**Every API endpoint ensures a consistent response structure comprising:**
+
+- `status` (string): Signifying the request outcome, either "success" or "failed".
+- `message` (string): A message that conveys supplementary information regarding the request status
+- `status_code` (integer): Represents the HTTP status code, reflecting the success or failure of the request.
+    
+
+These elements are foundational across all endpoints. For endpoint-specific details, refer to the individual documentation sections.
+
+
 ### Sending Form Data
 
 Some endpoints will be recieving form data instead of the tranditional JSON data sent with every request.
@@ -128,7 +139,7 @@ The `signup_token` will be used to verify the user's Email in the `/api/verify-e
   "signup_token": "oikjasdkjsd;asmfdklksjdsaudjsamdsdsodsssd..."
 }
 ```
-
+**Error Handling**  
 If registration fails, you will receive a JSON response with details about the error, including the status code.
 - **HTTP 400 Bad Request:** Invalid request payload.  
 - **HTTP 409 Conflict:** User with the same email already exists.  
@@ -200,6 +211,7 @@ A successful response will look like this:
 ```
 You can then go ahead to redirect user to login page.
 
+**Error Handling**  
 If Email verification fails, you will receive a JSON response with details about the error, including the status code.
 - **HTTP 400 Bad Request:** Invalid request payload.  
 - **HTTP 409 Conflict:** User with the same email already exists.  
@@ -234,6 +246,7 @@ The `two_FA_token` will be used to verify the 2 Factor Authentication Code in th
 }
 ```
 
+**Error Handling**  
 If Login fails, you will receive a JSON response with details about the error, including the status code.
 
 - **HTTP 401 Unauthorized:** Invalid email or password.  
@@ -270,6 +283,107 @@ The `access_token` is automatically sent with every request, but the `csrf_acces
 _For more info, see Documentation above on accessing protected endpoints._
 
 
+### Forgot Password
+**Endpoint:** `/api/forgot-password`  
+**HTTP Method:** `POST`  
+**Description:** used if to reset password if it's forgotten.  
+
+This endpoint requires either the the user's email, or username in the body of the reequest. A six digit reset code will be sent to user's email. This reset code will need to be sent to `/api/reset-password` endpoint to verify and change password.
+```json
+{
+    "email_username": "trendit_user@gmail.com"
+}
+```
+
+If reset code is sent successful, you will receive a JSON response with a 200 OK status code and a `reset_token`.
+
+```json
+{
+    "email": "trendit_user@gmail.com",
+    "message": "Password reset code sent successfully",
+    "reset_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ...",
+    "status": "success",
+    "status_code": 200
+}
+```
+**Error Handling**  
+If an eeror occurs in the process, you will receive a JSON response with details about the error, including the status code.
+
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request.  
+
+
+
+
+### Verify Password Reset Code
+**Endpoint:** `/api/reset-password`  
+**HTTP Method:** `POST`  
+**Description:** verify reset code and change password.
+
+The reset code, new password and reset token is required in the request's body.
+```json
+{
+    "entered_code": 641092,
+    "new_password": "new.password",
+    "reset_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ..."
+}
+```
+
+This endpoint will check if the entered code is correct and update the user's password with the provided `new password`.
+
+if `entered_code` is correct, you will receive a JSON response with a 200 OK status code and appropriate message.
+```json
+{
+    "message": "Password changed successfully",
+    "status": "success",
+    "status_code": 200
+}
+```
+**Error Handling**  
+If an eeror occurs in the process, you will receive a JSON response with details about the error, including the status code.
+
+- **HTTP 401 Unauthorized:** reset code is invalid or expired.  
+- **HTTP 404 Not Found:** reset token not found.
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request. 
+
+
+
+
+### Resend Password Rest Code
+**Endpoint:** `/api/resend-code?code_type=pwd-reset`  
+**HTTP Method:** `POST`  
+**Description:** Resend code to save reset password.  
+**Query Parameters:** `code_type=pwd-reset`
+
+The resend code endpoint is used to resend the six-digit code that should have been sent to the user in the first place.
+
+In this case, this endpoint with the Query Parameter `code_type=pwd-reset` will resend the password reset code that was sent by the `/api/forgot-password` endpoint.
+
+This endpoint only requires either username or email.
+```json
+{
+    "email_username": "trendit_user@gmail.com"
+}
+```
+
+If request is successful, the reset code will be sent and a new reset token will be returned in the response.
+```json
+{
+    "message": "Password reset code sent successfully",
+    "reset_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJm...",
+    "status": "success",
+    "status_code": 200
+}
+```
+
+**Error Handling**  
+If an error occurs in the process, you will receive a JSON response with details about the error, including the status code.
+
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request.  
+
+
+
+
+
 
 
 ### User Logout
@@ -298,7 +412,10 @@ The Payment endpoints are use to Initialize payments & process payments, verify 
 
 It includes endpoints to pay `"Activation fee"` and `"Membership fee"`. It also to includes endpoints to credit user's wallet.
 
-_**NOTE:**_ Currently, payments are made only in Naira, and support for other currencies will be added later on.
+_**NOTE:**_ Currently, payments are made only in Naira, and support for other currencies will be added later on. Documentation will updated when the support is added.
+
+
+
 
 ### Account Activation Fee
 **Endpoint:** `/api/payment/account-activation-fee`  
@@ -306,7 +423,14 @@ _**NOTE:**_ Currently, payments are made only in Naira, and support for other cu
 **Description:** Initialize a payment for account activation.  
 **Login Required:** True
 
-Include the following JSON data in the request body:
+This endpoint will set up the payment process for `account-activation-fee`. A Paystack authorization URL will be returned in the response for user to complet their payment. Once payment is complete use will automatically be redirected back to the homepage with a Transaction reference in as the query parameter.
+For instance, after a successful payment the user could be redirected to this URL.
+
+`https://trendit3.vercel.app/homepage?trxref=bsvxk9cpxx`
+
+As you can see there is `trxref` query parameter in the URL. This query parameter will be needed in the endpoint to verify payments. 
+
+So to initialize payment, the amount is needed in the request's body:
 ```json
 {
   "amount": 1000,
@@ -323,7 +447,7 @@ On successful, request, this will return an authorization URL where users need t
   "payment_type": "account-activation-fee"
 }
 ```
-
+**Error Handling**  
 If payment Initialization fails, you will receive a JSON response with details about the error, including the status code.
 
 - **HTTP 404 Not Found:** User not found.  
@@ -337,7 +461,14 @@ If payment Initialization fails, you will receive a JSON response with details a
 **Description:** Initialize a payment for Monthly Membership fee.  
 **Login Required:** True
 
-Include the following JSON data in the request body:
+This endpoint will set up the payment process for `membership-fee`. A Paystack authorization URL will be returned in the response for user to complet their payment. Once payment is complete use will automatically be redirected back to the homepage with a Transaction reference in as the query parameter.
+For instance, after a successful payment the user could be redirected to this URL.
+
+`https://trendit3.vercel.app/homepage?trxref=bsvxk9cpxx`
+
+As you can see there is `trxref` query parameter in the URL. This query parameter will be needed in the endpoint to verify payments. 
+
+So to initialize payment, the amount is needed in the request's body:
 ```json
 {
   "amount": 300,
@@ -355,18 +486,62 @@ On successful, request, this will return an authorization URL where users need t
 }
 ```
 
+
+
+### Credit Wallet
+**Endpoint:** `/api/payment/credit-wallet`  
+**HTTP Method:** POST  
+**Description:** Initialize a payment for a user to credit their Trendit wallet.  
+**Login Required:** True
+
+This endpoint will set up the payment process to credit user's wallet. A Paystack authorization URL will be returned in the response for user to complete their payment. Once payment is complete use will automatically be redirected back to the homepage with a Transaction reference in as the query parameter.
+For instance, after a successful payment the user could be redirected to this URL.
+
+`https://trendit3.vercel.app/homepage?trxref=bsvxk9cpxx`
+
+As you can see there is `trxref` query parameter in the URL. This query parameter will be needed in the endpoint to verify payments. 
+
+So to initialize payment, the amount is needed in the request's body:
+```json
+{
+  "amount": 300,
+}
+```
+If payment processing is successful, you will receive a JSON response with a 200 OK status code. The response will include an authorization URL. This is where you redirect user's to make their payments to credit their Trendit wallet. A successful response should look like this.
+``` json
+{  
+    "status": "success",
+    "status_code": 200,
+    "message": "Payment initialized",  
+    "payment_type": "credit-wallet",
+    "authorization_url": "https://user_authorization_url"
+}
+
+ ```
+**Error Handling**  
+If payment processing fails, you will receive a JSON response with details about the error, including the status code.
+
+- **HTTP 404 Not Found:** User not found.
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request.
+
+
+
 ### Verify Payment
 **Endpoint:** /api/payment/verify  
 **HTTP Method:** POST  
 **Description:** Verify a payment for a user using the Paystack API.  
 
+
+This endpoint is necessary immediately after being redirected from Paystack.  
+As explained the docs above, immediately after payment, users gets redirected back to Trendit³ site, with a `trxref` query parameter in the URL. The value of this query parameter needs to be sent to `/api/payment/verify` in other to confirm that the payment was made. And if the payment was made successfully, the user record will be updated accordingly in the Trendit³ database.
+
 Include the following JSON data in the request body:
 ```json
 {
-    "transaction_id": "user_transactiod_id"
+    "reference": "8j9onvy39z" // the value of trxref
 }
 ```
-The transaction_id can be gotten from the arguments in the URL where user was redirected to after successful payment.
+The reference can be gotten from the arguments in the URL where user was redirected to after successful payment.
 
 If payment verification is successful, you will receive a JSON response with a 200 OK status code. The response will include a message and payment details.
 ```json
@@ -375,10 +550,9 @@ If payment verification is successful, you will receive a JSON response with a 2
   "status_code": 200,
   "message": "Payment successfully verified",
   "activation_fee_paid": true,
-  "item_upload_paid": true
 }
 ```
-
+**Error Handling**  
 If payment verification fails, you will receive a JSON response with details about the error, including the status code.
 - **HTTP 400 Bad Request:** Transaction verification failed.  
 - **HTTP 500 Internal Server Error:** An error occurred while processing the request.  
@@ -386,18 +560,13 @@ If payment verification fails, you will receive a JSON response with details abo
 ### Payment History
 **Endpoint:** /api/payment/history   
 **HTTP Method:** GET   
-**Description:** Fetch the payment history for a user.   
+**Description:** Fetch the payment history for logged in user.  
+**Login Required:** True
 
-Include the following JSON data in the request body:
+This endpoint fetches the payment history of the the current logged in User.  
+If fetching the payment history is successful, you will receive a JSON response with a 200 OK status code. The response will include the user's payment history.
 
-```json
-{
-  "user_id": 123
-}
-```
-
-If fetching the payment history is successful, you will receive a JSON response with a 200 OK status code. The response will include a message and the user's payment history.
-```json
+``` json
 {
   "status": "success",
   "status_code": 200,
@@ -419,44 +588,114 @@ If fetching the payment history is successful, you will receive a JSON response 
     }
   ]
 }
-```
-
+ ```
+**Error Handling**  
 If fetching the payment history fails, you will receive a JSON response with details about the error, including the status code.
-- **HTTP 404 Not Found:** User not found.  
-- **HTTP 500 Internal Server Error:** An error occurred while processing the request.  
+
+- **HTTP 404 Not Found:** User not found.
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request.
 
 ### Webhook
 **Endpoint:** /api/payment/webhook  
 **HTTP Method:** POST  
 **Description:** Handles a webhook for a payment.  
 
-This endpoint is used for receiving and processing payment-related webhooks from Paystack. It verifies the signature of the webhook request, checks if the event is a successful payment event, and updates the user's membership status in the database.
+This endpoint is meant for Paystack only and request from any other party won't work.  
+It is used for receiving and processing payment-related webhooks from Paystack. It verifies the signature of the webhook request, checks if the event is a successful payment event, and updates the user's record in the database.
 
 - Usage: You should configure this endpoint as a webhook endpoint in your Paystack account settings.
 
-## Items Endpoints
-Items is the name used to represent both productS and services uploaded to the Marketplace. So find below the endpoints to interact with items on the Marketplace.
+## Items Endpoints (products & services)
+Items is the name used to represent both products and services uploaded to the Marketplace. The items endpoints consist of endpoints to fetch all items, fetch a single item, upload items, update items, and delete item.
 
-### List All Items
 
+### Fetch All Items
 **Endpoint:** `/api/items`  
 **HTTP Method:** GET  
 **Description:** Fetch all items in the database.  
+**Query Parameters:** `page` - The page number to retrieve. It Defaults to 1 if not provided.
 
-**Query Parameters:**
-- page: The page number to retrieve. Defaults to 1 if not provided.
+This endpoint fetches all products & services from the Marketplace.
+For better performance, the returned items are paginated. Only 10 items are returned per page. So to get more items from a particular page, the query parameter `page` needs to be present the endpoint.
 
 A successful response will look like this:
 ```javascript
 {
     "status": "success",
-    "message": "Items fetched successfully",
+    "message": "products & services fetched successfully",
     "status_code": 200,
     "total_items": 12, // total number of items available
-    "items": [item1, item2, ...] // items on the current page
+    "items": [item1, item2, ...], // items on the current page
+    "current_page": 1,
+    "total_pages": 12,
 }
 ```
-To fetch items from a specific page, include the `page` parameter in your request. For example, to fetch items from page 2, you would send a GET request to `/items?page=2.`
+To fetch items from a specific page, include the `page` query parameter in the endpoint. For example, to fetch items from page 2, you would send a GET request to `api/items?page=2.`
+
+**Error Handling**  
+If fetching items fails, you will receive a JSON response with details about the error, including the status code.
+
+- HTTP 500 Internal Server Error: An error occurred while processing the request.
+
+
+
+
+
+
+### Fetch Single Item
+**Endpoint:** `/api/items/<item_id_slug>`  
+**HTTP Method:** GET  
+Description: Fetch a single item by it's ID or slug.  
+
+
+This endpoint will fetch a single item using either it's ID or slug.  
+- Fetch an item using it's id: `/api/items/1`
+- Fetch an item using it's slug: `/api/items/hair-dryer`
+
+A successful response will look like this:
+
+``` json
+{
+    "status": "success",
+    "message": "Item fetched successfully",
+    "status_code": 200,
+    "item": {
+        "id": 1,
+        "name": "hair dryer",
+        "description": "this is a description....",
+        "item_img": "https://cloudinary/img.jpg",
+        "price": 400,
+        "category": "fashion",
+        "brand_name": "LG",
+        "sizes": "",
+        "colors": "red",
+        "material": "metal",
+        "phone": "07089227345",
+        "slug": "hair-dryer",
+        "views_count": 13,
+        "total_likes": 30,
+        "total_comments": 2,
+        "created_at": "Sun, 03 Dec 2023 20:50:09 GMT",
+        "updated_at": "Sun, 03 Dec 2023 20:50:09 GMT",
+        "item_type": "product",
+        "seller": {
+            "id": 2,
+            "username": "trendit_user",
+            "email": "trendit_user@gmail.com"
+        }
+    }
+}
+
+ ```
+**Error Handling**  
+If fetching the item fails, you will receive a JSON response with details about the error, including the status code.
+
+- HTTP 404 Not Found: product or service not found.
+- HTTP 500 Internal Server Error: An error occurred while processing the request.
+
+
+
+
 
 
 ### Sending Form Data
@@ -488,13 +727,14 @@ fetch('/api/items/new', {
 ```
 
 
-### Create a New Item
-
+### Create (Upload) a New Item
 **Endpoint:** `/api/items/new`  
 **HTTP Method:** POST  
 **Description:** Create a new item. This endpoint requires JWT authentication.
+**Login Required:** True
 
-following the example above, you can send form data with the necessary fields to this endpoint `/api/items/new`:
+To create(upload) an item, you need to send a form data to this endpoint.   
+Following the example above on how to send form data, you can send form data with the necessary fields to this endpoint /api/items/new:
 ```
 item_type: "product", // either product or service
 name: "Gorgeous Fresh Chips",
@@ -541,10 +781,10 @@ Upon successful creation, a 200 OK status code will be returned along with detai
 ```
 
 ### Update an Item
-
-**Endpoint:** `/api/items/update/<int:item_id>`  
+**Endpoint:** `/api/items/update/<item_id_slug>`  
 **HTTP Method:** PUT  
 **Description:** Update an existing item. 
+**Login Required:** True
 
 Include the necessary form data in the request body:
 ```
@@ -566,27 +806,13 @@ A successful response will include a 200 OK status code and the details of the u
 
 ```
 
-### Get a Single Item
 
-**Endpoint:** `/api/items/<int:item_id>`  
-**HTTP Method:** GET  
-**Description:** Fetch a single item by its ID. 
-
-A successful response will look like this:
-```json
-{
-    "status": "success",
-    "message": "Item fetched successfully",
-    "status_code": 200,
-    "item": {item details...}
-}
-```
 
 ### Delete an Item
-
-**Endpoint:** `/api/items/delete/<int:item_id>`  
+**Endpoint:** `/api/items/delete/<item_id_slug>`  
 **HTTP Method:** DELETE  
 **Description:** Delete an item by its ID. 
+**Login Required:** True  
 
 A successful response will look like this:
 ```json
@@ -598,3 +824,648 @@ A successful response will look like this:
 ```
 
 Please remember to handle errors and exceptions gracefully in your frontend application by checking the response status codes and displaying appropriate messages to the user.
+
+
+
+
+
+## Location Endpoints
+The endpoints in this collection can be used to get supported countries, states and local government area.
+
+
+**Note:**  
+The `supported countries` endpoint includes a curated list of countries deemed relevant to the Trendit platform, containing 7 entries. This selection is based on the regions that Paystack currently supports. 
+
+Please bare in mind that, at the moment, Trendit³ is set up to only process payments in Nigeria's currency. But that could change later on as the Trendit³ platform grows and reaches a wide area of audience.
+
+
+### Fetch Supported Countries
+**Endpoint:** `/api/countries`  
+**HTTP Method:** GET  
+**Description:** Fetch supported countries.
+
+This endpoint returns the list of countries currently supported by Paystack for payment processing. 
+
+**Note:**  
+Trendit³ intends allows users to make payments in their local currencies. So to ensure a seamless payment experience, the platform utilizes the country data provided by Paystack.
+
+**Key response details:**
+
+- `total` (integer): Indicates the total number of countries returned.
+- `countries` (list): Holds the total countries and their respective data.    
+    - `name` (string): The name of the country.
+    - `iso_code` (string): A unique code representing the country.
+    - `currency_code` (string): A unique code representing the currency.
+    
+
+**A successful response will look like this:**
+
+``` json
+{
+    "status": "success",
+    "message": "Countries retrieved",
+    "status_code": 200,
+    "total": 7,
+    "countries": [
+        {
+            "currency_code": "NGN",
+            "iso_code": "NG",
+            "name": "Nigeria"
+        },
+        {
+            "currency_code": "GHS",
+            "iso_code": "GH",
+            "name": "Ghana"
+        },
+        {...},
+    ]
+}
+```
+
+**Error Handling**  
+If the request fails, you will receive a JSON response with details about the error, including the status code.
+
+- HTTP 500 Internal Server Error: An error occurred while processing the request.
+
+
+
+
+### Fetch States
+**Endpoint:** `/api/states?country=Nigeria`  
+**HTTP Method:** GET  
+**Description:** Fetch the states for a specified country.  
+**Query Parameters:** `country` (required)   
+
+
+This endpoint returns a list of states within the specified country. The list is particularly useful for users to select their specific region when providing location information.
+
+
+**Key response details:**
+
+- `total` (integer): The total number of states available for the specified country.
+- `states` (list): A list of dictionaries containing state information.
+    - `name` (string): The name of the state.
+    - `state_code` (string): A unique code representing the state.
+
+**Example Request:**
+
+`GET /api/states?country=Nigeria`
+
+**A successful response will look like this:**
+
+``` json
+{
+    "status": "success",
+    "message": "States in Nigeria retrieved",
+    "status_code": 200,
+    "total": 36,
+    "states": [
+        {"name": "Abia State", "state_code": "AB"},
+        {"name": "Adamawa State", "state_code": "AD"},
+        {"name": "Akwa Ibom State", "state_code": "AK"},
+        {"name": "...", "state_code": "..."},
+        {...}
+    ]
+}
+ ```
+
+**Error Handling**  
+If the request fails, you will receive a JSON response with details about the error, including the status code.
+
+- HTTP 500 Internal Server Error: An error occurred while processing the request.
+
+
+
+
+
+### Fetch State's Local Governments
+**Endpoint:** `/api/states/lga/<state_name>`  
+**HTTP Method:** GET  
+**Description:** Fetch the local governments of a specified state. 
+
+
+This endpoint returns a list of local government areas in a given state. The list is particularly useful for users to select their specific region when providing location information.
+
+
+**Key response details:**
+- `total` (integer): The total number of local governments in the specified state.
+- `state_lga` (list): A list containing the local governments.
+
+
+**Example Request:**
+`GET /api/states/lga/lagos`
+
+**A successful response will look like this:**
+
+``` json
+{
+    "status": "success",
+    "message": "Local governments for Lagos fetched successfully",
+    "status_code": 200,
+    "total": 20,
+    "state_lga": [
+        "Agege",
+        "Ajeromi-Ifelodun",
+        "Alimosho",
+        "Amuwo-Odofin",
+        "Apapa",
+        "Badagry",
+        "Epe",
+        "Eti-Osa",
+        "Ibeju-Lekki",
+        "Ifako-Ijaiye",
+        "Ikeja",
+        "Ikorodu",
+        "Kosofe",
+        "Lagos Island",
+        "Lagos Mainland",
+        "Mushin",
+        "Ojo",
+        "Oshodi-Isolo",
+        "Shomolu",
+        "Surulere"
+    ],
+}
+ ```
+**Error Handling**  
+If the request fails, you will receive a JSON response with details about the error, including the status code.
+
+- HTTP 500 Internal Server Error: An error occurred while processing the request.
+
+## Tasks Endpoints
+
+One of the core features of Trendit³ is allowing users to create task for other users to perform.  
+There are two types of task which include, `Advert Task` and `Engagement Task`
+
+The endpoints in this section includs:
+
+- **For All Tasks:**
+    - `Fetch all Tasks`: Fetches both advert and engagement tasks.
+    - `Fetch Tasks by the current User`: Fetches all advert and engagement task created by the current logged in user.
+    - `Fetch a Single Task`: Fetches a specific task and its details.
+    - `Create Task with wallet`: Creates a new task, using user's wallet.
+    - `Create Tasks with Payment Gateway`: Creates a new task, using Paystack.
+- **For Advert Tasks:**
+    - `Fetch Advert Tasks`: Fetchs all advert task.
+    - `Fetch Advert Tasks for Platfrom`: Fetches all advert task created for a specific social platfrom.
+    - `Fetch Advert Tasks Grouped by Field`: Fetches all advert task, but grouped by a specified field (e.g: paltform)
+- **For Engagement Tasks:**
+    - `Fetch Engagement Tasks`: Fetch all engagement tasks.
+    - `Fetch Engagement Tasks Grouped by Field`: Fetches all engagement tasks, but grouped by a specified field, (e.g: goal)
+
+
+
+### Fetch All Tasks
+**Endpoint:** `/api/tasks`  
+**HTTP Method:** `GET`  
+**Description:** Fetch both advert and engagement tasks.  
+**Query Parameters:** `page` (optional): The page number to retrieve. Defaults to 1 if not provided.
+
+This endpoint fetches all advert and engagement tasks.  
+For better performance, the tasks are paginated. So by default, 10 Tasks are returned per page. To get more Tasks from a particular page, the query parameter page needs to be present the endpoint.
+
+
+**Key Response Details:**
+
+- `total` (integer): The total number of Tasks on Trendit³.
+- `all_tasks` (list): A list containing all tasks. (up to 10 per page).
+- `current_page` (integer): The current page number.
+- `total_pages` (integer): Total number of pages to retrieve tasks.
+
+**A Successful Response Example:**
+```json
+{
+    "message": "All Tasks fetched successfully",
+    "status": "success",
+    "status_code": 200,
+    "total_pages": 1
+    "current_page": 1,
+    "total": 2,
+    "all_tasks": [
+        {
+            "caption": "ujhbujnb",
+            "gender": "Male",
+            "hashtags": "#hjsdf, kskj, kslkf",
+            "id": 2,
+            "media_path": "https://cloudinary.com/img.png",
+            "payment_status": "Complete",
+            "platform": "youtube",
+            "posts_count": 3,
+            "target_country": "Nigeria",
+            "target_state": "Lagos",
+            "task_reference": "task-vie26tzy",
+            "type": "advert"
+            "creator": {
+                "id": 1,
+                "username": "trendit3_user",
+                "email": "trendit3_user@gmail.com"
+            }
+        },
+        {
+            "account_link": "https://hjsj.com",
+            "engagements_count": 1,
+            "goal": "Follow my account",
+            "id": 1,
+            "media_path": null,
+            "payment_status": "Complete",
+            "platform": "instagram",
+            "task_reference": "task-bwg2ubla",
+            "type": "engagement"
+            "creator": {
+                "id": 1,
+                "username": "trendit3_user",
+                "email": "trendit3_user@gmail.com"
+            }
+        },
+    ],
+}
+```
+
+To fetch Tasks from a specific page, include the page query parameter in the endpoint. For example, to fetch Tasks from page 2, send a GET request to api/tasks?page=2.
+
+
+**Error Handling**  
+If fetching Tasks fails, you will receive a JSON response with details about the error, including the status code.
+
+- HTTP 500 Internal Server Error: An error occurred while processing the request.
+
+
+
+
+### Fetch All Tasks by Current User
+**Endpoint:** `/api/current-user/tasks`  
+**HTTP Method:** `GET`  
+**Description:** Fetch both advert and engagement tasks created by the currently logged in user.  
+**Query Parameters:** `page` (optional): The page number to retrieve. Defaults to 1 if not provided.  
+**Login Required:** True
+
+This endpoint is quite similar to the `Fetch All Tasks` endpoint above, except this time it returns all tasks created by currently logged in user.
+
+**Key Response Details:**
+- `total` (integer): The total number of Tasks on Trendit³.
+- `all_tasks` (list): A list containing all tasks. (up to 10 per page).
+- `current_page` (integer): The current page number.
+- `total_pages` (integer): Total number of pages to retrieve tasks.
+
+**A Successful Response Example:**
+```json
+{
+    "message": "All Tasks fetched successfully",
+    "status": "success",
+    "status_code": 200,
+    "total_pages": 1
+    "current_page": 1,
+    "total": 2,
+    "all_tasks": [retrieved tasks...],
+}
+```
+
+To fetch Tasks from a specific page, include the page query parameter in the endpoint. For example, to fetch Tasks from page 2, send a GET request to api/tasks?page=2.
+
+
+**Error Handling**  
+If fetching Tasks fails, you will receive a JSON response with details about the error, including the status code.
+
+- HTTP 401 Unauthorized: User is not logged in
+- HTTP 500 Internal Server Error: An error occurred while processing the request.
+
+
+
+
+
+
+
+
+
+
+
+### Fetch Single Task
+
+**Endpoint:** `/api/tasks/{task_id}`  
+**HTTP Method:** `GET`  
+**Description:** Retrieve detailed information about a specific task based on its unique ID.  
+**Path Parameter::** `{task_id}` (required)
+
+This endpoint allows you to fetch a single task by providing its unique identifier in the URL.
+
+**Path Parameter::**
+- `{task_id}` (required): The unique identifier of the task. Example: `/api/tasks/123`
+
+**Key Response Details:**
+
+- `task` (object): Detailed information about the specified task.
+    - `creator` (object): details on the user that created the task
+
+**A Successful Response Example:**
+```json
+{
+    "message": "Task fetched successfully",
+    "status": "success",
+    "status_code": 200,
+    "task": {
+        "caption": "ujhbujnb",
+        "gender": "Male",
+        "hashtags": "#hjsdf, kskj, kslkf",
+        "id": 123,
+        "media_path": "https://cloudinary.com/img.png",
+        "payment_status": "Complete",
+        "platform": "youtube",
+        "posts_count": 3,
+        "target_country": "Nigeria",
+        "target_state": "Lagos",
+        "task_reference": "task-vie26tzy",
+        "type": "advertisement"
+        "creator": {
+            "id": 1,
+            "username": "trendit3_user",
+            "email": "trendit3_user@gmail.com"
+        }
+    }
+}
+```
+**Error Handling**  
+If fetching Task fails, you will receive a JSON response with details about the error, including the status code.
+
+- HTTP 500 Internal Server Error: An error occurred while processing the request.
+
+
+### Create New Task
+
+**Endpoint:** `/api/tasks/new?payment_method=trendit_wallet`  
+**HTTP Method:** `POST`  
+**Description:** Create a new task.   
+**Query Parameters:**  `payment_method` (required):
+
+In this endpoint, payment is required before the task is created. If the payment method is "trendit_wallet," the user's wallet will be used for payment. If the payment method is "payment_gateway," a Paystack authorization URL will be returned for redirection to complete the payment.
+
+**Query Parameters:**
+- `payment_method` (required): The payment method for task creation. Options: `trendit_wallet` or `payment_gateway`.
+
+**Form Data Parameters (for POST request):**
+- `task_type` (required): The type of task. Options: `advert` or `engagement`.
+- `caption` (required for advert tasks): The caption or title for the advertisement task.
+- `platform` (required): The platform for the task. Example: `youtube`, `instagram`.
+- `amount` (required): The amount to be paid in Naira.
+- `target_country` : The target country for the task.
+- `target_state` : The target state within the country for the task.
+- `gender` (optional): The gender associated with the task.
+- `hashtags` (required for advert tasks): Any hashtags associated with the advertisement task.
+- `media` (optional): URL of media associated with the task.
+- `posts_count` (required for advert tasks): The number of times the task can be performed by others.
+- `goal` (required for engagement tasks): The goal for engagement tasks, e.g., "Follow my account."
+- `account_link` (required for engagement tasks): The link to the social media account to engage with.
+- `engagements_count` (required for engagement tasks): The number of times the task can be performed by others.
+
+
+**Key Response Details:**
+
+- If payment method is `trendit_wallet`:
+  - `message` (string): A success message indicating that the task has been created.
+  - `task` (object): Details of the newly created task
+
+- If payment method is `payment_gateway`:
+  - `authorization_url` (string): The Paystack authorization URL. Redirect the user to this URL to complete the payment.
+
+**A Successful Response Example (trendit_wallet):**
+```json
+{
+    "message": "Task created successfully. Payment made using Trendit³ Wallet.",
+    "status": "success",
+    "status_code": 201,
+    "task": {
+        "caption": "ujhbujnb",
+        "gender": "Male",
+        "hashtags": "#hjsdf, kskj, kslkf",
+        "id": 4,
+        "media_path": null,
+        "payment_status": "Complete",
+        "platform": "youtube",
+        "posts_count": 3,
+        "target_country": "Nigeria",
+        "target_state": "Lagos",
+        "task_reference": "task-leplrxf9",
+        "type": "advert"
+        "creator": {
+            "email": "trendit_user@gmail.com",
+            "id": 1,
+            "username": "trendit_user"
+        },
+    }
+}
+```
+
+**A Successful Response Example (payment_gateway):**
+```json
+{
+    "authorization_url": "https://checkout.paystack.com/jph2o4hhupfkj72",
+    "message": "Payment initialized",
+    "payment_type": "task_creation",
+    "status": "success",
+    "status_code": 200
+}
+```
+After a user successfully makes payment using paystack, the user could be redirected back to Trendit³ site.  
+`https://trendit3.vercel.app/homepage?trxref=bsvxk9cpxx`
+
+As you can see there is `trxref` query parameter in the URL. This query parameter will be needed in the `/api/payment/verify` endpoint to verify payments. Once the payment is verified, the task will be created.
+
+
+**Error Handling**  
+If fetching Task fails, you will receive a JSON response with details about the error, including the status code.
+
+- HTTP 400 Bad Request Error: Insufficient balance/User does not have a wallet
+- HTTP 500 Internal Server Error: An error occurred while processing the request.
+
+
+
+
+
+
+
+
+
+### Fetch Advert Tasks
+**Endpoint:** `/api/tasks/advert`  
+**HTTP Method:** `GET`  
+**Description:** Retrieve all advert tasks.  
+
+The endpoint is paginated, returning 10 advert tasks per page by default.
+
+**Query Parameters:**
+- `page` (optional): The page number to retrieve. Defaults to 1 if not provided.
+
+This endpoint fetches all advert tasks specifically.
+
+**Key Response Details:**
+
+- `total` (integer): The total number of advert tasks on Trendit³.
+- `advert_tasks` (list): A list containing advert tasks (up to 10 per page).
+- `current_page` (integer): The current page number.
+- `total_pages` (integer): Total number of pages to retrieve advert tasks.
+
+**A Successful Response Example:**
+```json
+{
+    "message": "Advert tasks fetched successfully",
+    "status": "success",
+    "status_code": 200,
+    "total_pages": 2,
+    "current_page": 1,
+    "total": 15,
+    "advert_tasks": [
+        {
+            "caption": "ujhbujnb",
+            "gender": "Male",
+            "hashtags": "#hjsdf, #kskj, #kslkf",
+            "id": 4,
+            "media_path": "https://cloudinary.com/advertisement1.png",
+            "payment_status": "Complete",
+            "platform": "youtube",
+            "posts_count": 3,
+            "target_country": "Nigeria",
+            "target_state": "Lagos",
+            "task_reference": "task-leplrxf9",
+            "type": "advert",
+            "creator": {
+                "email": "trendit_user@gmail.com",
+                "id": 1,
+                "username": "trendit_user"
+            },
+        }
+        // ... (up to 10 tasks per page)
+    ]
+}
+```
+
+**To Fetch Advert Tasks from a Specific Page:**  
+Include the page query parameter in the endpoint. For example, to fetch tasks from page 2, send a GET request to `/api/tasks/advert?page=2`.
+
+**Error Handling**  
+If fetching advert tasks fails, you will receive a JSON response with details about the error, including the status code.
+
+- HTTP 500 Internal Server Error: An error occurred while processing the request.
+
+
+
+
+### Fetch Advert Tasks for a Specific Platform
+
+**Endpoint:** `/api/tasks/advert/{platform}`  
+**HTTP Method:** `GET`  
+**Description:** Retrieve all advert tasks for a specific platform.  
+
+The endpoint is paginated, returning 10 tasks per page by default.
+
+**Path Parameter:**
+- `{platform}` (required): The platform for which to retrieve advert tasks, e.g., `TikTok`.
+
+Example Request:
+`GET /api/tasks/advert/TikTok`
+
+**Key Response Details:**
+
+- `total` (integer): The total number of advert tasks for the specified platform on Trendit³.
+- `current_page` (integer): The current page number.
+- `total_pages` (integer): Total number of pages to retrieve advert tasks for the specified platform.
+- `advert_tasks` (list): A list containing advert tasks (up to 10 per page) for the specified platform.
+
+**A Successful Response Example:**
+```json
+{
+    "message": "All Advert Tasks for TikTok fetched successfully",
+    "status": "success",
+    "status_code": 200,
+    "total_pages": 2,
+    "current_page": 1,
+    "total": 13,
+    "advert_tasks": [
+        {
+            "caption": "ujhbujnb",
+            "gender": "Male",
+            "hashtags": "#hjsdf, kskj, kslkf",
+            "id": 4,
+            "media_path": null,
+            "payment_status": "Complete",
+            "platform": "TikTok",
+            "posts_count": 3,
+            "target_country": "Nigeria",
+            "target_state": "Lagos",
+            "task_reference": "task-leplrxf9",
+            "type": "advert",
+            "creator": {
+                "email": "trendit_user@gmail.com",
+                "id": 1,
+                "username": "trendit_user"
+            },
+        },
+        // ... (up to 10 tasks per page)
+    ]
+}
+```
+
+**To Fetch Advert Tasks for TikTok from a Specific Page:**  
+Include the page query parameter in the endpoint. For example, to fetch tasks from page 2, send a GET request to `/api/tasks/advert/TikTok?page=2`.
+
+**Error Handling**  
+If fetching advert tasks for the specified platform fails, you will receive a JSON response with details about the error, including the status code.
+
+- HTTP 500 Internal Server Error: An error occurred while processing the request.
+
+
+
+### Fetch Advert Tasks Grouped by Field
+
+**Endpoint:** `/api/tasks/advert/grouped-by/{field}`  
+**HTTP Method:** `GET`  
+**Description:** Retrieve all advertisement tasks grouped by field.
+
+**Path Parameter:**
+- `{field}` (required): The field by which to group advert tasks, e.g., `platform` or `gender`.
+
+
+**Key Response Details:**
+
+- `tasks_grouped_by_field` (object): An object containing field values as keys, each with an associated list of advertisement tasks (`tasks`) and the total number of tasks (`total`) for that field.
+
+
+**A Successful Response Example (Grouped by Platform):**
+```json
+{
+    "message": "Advert tasks grouped by platform fetched successfully.",
+    "status": "success",
+    "status_code": 200,
+    "tasks_by_platform": {
+        "youtube": {
+            "tasks": [
+                {
+                    "caption": "ujhbujnb",
+                    "creator": {
+                        "email": "trendit_user@gmail.com",
+                        "id": 1,
+                        "username": "trendit_user"
+                    },
+                    "gender": "Male",
+                    "hashtags": "#hjsdf, kskj, kslkf",
+                    "id": 2,
+                    "media_path": null,
+                    "payment_status": "Complete",
+                    "platform": "youtube",
+                    "posts_count": 3,
+                    "target_country": "Nigeria",
+                    "target_state": "Lagos",
+                    "task_reference": "task-vie26tzy",
+                    "type": "advert"
+                },
+                // ... (up to 10 tasks per platform)
+            ],
+            "total": 3
+        },
+        // ... (more platforms)
+    }
+}
+```
+
+**Error Handling**  
+If fetching advert tasks grouped by platform fails, you will receive a JSON response with details about the error, including the status code.
+
+- HTTP 500 Internal Server Error: An error occurred while processing the request.

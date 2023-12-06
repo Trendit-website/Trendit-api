@@ -129,7 +129,7 @@ class TaskController:
             current_tasks = [task.to_dict() for task in tasks]
             extra_data = {
                 'total': pagination.total,
-                "all_tasks": current_tasks,
+                "advert_tasks": current_tasks,
                 "current_page": pagination.page,
                 "total_pages": pagination.pages,
             }
@@ -321,7 +321,7 @@ class TaskController:
                     return error_response('Error creating new task', 500)
                 
                 status_code = 201
-                msg = 'Task paid for and created successfully'
+                msg = 'Task created successfully. Payment made using Trendit³ Wallet.'
                 extra_data = {'task': new_task.to_dict()}
         except Exception as e:
             error = True

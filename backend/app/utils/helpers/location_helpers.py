@@ -149,3 +149,33 @@ def get_currency_code(country):
 
 def get_naija_states_lga():
     return jsonify(AppJSON.naija_states)
+
+def get_naija_state_lga(state):
+    error = False
+    
+    try:
+        # send request
+        lga = AppJSON.get_local_governments(state)
+        
+        if len(lga) > 1:
+            status_code = 200
+            msg = f"Local governments for {state} fetched successfully"
+            
+            extra_data = {
+                'total': len(lga),
+                'state_lga': lga
+            }
+        else:
+            error = True
+            status_code = 400
+            msg = f"{state} doesn't have any local government"
+    except Exception as e:
+        error = True
+        msg = 'An error occurred while processing the request.'
+        status_code = 500
+        logging.exception("An exception occurred getting PAYSTACK supported countries.", str(e)) # Log the error details for debugging
+    
+    if error:
+        return error_response(msg, status_code)
+    else:
+        return success_response(msg, status_code, extra_data)

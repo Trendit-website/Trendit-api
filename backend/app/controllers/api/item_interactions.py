@@ -4,15 +4,17 @@ from flask_jwt_extended import get_jwt_identity
 
 from app.extensions import db
 from app.models.item import Item, LikeLog, Share, Comment
+from app.utils.helpers.item_helpers import fetch_item
 
 
 class ItemInteractionsController:
     @staticmethod
-    def like_item(item_id):
+    def like_item(item_id_slug):
         error = False
         try:
             user_id = get_jwt_identity()
-            item = Item.query.get(item_id)
+            item = fetch_item(item_id_slug)
+            item_id = item.id
             
             if item is None:
                 return jsonify({
@@ -53,11 +55,12 @@ class ItemInteractionsController:
 
 
     @staticmethod
-    def share_item(item_id):
+    def share_item(item_id_slug):
         error = False
         try:
             user_id = get_jwt_identity()
-            item = Item.query.get(item_id)
+            item = fetch_item(item_id_slug)
+            item_id = item.id
             
             if item is None:
                 return jsonify({
@@ -98,10 +101,11 @@ class ItemInteractionsController:
 
 
     @staticmethod
-    def view_item(item_id):
+    def view_item(item_id_slug):
         error = False
         try:
-            item = Item.query.get(item_id)
+            item = fetch_item(item_id_slug)
+            item_id = item.id
             
             if item is None:
                 return jsonify({
@@ -138,13 +142,14 @@ class ItemInteractionsController:
 
 
     @staticmethod
-    def add_comment(item_id):
+    def add_comment(item_id_slug):
         error = False
         
         try:
             data = request.get_json()
             user_id = get_jwt_identity()
-            item = Item.query.get(item_id)
+            item = fetch_item(item_id_slug)
+            item_id = item.id
             
             if item is None:
                 return jsonify({

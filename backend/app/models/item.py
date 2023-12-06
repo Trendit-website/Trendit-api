@@ -70,11 +70,16 @@ class Item(db.Model):
             'phone': self.phone,
             'slug': self.slug,
             'views_count': self.views_count,
+            'item_type': self.item_type,
             'total_likes': len(list(self.likes)),
             'total_comments': len(list(self.comments)),
             'created_at': self.created_at,
             'updated_at': self.updated_at,
-            'seller_id': self.seller_id,
+            'seller': {
+                'id': self.seller_id,
+                'username': self.seller.username,
+                'email': self.seller.email
+            }
         }
 
 class LikeLog(db.Model):

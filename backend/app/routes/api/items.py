@@ -17,18 +17,18 @@ def create_item():
 
 
 
-@bp.route('/items/update/<int:item_id>', methods=['PUT'])
+@bp.route('/items/update/<item_id_slug>', methods=['PUT'])
 @jwt_required()
-def update_item(item_id):
-    return ItemController.update_item(item_id)
+def update_item(item_id_slug):
+    return ItemController.update_item(item_id_slug)
 
 
-@bp.route('/items/<int:item_id>', methods=['GET'])
-def get_single_item(item_id):
-    return ItemController.get_single_item(item_id)
+@bp.route('/items/<item_id_slug>', methods=['GET'])
+def get_single_item(item_id_slug):
+    return ItemController.get_single_item(item_id_slug)
 
 
-@bp.route('/items/delete/<int:item_id>', methods=['DELETE'])
+@bp.route('/items/delete/<item_id_slug>', methods=['DELETE'])
 @jwt_required()
-def delete_item(item_id):
-    return ItemController.delete_item(item_id)
+def delete_item(item_id_slug):
+    return ItemController.delete_item(item_id_slug)

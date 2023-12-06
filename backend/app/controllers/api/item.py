@@ -4,7 +4,7 @@ from flask_jwt_extended import get_jwt_identity
 
 from config import Config
 from app.models.item import Item
-from app.utils.helpers.item_helpers import save_item
+from app.utils.helpers.item_helpers import save_item, fetch_item
 from app.utils.helpers.payment_helpers import is_paid
 from app.utils.helpers.response_helpers import error_response, success_response
 
@@ -21,7 +21,7 @@ class ItemController:
             items = pagination.items
             current_items = [item.to_dict() for item in items]
             extra_data = {
-                'total_items': pagination.total,
+                "total_items": pagination.total,
                 "items": current_items,
                 "current_page": pagination.page,
                 "total_pages": pagination.pages,
@@ -33,13 +33,13 @@ class ItemController:
         except Exception as e:
             error = True
             status_code = 500
-            msg = "Error fetching Items from the database"
+            msg = f"Error fetching Products & Services from the database: {str(e)}"
             logging.exception("An exception occurred during fetching Items.\n", str(e))
         
         if error:
             return error_response(msg, status_code)
         else:
-            return success_response('Items fetched successfully', 200, extra_data)
+            return success_response('Products & Services fetched successfully', 200, extra_data)
 
 
     @staticmethod
@@ -48,6 +48,7 @@ class ItemController:
         
         try:
             data = request.form.to_dict()
+            item_type = data.get('item_type', '')
             user_id = get_jwt_identity()
             
             if not is_paid(user_id, 'membership-fee'):
@@ -56,16 +57,16 @@ class ItemController:
             new_item = save_item(data) # Save the item
             if new_item:
                 status_code = 201
-                msg = "Item Created successfully"
+                msg = f"{item_type} Created successfully"
                 item = new_item.to_dict()
             else:
                 error = True
                 status_code = 500
-                msg = "Error creating new item"
+                msg = f"Error creating new {item_type}"
         except Exception as e:
             error = True
             status_code = 500
-            msg = "Error creating new item"
+            msg = f"Error creating new {item_type}"
             logging.exception("An exception occurred during creation of Item.\n", str(e))
         
         if error:
@@ -75,26 +76,27 @@ class ItemController:
 
 
     @staticmethod
-    def update_item(item_id):
+    def update_item(item_id_slug):
         error = False
         
         try:
             data = request.form.to_dict()
+            item_type = data.get('item_type', '')
             user_id = get_jwt_identity()
             
-            item = Item.query.get(item_id)
+            item = fetch_item(item_id_slug)
             
             if item is None:
                 return error_response('Item not found', 404)
             
             if item.seller_id != user_id:
-                return error_response('You are not authorized to update this item', 403)
+                return error_response(f'You are not authorized to update this {item.item_type}', 403)
             
             # Update the item properties as needed
-            updated_item = save_item(data, item_id)
+            updated_item = save_item(data, item_id_slug)
             if updated_item:
                 status_code = 200
-                msg = "Item Updated successfully"
+                msg = f"{item_type} Updated successfully"
                 item = updated_item.to_dict()
                 extra_data = {
                     "item": item
@@ -102,11 +104,11 @@ class ItemController:
             else:
                 error = True
                 status_code = 500
-                msg = "Error updating item"
+                msg = f"Error updating {item.item_type}"
         except Exception as e:
             error = True
             status_code = 500
-            msg = "Error updating item"
+            msg = f"Error updating {item.item_type}"
             logging.exception("An exception occurred during updating of Item.\n", str(e))
         
         if error:
@@ -116,38 +118,39 @@ class ItemController:
 
 
     @staticmethod
-    def get_single_item(item_id):
+    def get_single_item(item_id_slug):
         error = False
         try:
-            item = Item.query.get(item_id)
+            item = fetch_item(item_id_slug)
             if item is None:
-                return error_response('Item not found', 404)
+                return error_response('Product/Service not found', 404)
         except Exception as e:
             error = True
             status_code = 500
-            msg = "Error fetching item"
+            msg = "Error fetching Product/Service"
             logging.exception("An exception occurred during fetching of Item.\n", str(e))
         if error:
             return error_response(msg, status_code)
         else:
-            return success_response('Item fetched successfully', 200, {"item": item.to_dict()})
+            return success_response(f'{item.item_type} fetched successfully', 200, {"item": item.to_dict()})
 
 
     @staticmethod
-    def delete_item(item_id):
+    def delete_item(item_id_slug):
         error = False
         try:
-            item = Item.query.get(item_id)
+            item = fetch_item(item_id_slug)
             if item is None:
-                return error_response('Item not found', 404)
+                return error_response('Product/Service not found', 404)
             
+            item_type = item.item_type
             item.delete()
         except Exception as e:
             error = True
             status_code = 500
-            msg = "Error deleting item"
-            logging.exception("An exception occurred during deletion of Item.\n", str(e))
+            msg = "Error deleting Product/Service"
+            logging.exception("An exception occurred during deletion of Item:", str(e))
         if error:
             return error_response(msg, status_code)
         else:
-            return success_response('Item deleted successfully', 200)
+            return success_response(f'{item_type} deleted successfully', 200)

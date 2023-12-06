@@ -1,6 +1,6 @@
 import sys
 from flask import request, jsonify, current_app
-from sqlalchemy import desc, func, text
+from sqlalchemy import or_
 from flask_jwt_extended import get_jwt_identity
 
 from app.extensions import db
@@ -21,7 +21,7 @@ def item_check(item_id):
     else:
         pass
 
-def save_item(data, item_id=None):
+def save_item(data, item_id_slug=None):
     """
     Function: save_item
 
@@ -51,8 +51,8 @@ def save_item(data, item_id=None):
         phone = data.get('phone', '')
         
         item = None
-        if item_id:
-            item = Item.query.get(item_id)
+        if item_id_slug:
+            item = fetch_item(item_id_slug)
         
         if item_img.filename != '':
             try:
@@ -95,3 +95,14 @@ def save_item(data, item_id=None):
         db.session.rollback()
         print(f'\n\n{"sys excInfo":-^30}\n', sys.exc_info(), f'\n{"///":-^30}\n\n')
         return None
+
+
+def fetch_item(item_id_slug):
+    # Try to get item from db with the id or slug.
+    item = Item.query.filter(or_(Item.id == item_id_slug, Item.slug == item_id_slug)).first()
+
+    if item:
+        return item
+    else:
+        return None
+    

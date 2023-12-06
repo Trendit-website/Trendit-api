@@ -72,12 +72,16 @@ class Task(db.Model):
             
         return {
             'id': self.id,
-            'creator_id': self.trendit3_user_id,
             'type': self.type,
             'platform': self.platform,
             'media_path': self.get_task_media(),
             'task_reference': self.task_ref,
             'payment_status': self.payment_status,
+            'creator': {
+                'id': self.trendit3_user_id,
+                'username': self.trendit3_user.username,
+                'email': self.trendit3_user.email
+            }
             **advert_task_dict,
             **engagement_task_dict 
         }
@@ -98,7 +102,6 @@ class AdvertTask(Task):
     def to_dict(self):
         return {
             'id': self.id,
-            'creator_id': self.trendit3_user_id,
             'type': self.type,
             'platform': self.platform,
             'media_path': self.get_task_media(),
@@ -110,6 +113,11 @@ class AdvertTask(Task):
             'gender': self.gender,
             'caption': self.caption,
             'hashtags': self.hashtags,
+            'creator': {
+                'id': self.trendit3_user_id,
+                'username': self.trendit3_user.username,
+                'email': self.trendit3_user.email
+            }
         }
 
 
@@ -125,7 +133,6 @@ class EngagementTask(Task):
     def to_dict(self):
         return {
             'id': self.id,
-            'creator_id': self.trendit3_user_id,
             'type': self.type,
             'platform': self.platform,
             'media_path': self.get_task_media(),
@@ -134,6 +141,11 @@ class EngagementTask(Task):
             'goal': self.goal,
             'account_link': self.account_link,
             'engagements_count': self.engagements_count,
+            'creator': {
+                'id': self.trendit3_user_id,
+                'username': self.trendit3_user.username,
+                'email': self.trendit3_user.email
+            }
         }
 
 
