@@ -165,7 +165,7 @@ const NavItem = ({ icon, children, path, onClose, ...rest }) => {
 };
 
 const MobileNav = ({ onOpen, ...rest }) => {
-  const user = useSelector((state) => state.auth.user);
+  // console.log(user);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const handleLogout = () => {
@@ -244,7 +244,7 @@ const MobileNav = ({ onOpen, ...rest }) => {
                 mr="6"
               >
                 <HStack>
-                  <Avatar size={"sm"} src={user.Profile_picture} />
+                  {/* <Avatar size={"sm"} src={user.profile_picture} /> */}
                   <VStack
                     display={{ base: "none", md: "flex" }}
                     alignItems="flex-start"
@@ -256,7 +256,7 @@ const MobileNav = ({ onOpen, ...rest }) => {
                       fontFamily="clash grotesk"
                       color="white"
                     >
-                      {user.username}
+                      {/* {user.username} */}
                     </Text>
                   </VStack>
                   <Box display={{ base: "none", md: "flex" }}>

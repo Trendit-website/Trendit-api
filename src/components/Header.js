@@ -29,6 +29,10 @@ const NAV_ITEMS = [
     href: "/about",
   },
   {
+    label: "Pricing",
+    href: "/pricing",
+  },
+  {
     label: "Our packages",
     href: "/packages",
     subItems: [
@@ -49,6 +53,10 @@ const NAV_ITEMS = [
   {
     label: "Marketplace",
     href: "/market-place",
+  },
+  {
+    label: "FAQs",
+    href: "/faq",
   },
 ];
 

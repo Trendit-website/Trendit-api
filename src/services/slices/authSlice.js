@@ -3,10 +3,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 
 const initialState = {
-  name: 'auth',
   isAuthenticated: false,
-  user: null,
-  auth: '',
   // Add other authentication-related state here
 };
 const loadStateFromLocalStorage = () => {
@@ -37,9 +34,10 @@ const authSlice = createSlice({
   initialState: loadStateFromLocalStorage() || initialState,
   reducers: {
     loginSuccess: (state, action) => {
+      state.isAuthenticated = action.payload;
+      console.log(state.isAuthenticated);
       state.isAuthenticated = true;
-      state.user = action.payload;
-      saveStateToLocalStorage(state);
+      localStorage.setItem('authState', JSON.stringify(state));
     },
     logout: (state) => {
       state.isAuthenticated = false;

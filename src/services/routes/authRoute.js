@@ -32,6 +32,20 @@ const authSlice = apiSlice.injectEndpoints({
         body,
       }),
     }),
+    forgotPassword: builder.mutation({
+      query: (body) => ({
+        url: "/forgot-password",
+        method: "POST",
+        body,
+      }),
+    }),
+    resetPassword: builder.mutation({
+      query: (body) => ({
+        url: "/reset-password",
+        method: "POST",
+        body,
+      }),
+    }),
   }),
   // override:{
   //   fetchBaseQuery: (baseQuery) =>  {
@@ -43,4 +57,4 @@ const authSlice = apiSlice.injectEndpoints({
   // }
 });
 
-export const { useRegisterMutation, useVerifyEmailMutation, useResendCodeMutation, useLoginMutation } = authSlice;
+export const { useRegisterMutation, useVerifyEmailMutation, useResendCodeMutation, useLoginMutation, useForgotPasswordMutation, useResetPasswordMutation } = authSlice;

@@ -12,18 +12,18 @@ const cardContent = [
   },
   {
     icon: "healthicons:money-bag",
-    header: "Businesses",
+    header: "Advertisers",
     content:
       "We connect you to real people that will help you achieve your business goals in a way that is both effective and cost-efficient.",
     anim: "zoom-in-down",
   },
-  {
-    icon: "ion:person-sharp",
-    header: "Individuals",
-    content:
-      "We connect you to real people that will help you grow and achieve other goals on your social media platforms.",
-    anim: "zoom-in-left",
-  },
+  // {
+  //   icon: "ion:person-sharp",
+  //   header: "Individuals",
+  //   content:
+  //     "We connect you to real people that will help you grow and achieve other goals on your social media platforms.",
+  //   anim: "zoom-in-left",
+  // },
 ];
 
 const Card = ({ icon, header, content, anim }) => {

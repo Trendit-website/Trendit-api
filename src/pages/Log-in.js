@@ -80,14 +80,15 @@ const LoginPage = () => {
           password: password,
         };
         const res = await login(body).unwrap();
-        console.log(res.user_data);
-        dispatch(loginSuccess(res.user_data));
+        console.log(res);
+        const isAuthenticated = true;
+        dispatch(loginSuccess(isAuthenticated));
         navigate("/homepage");
       } catch (error) {
         console.log(error)
         toast({
           title: "Error",
-          description: `${error.data.message}`,
+          description: `${error?.data?.message || error?.error}`,
           status: "error",
           duration: 5000,
           isClosable: true,

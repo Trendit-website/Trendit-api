@@ -106,13 +106,13 @@ const Earners = () => {
       icon: "mdi:chat-alert",
     },
 
-    {
-      header: "Take surveys",
-      content:
-        "Help businesses transform their ideas into reality by completing surveys to help them make more informed decisions.",
+    // {
+    //   header: "Take surveys",
+    //   content:
+    //     "Help businesses transform their ideas into reality by completing surveys to help them make more informed decisions.",
 
-      icon: "mdi:note-edit",
-    },
+    //   icon: "mdi:note-edit",
+    // },
   ];
 
   const [isMobile] = useMediaQuery("(max-width: 767px)");
