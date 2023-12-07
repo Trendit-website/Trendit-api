@@ -144,7 +144,7 @@ function Adlist() {
              </div>
            ))
          ) : (
-           <Text fontSize='20px' textAlign='center' mt='20px'>No Advert tasks yet</Text>
+           <Text fontSize='20px' color="white" textAlign='center' mt='20px'>No Advert tasks yet</Text>
          )}
         </div>
       )
