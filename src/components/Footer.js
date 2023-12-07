@@ -40,34 +40,41 @@ return (
         </Box>
 
         <Flex mt={8} gap='5'>
-          <Link href="#" >
+          <a href="https://www.facebook.com/TrenditHQ/" target="_blank" rel="noreferrer" >
             <iconify-icon
               icon="basil:facebook-solid"
               style={{ color: "white" }}
               width="25"
             ></iconify-icon>
-          </Link>
-          <Link href="#">
+          </a>
+          <a href="https://www.instagram.com/trendithq/" target="_blank" rel="noreferrer">
             <iconify-icon
               icon="basil:instagram-outline"
               style={{ color: "white" }}
               width="25"
             ></iconify-icon>
-          </Link>
-          <Link href="#" >
+          </a>
+          <a href="https://twitter.com/trendithq" target="_blank" rel="noreferrer" >
             <iconify-icon
-              icon="basil:twitter-solid"
+              icon="devicon:twitter"
               style={{ color: "white" }}
               width="25"
             ></iconify-icon>
-          </Link>
-          <Link href="#">
+          </a>
+          <a href="https://www.youtube.com/@Trendithq" target="_blank" rel="noreferrer">
             <iconify-icon
-              icon="basil:linkedin-solid"
+              icon="mdi:youtube"
               style={{ color: "white" }}
               width="25"
             ></iconify-icon>
-          </Link>
+          </a>
+          <a href="https://www.tiktok.com/@trendithq" target="_blank" rel="noreferrer">
+            <iconify-icon
+              icon="ic:baseline-tiktok"
+              style={{ color: "white" }}
+              width="25"
+            ></iconify-icon>
+          </a>
         </Flex>
       </Box>
 
