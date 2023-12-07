@@ -22,7 +22,7 @@ import { useSelector, useDispatch } from "react-redux";
 const GenerateLink = () => {
   // const isLinked = useSelector(selectIsLinked);
   const dispatch = useDispatch();
-  const user = useSelector((state) => state.auth.user);
+  // const user = useSelector((state) => state.auth.user);
 
   const [isLoading, setIsLoading] = useState(false);
   const [isCopied, setIsCopied] = useState(false); 
@@ -101,7 +101,7 @@ const GenerateLink = () => {
                 pl="0.5rem"
                 borderTopRightRadius={0}
                 borderBottomRightRadius={0}
-                value={user.referral_link}
+                // value={user.referral_link}
                 type="text"
                 id="inputToCopy"
                
@@ -153,7 +153,7 @@ const GenerateLink = () => {
                   pl="0.5rem"
                   borderTopRightRadius={0}
                   borderBottomRightRadius={0}
-                  value={user.username}
+                  // value={user.username}
                   readOnly="true"
                 />
               </InputGroup>

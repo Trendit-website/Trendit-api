@@ -13,6 +13,7 @@ import {
   Flex,
   Image,
   Container,
+  useToast,
 } from "@chakra-ui/react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowBackIcon } from "@chakra-ui/icons";
@@ -27,12 +28,12 @@ import { Spinner } from "@chakra-ui/react";
 
 import Onboard from "../../assets/images/onboard.png";
 import { useRegisterMutation, useResendCodeMutation, useVerifyEmailMutation } from "../../services/routes/authRoute";
-import toast from "react-hot-toast";
 import { isStrongPassword, isValidEmail } from "../../utils";
-import { is } from "date-fns/locale";
 
 function SignUpComponent() {
   const navigate = useNavigate();
+  const toast = useToast();
+
   const [register, { isLoading }] = useRegisterMutation();
   const [verifyEmail, {isLoading: mailLoading}] = useVerifyEmailMutation();
   const [resendCode, {isLoading: codeLoad}] = useResendCodeMutation()
@@ -53,7 +54,6 @@ function SignUpComponent() {
   const [genderError, setgenderError] = useState("");
   const [pin, setPin] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
-  const [isResending, setIsResending] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
 
 
@@ -215,8 +215,13 @@ function SignUpComponent() {
           setCurrentStep(currentStep + 1); // Proceed to Step 3 after 3 seconds
         }, 3000);
       } catch (error) {
-        toast.error(error.data.message)
-        console.log(error);
+        toast({
+          title: "Error",
+          description: `${error?.data?.message || error?.error}`,
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
       }
 
     }

@@ -85,7 +85,6 @@ const LoginPage = () => {
         dispatch(loginSuccess(isAuthenticated));
         navigate("/homepage");
       } catch (error) {
-        console.log(error)
         toast({
           title: "Error",
           description: `${error?.data?.message || error?.error}`,

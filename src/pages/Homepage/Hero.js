@@ -47,7 +47,7 @@ const Hero = () => {
         </Heading>
 
         <Text textAlign={{ base: "center", md: "left" }} my={6} color="#808080">
-        Earn Daily Income for Posting Ads and Completing Simple Social Tasks for Individuals, Businesseson Your Social Media Account
+        Earn Daily Income for Posting Ads and Completing Simple Social Tasks for Individuals, Businesses, and Brands on Your Social Media Account.
         </Text>
         <Box  display='flex'  px={0} mx={0}>
           <Image

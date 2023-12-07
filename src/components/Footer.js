@@ -35,8 +35,7 @@ return (
         <Box>
           <img src={LogoJPG} alt="" width="100px" />
           <Text>
-            A dynamic and innovative social finance platform for users and
-            businesses
+          Trendit³ is an online freelance platform that remunerates its users (Earners) for performing simple everyday tasks on their social media accounts.
           </Text>
         </Box>
 
@@ -75,7 +74,7 @@ return (
       <Box mb={5}>
         <Box fontFamily="Clash Grotesk">
           <Heading color="white" fontSize="18px" fontWeight={400} mb={2}>
-            For Businesses
+            For Advertisers
           </Heading>
           <Link>
             {" "}

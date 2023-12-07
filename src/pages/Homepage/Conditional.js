@@ -88,25 +88,16 @@ const OffersForEarners = () => {
             >
               Earners
             </MenuItem>
+            
             <MenuItem
-              onClick={() => handleOptionSelect("Businesses")}
+              onClick={() => handleOptionSelect("Advertisers")}
               bg="black"
               _hover={{
                 color: "#CB29BE",
                 transition: "color 0.3s ease-in-out",
               }}
             >
-              Businesses
-            </MenuItem>
-            <MenuItem
-              onClick={() => handleOptionSelect("Individual")}
-              bg="black"
-              _hover={{
-                color: "#CB29BE",
-                transition: "color 0.3s ease-in-out",
-              }}
-            >
-              Individual
+              Advertisers
             </MenuItem>
           </MenuList>
         </Menu>
@@ -114,8 +105,7 @@ const OffersForEarners = () => {
 
       {/* Render the selected component based on the chosen option */}
       {selectedOption === "Earners" && <Component1 />}
-      {selectedOption === "Businesses" && <Component2 />}
-      {selectedOption === "Individual" && <Component3 />}
+      {selectedOption === "Advertisers" && <Component3 />}
     </Flex>
   );
 };
