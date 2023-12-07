@@ -110,7 +110,7 @@ const DesktopNav = () => {
         <Button
           variant="ghost"
           _hover={{
-            color: "#CB29BE",
+            color: "white",
             transition: "color 0.3s ease-in-out",
             opacity: "0.9",
           }}
