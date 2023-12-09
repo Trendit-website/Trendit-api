@@ -3,4 +3,5 @@
 env/
 migrations/
 migrations_local/
+migrations_live/
 todo.py

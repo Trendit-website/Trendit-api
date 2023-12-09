@@ -5,7 +5,7 @@ from flask_jwt_extended import get_jwt_identity
 from app.extensions import db
 from app.models.user import Trendit3User
 from app.models.task import TaskPerformance, Task
-from app.utils.helpers.task_helpers import save_performed_task
+from app.utils.helpers.task_helpers import save_performed_task, fetch_task
 from app.utils.helpers.response_helpers import error_response, success_response
 from app.utils.helpers.basic_helpers import generate_random_string, console_log
 
@@ -16,10 +16,19 @@ class TaskPerformanceController:
         error = False
         
         try:
+            user_id = int(get_jwt_identity())
             data = request.form.to_dict()
-            task = Task.query.get(int(data.get('task_id', '')))
+            
+            task_id_key = data.get('task_id_key', '')
+            task = fetch_task(task_id_key)
             if task is None:
                 return error_response('Task not found', 404)
+            
+            task_id = task.id
+            
+            performedTask = TaskPerformance.query.filter_by(user_id=user_id, task_id=task_id).first()
+            if performedTask:
+                return error_response(f"Task already performed and cannot be repeated", 409)
             
             new_performed_task = save_performed_task(data)
             
@@ -57,7 +66,7 @@ class TaskPerformanceController:
             status_code = 200
             extra_data = {
                 'total': len(pt_dict),
-                'all_performed_task': pt_dict
+                'all_performed_tasks': pt_dict
             }
         except Exception as e:
             error = True

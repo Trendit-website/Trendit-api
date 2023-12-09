@@ -122,7 +122,7 @@ class Profile(db.Model):
     @property
     def referral_link(self):
         if self.referral_code is None:
-            return None
+            return ''
         return f'{Config.DOMAIN_NAME}/signup/{self.referral_code}'
     
     def update(self, **kwargs):
@@ -136,9 +136,9 @@ class Profile(db.Model):
             if theImage:
                 return theImage.get_path()
             else:
-                return None
+                return ''
         else:
-            return None
+            return ''
         
     def to_dict(self):
         return {

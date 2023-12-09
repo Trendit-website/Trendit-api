@@ -148,13 +148,17 @@ def save_task(data, task_id_key=None, payment_status='Pending'):
 def save_performed_task(data, pt_id=None, status='Pending'):
     try:
         user_id = int(get_jwt_identity())
-        task_id = int(data.get('task_id', 0))
+        
+        task_id_key = data.get('task_id_key', '')
+        task = fetch_task(task_id_key)
+        if task is None:
+            raise ValueError("Task not found.")
+        
+        task_id = task.id
+        
         reward_money = float(data.get('reward_money'))
         screenshot = request.files['screenshot']
         
-        task = Task.query.get(task_id)
-        if task is None:
-            raise ValueError("Task not found.")
         
         task_type = task.type
         
@@ -169,8 +173,8 @@ def save_performed_task(data, pt_id=None, status='Pending'):
                 current_app.logger.error(f"An error occurred while saving Screenshot: {str(e)}")
                 raise Exception("Error saving Screenshot.")
         elif screenshot.filename == '' and task:
-            if task.media_id:
-                screenshot_id = task.media_id
+            if performed_task.proof_screenshot_id:
+                screenshot_id = performed_task.proof_screenshot_id
             else:
                 raise Exception("No screenshot provided.")
         else:
@@ -188,3 +192,30 @@ def save_performed_task(data, pt_id=None, status='Pending'):
         logging.exception("An exception occurred trying to save performed task:\n", str(e))
         db.session.rollback()
         raise e
+
+
+def fetch_performed_task(pt_id_key):
+    """
+    Fetches a performed task from the database based on either its ID or key.
+
+    Parameters:
+    - pt_id_key (int or str): The ID or key of the task to fetch. 
+        - If an integer, the function fetches the performed task by ID; 
+        - if a string, it fetches the performed task by key.
+
+    Returns:
+    - TaskPerformance or None: The fetched performed task if found, or None if no performed task matches the provided ID or key.
+    """
+    try:
+        # Check if task_id_key is an integer
+        task_id_key = int(task_id_key)
+        # Fetch the task by id
+        performed_task = TaskPerformance.query.filter_by(id=task_id_key).first()
+    except ValueError:
+        # If not an integer, treat it as a string
+        performed_task = TaskPerformance.query.filter_by(key=task_id_key).first()
+
+    if performed_task:
+        return performed_task
+    else:
+        return None

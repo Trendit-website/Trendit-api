@@ -165,6 +165,7 @@ class EngagementTask(Task):
 
 class TaskPerformance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(120), unique=True, nullable=False, default=generate_random_string(8))
     task_id = db.Column(db.Integer, nullable=False)  # either an AdvertTask id or an EngagementTask id
     task_type = db.Column(db.String(80), nullable=False)  # either 'advert' or 'engagement'
     reward_money = db.Column(db.Float(), default=00.00, nullable=False)
@@ -172,11 +173,11 @@ class TaskPerformance(db.Model):
     status = db.Column(db.String(80), default='Pending')
     date_completed = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     
-    def __repr__(self):
-        return f'<ID: {self.id}, User ID: {self.user_id}, Task ID: {self.task_id}, Task Type: {self.task_type}, Status: {self.status}>'
-    
     user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
     trendit3_user = db.relationship('Trendit3User', backref=db.backref('performed_tasks', lazy='dynamic'))
+    
+    def __repr__(self):
+        return f'<ID: {self.id}, User ID: {self.user_id}, Task ID: {self.task_id}, Task Type: {self.task_type}, Status: {self.status}>'
     
     @classmethod
     def create_task_performance(cls, user_id, task_id, task_type, reward_money, proof_screenshot_id, status):
@@ -202,7 +203,7 @@ class TaskPerformance(db.Model):
         if self.proof_screenshot_id:
             theImage = Media.query.get(self.proof_screenshot_id)
             if theImage:
-                return theImage.get_path("original")
+                return theImage.get_path()
             else:
                 return None
         else:
@@ -211,11 +212,16 @@ class TaskPerformance(db.Model):
     def to_dict(self):
         return {
             'id': self.id,
-            'user_id': self.user_id,
+            'key': self.key,
             'task_id': self.task_id,
             'task_type': self.task_type,
             'reward_money': self.reward_money,
             'proof_screenshot_path': self.get_proof_screenshot(),
             'status': self.status,
-            'date_completed': self.date_completed
+            'date_completed': self.date_completed,
+            'user': {
+                'id': self.user_id,
+                'username': self.trendit3_user.username,
+                'email': self.trendit3_user.email
+            },
         }

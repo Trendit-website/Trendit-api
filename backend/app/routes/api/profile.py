@@ -15,6 +15,16 @@ def edit_profile():
     return ProfileController.edit_profile()
 
 
+@bp.route('/profile-pic', methods=['GET'])
+@jwt_required()
+def get_profile_pic():
+    return ProfileController.get_profile_pic()
+
+@bp.route('/profile-pic/edit', methods=['POST'])
+@jwt_required()
+def update_profile_pic():
+    return ProfileController.update_profile_pic()
+
 @bp.route('/profile/email-edit', methods=['POST'])
 @jwt_required()
 def user_email_edit():
