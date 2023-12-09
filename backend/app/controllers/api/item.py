@@ -21,8 +21,8 @@ class ItemController:
             items = pagination.items
             current_items = [item.to_dict() for item in items]
             extra_data = {
-                "total_items": pagination.total,
-                "items": current_items,
+                "total": pagination.total,
+                "all_items": current_items,
                 "current_page": pagination.page,
                 "total_pages": pagination.pages,
             }
@@ -80,11 +80,12 @@ class ItemController:
         error = False
         
         try:
+            item = fetch_item(item_id_slug)
+            
             data = request.form.to_dict()
-            item_type = data.get('item_type', '')
+            item_type = data.get('item_type', item.item_type)
             user_id = get_jwt_identity()
             
-            item = fetch_item(item_id_slug)
             
             if item is None:
                 return error_response('Item not found', 404)

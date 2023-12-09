@@ -4,7 +4,7 @@ from flask_jwt_extended import get_jwt_identity
 
 from config import Config
 from app.models.task import Task, AdvertTask, EngagementTask
-from app.utils.helpers.task_helpers import save_task, get_tasks_dict_grouped_by_field
+from app.utils.helpers.task_helpers import save_task, get_tasks_dict_grouped_by_field, fetch_task
 from app.utils.helpers.response_helpers import error_response, success_response
 from app.utils.helpers.basic_helpers import generate_random_string, console_log
 from app.utils.helpers.payment_helpers import initialize_payment, debit_wallet
@@ -88,11 +88,11 @@ class TaskController:
     
     
     @staticmethod
-    def get_single_task(task_id):
+    def get_single_task(task_id_key):
         error = False
         
         try:
-            task = Task.query.get(task_id)
+            task = fetch_task(task_id_key)
             if task is None:
                 return error_response('Task not found', 404)
             
@@ -165,7 +165,7 @@ class TaskController:
             current_tasks = [task.to_dict() for task in tasks]
             extra_data = {
                 'total': pagination.total,
-                "all_tasks": current_tasks,
+                "engagement_tasks": current_tasks,
                 "current_page": pagination.page,
                 "total_pages": pagination.pages,
             }
@@ -234,7 +234,7 @@ class TaskController:
             current_tasks = [task.to_dict() for task in tasks]
             extra_data = {
                 'total': pagination.total,
-                "all_tasks": current_tasks,
+                "advert_tasks": current_tasks,
                 "current_page": pagination.page,
                 "total_pages": pagination.pages,
             }
@@ -258,7 +258,7 @@ class TaskController:
     
     
     @staticmethod
-    def get_engagement_tasks_by(field):
+    def get_engagement_tasks_grouped_by_field(field):
         error = False
         
         try:
@@ -296,17 +296,16 @@ class TaskController:
         try:
             data = request.form.to_dict()
             amount = int(data.get('amount'))
-            task_ref = f"task-{generate_random_string(8)}"
             payment_method = request.args.get('payment_method', 'trendit_wallet')
             current_user_id = get_jwt_identity()
             
             
             if payment_method == 'payment_gateway':
-                new_task = save_task(data, task_ref)
+                new_task = save_task(data)
                 if new_task is None:
                     return error_response('Error creating new task', 500)
                 
-                return initialize_payment(current_user_id, data, payment_type='task_creation', meta_data={'task_ref': task_ref})
+                return initialize_payment(current_user_id, data, payment_type='task_creation', meta_data={'task_key': new_task.task_key})
             
             if payment_method == 'trendit_wallet':
                 # Debit the user's wallet
@@ -316,7 +315,7 @@ class TaskController:
                     msg = f'Error creating new Task: {e}'
                     return error_response(msg, 400)
                 
-                new_task = save_task(data, task_ref, payment_status='Complete')
+                new_task = save_task(data, payment_status='Complete')
                 if new_task is None:
                     return error_response('Error creating new task', 500)
                 
@@ -327,7 +326,7 @@ class TaskController:
             error = True
             status_code = 500
             msg = "Error creating new task"
-            logging.exception("An exception occurred during creation of Task.\n", str(e))
+            logging.exception("An exception occurred during creation of Task ==>", str(e))
         
         if error:
             return error_response(msg, status_code)

@@ -13,9 +13,9 @@ def get_current_user_tasks():
 def get_all_tasks():
     return TaskController.get_tasks()
 
-@bp.route('/tasks/<int:task_id>', methods=['GET'])
-def get_single_task(task_id):
-    return TaskController.get_single_task(task_id)
+@bp.route('/tasks/<task_id_key>', methods=['GET'])
+def get_single_task(task_id_key):
+    return TaskController.get_single_task(task_id_key)
 
 @bp.route('/tasks/advert', methods=['GET'])
 def get_all_advert_tasks():
@@ -38,8 +38,8 @@ def get_advert_tasks_by_platform(platform):
 
 
 @bp.route('/tasks/engagement/grouped-by/<field>', methods=['GET'])
-def get_engagement_tasks_by(field):
-    return TaskController.get_engagement_tasks_by(field)
+def get_engagement_tasks_grouped_by_field(field):
+    return TaskController.get_engagement_tasks_grouped_by_field(field)
 
 
 @bp.route('/tasks/new', methods=['POST'])

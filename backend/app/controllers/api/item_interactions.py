@@ -3,8 +3,9 @@ from flask import request, jsonify
 from flask_jwt_extended import get_jwt_identity
 
 from app.extensions import db
-from app.models.item import Item, LikeLog, Share, Comment
+from app.models.item import LikeLog, Share, Comment
 from app.utils.helpers.item_helpers import fetch_item
+from app.utils.helpers.response_helpers import error_response, success_response
 
 
 class ItemInteractionsController:
@@ -14,22 +15,14 @@ class ItemInteractionsController:
         try:
             user_id = get_jwt_identity()
             item = fetch_item(item_id_slug)
-            item_id = item.id
-            
             if item is None:
-                return jsonify({
-                    "status": "failed",
-                    "status_code": 404,
-                    "message": "Item not found"
-                }), 404
+                return error_response("Item not found", 404)
+            
+            item_id = item.id
             
             like = LikeLog.query.filter_by(user_id=user_id, item_id=item_id).first()
             if like:
-                return jsonify({
-                    "status": "failed",
-                    "status_code": 400,
-                    "message": "You have already liked this item"
-                }), 400
+                return success_response(f"You have already liked this {item.item_type}", 200)
             
             new_like = LikeLog(user_id=user_id, item_id=item_id)
             db.session.add(new_like)
@@ -47,11 +40,7 @@ class ItemInteractionsController:
                 "message": msg,
             }), status_code
         else:
-            return jsonify({
-                "status": "success",
-                "status_code": 200,
-                "message": "Item liked successfully"
-            }), 200
+            return success_response(f"{item.item_type} liked successfully", 200)
 
 
     @staticmethod
@@ -105,14 +94,14 @@ class ItemInteractionsController:
         error = False
         try:
             item = fetch_item(item_id_slug)
-            item_id = item.id
-            
             if item is None:
                 return jsonify({
                     "status": "failed",
                     "status_code": 404,
                     "message": "Item not found"
                 }), 404
+            
+            item_id = item.id
             
             # Check if views_count is None or not defined
             if item.views_count is None:
@@ -137,7 +126,7 @@ class ItemInteractionsController:
             return jsonify({
                 "status": "success",
                 "status_code": 200,
-                "message": "Item viewed successfully"
+                "message": f"{item.item_type} viewed successfully"
             }), 200
 
 
@@ -146,21 +135,27 @@ class ItemInteractionsController:
         error = False
         
         try:
-            data = request.get_json()
-            user_id = get_jwt_identity()
             item = fetch_item(item_id_slug)
-            item_id = item.id
-            
             if item is None:
                 return jsonify({
                     "status": "failed",
                     "status_code": 404,
                     "message": "Item not found"
                 }), 404
+            
+            item_id = item.id
+            user_id = get_jwt_identity()
+            data = request.get_json()
+            comment = data.get('comment')
+            
+            if not comment:
+                return error_response("Comment not provided", 400)
+            
                 
-            new_comment = Comment(user_id=user_id, item_id=item_id, text=data['text'])
+            new_comment = Comment(user_id=user_id, item_id=item_id, text=comment)
             db.session.add(new_comment)
             db.session.commit()
+            extra_data = {'comment_details': new_comment.to_dict()}
         except Exception as e:
             error = True
             status_code = 500
@@ -168,15 +163,7 @@ class ItemInteractionsController:
             logging.exception(f"An exception occurred during adding a comment to Item {item_id}.\n{str(e)}")
         
         if error:
-            return jsonify({
-                "status": "failed",
-                "status_code": status_code,
-                "message": msg,
-            }), status_code
+            return error_response(msg, status_code)
         else:
-            return jsonify({
-                "status": "success",
-                "status_code": 200,
-                "message": "Comment added successfully"
-            }), 200
+            return success_response("Comment added successfully", 200, extra_data)
 

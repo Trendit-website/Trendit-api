@@ -1,3 +1,4 @@
+import time
 from sqlalchemy.orm import backref
 from datetime import datetime
 
@@ -22,7 +23,10 @@ class Item(db.Model):
     phone = db.Column(db.String(100), nullable=True)
     views_count = db.Column(db.Integer, default=0)
     slug = db.Column(db.String(), nullable=False, unique=True)
-    item_img = db.Column(db.Integer, db.ForeignKey('media.id'), nullable=True)
+    item_img_id = db.Column(db.Integer, db.ForeignKey('media.id'), nullable=True)
+    country = db.Column(db.String(80), nullable=True)
+    state = db.Column(db.String(80), nullable=True)
+    city = db.Column(db.String(100), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -32,22 +36,33 @@ class Item(db.Model):
     
 
     def __repr__(self):
-        return f'<Item ID: {self.id}, name: {self.name}, type: {self.item_type}, time: {self.timestamp}>'
+        return f'<Item ID: {self.id}, name: {self.name}, type: {self.item_type}, time: {self.created_at}>'
     
-    def insert(self):
-        db.session.add(self)
+    
+    @classmethod
+    def create_item(cls, item_type, name, description, price, category, brand_name, size, color, material, phone, item_img_id, country, state, city, slug, seller_id):
+        
+        item = cls(item_type=item_type, name=name, description=description, price=price, category=category, brand_name=brand_name, size=size, color=color, material=material, phone=phone, item_img_id=item_img_id, country=country, state=state, city=city, slug=slug, seller_id=seller_id)
+        
+        db.session.add(item)
+        db.session.commit()
+        
+        return item
+    
+
+    def update(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
         db.session.commit()
 
-    def update(self):
-        db.session.commit()
 
     def delete(self):
         db.session.delete(self)
         db.session.commit()
     
     def get_item_img(self):
-        if self.item_img:
-            theImage = Media.query.get(self.item_img)
+        if self.item_img_id:
+            theImage = Media.query.get(self.item_img_id)
             if theImage:
                 return theImage.get_path()
             else:
@@ -85,10 +100,10 @@ class Item(db.Model):
 class LikeLog(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
-    item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
 
     # relationships
+    item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
     liked_item = db.relationship('Item', backref=db.backref('likes', lazy='dynamic'))
     trendit3_user = db.relationship('Trendit3User', backref=db.backref('likes', lazy='dynamic'))
     
@@ -98,8 +113,12 @@ class LikeLog(db.Model):
     def to_dict(self):
         return {
             'id': self.id,
-            'name': self.item_id,
-            'description': self.user_id,
+            'item_id': self.item_id,
+            'user': {
+                'id': self.user_id,
+                'username': self.trendit3_user.username,
+                'email': self.trendit3_user.email
+            }
         }
 
 class Share(db.Model):
@@ -119,20 +138,24 @@ class Share(db.Model):
     def to_dict(self):
         return {
             'id': self.id,
-            'name': self.item_id,
-            'description': self.user_id,
+            'user': {
+                'id': self.user_id,
+                'username': self.trendit3_user.username,
+                'email': self.trendit3_user.email
+            }
         }
 
 class Comment(db.Model):
     __tablename__ = 'comment'
 
     id = db.Column(db.Integer, primary_key=True)
-    item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
     text = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # relationships
+    item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
     commented_item = db.relationship('Item', backref=db.backref('comments', lazy='dynamic'))
     trendit3_user = db.relationship('Trendit3User', backref=db.backref('comments', lazy='dynamic'))
     
@@ -142,6 +165,13 @@ class Comment(db.Model):
     def to_dict(self):
         return {
             'id': self.id,
-            'name': self.item_id,
-            'description': self.user_id,
+            'item_id': self.item_id,
+            'comment': self.text,
+            'created_at': self.created_at,
+            'updated_at': self.updated_at,
+            'user': {
+                'id': self.user_id,
+                'username': self.trendit3_user.username,
+                'email': self.trendit3_user.email
+            }
         }

@@ -9,7 +9,7 @@ from app.models.payment import Payment, Transaction
 from app.utils.helpers.response_helpers import error_response, success_response
 from app.utils.helpers.basic_helpers import console_log
 from app.utils.helpers.payment_helpers import initialize_payment, credit_wallet, payment_recorded
-from app.utils.helpers.task_helpers import get_task_by_ref
+from app.utils.helpers.task_helpers import get_task_by_key
 from config import Config
 
 class PaymentController:
@@ -105,8 +105,8 @@ class PaymentController:
                                 'membership_fee_paid': membership_fee_paid,
                             })
                         elif payment_type == 'task_creation':
-                            task_ref = verification_response['data']['metadata']['task_ref']
-                            task = get_task_by_ref(task_ref)
+                            task_key = verification_response['data']['metadata']['task_key']
+                            task = get_task_by_key(task_key)
                             task.update(payment_status='Complete')
                             task_dict = task.to_dict()
                             
@@ -134,8 +134,8 @@ class PaymentController:
                             msg = 'Payment Completed successfully and Membership fee already accepted'
                             extra_data.update({'membership_fee_paid': trendit3_user.membership.membership_fee_paid,})
                         elif payment_type == 'task_creation':
-                            task_ref = verification_response['data']['metadata']['task_ref']
-                            task = get_task_by_ref(task_ref)
+                            task_key = verification_response['data']['metadata']['task_key']
+                            task = get_task_by_key(task_key)
                             task_dict = task.to_dict()
                             msg = 'Payment Completed and Task has already been created successfully'
                             extra_data.update({'task': task_dict})
@@ -246,8 +246,8 @@ class PaymentController:
                         elif payment_type == 'membership-fee':
                             trendit3_user.membership_fee(paid=True)
                         elif payment_type == 'task_creation':
-                            task_ref = data['data']['metadata']['task_ref']
-                            task = get_task_by_ref(task_ref)
+                            task_key = data['data']['metadata']['task_key']
+                            task = get_task_by_key(task_key)
                             task.update(payment_status='Complete')
                         elif payment_type == 'credit-wallet':
                             # Credit user's wallet

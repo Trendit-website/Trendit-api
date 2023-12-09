@@ -2,4 +2,5 @@
 .vscode/
 env/
 migrations/
+migrations_local/
 todo.py

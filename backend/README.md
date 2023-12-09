@@ -450,7 +450,7 @@ On successful, request, this will return an authorization URL where users need t
 **Error Handling**  
 If payment Initialization fails, you will receive a JSON response with details about the error, including the status code.
 
-- **HTTP 404 Not Found:** User not found.  
+- **HTTP 401 Unauthorized:** User is not logged in.
 - **HTTP 409 Conflict:** Payment has already been made by the user.  
 - **HTTP 500 Internal Server Error:** An error occurred while processing the request.  
 
@@ -521,7 +521,7 @@ If payment processing is successful, you will receive a JSON response with a 200
 **Error Handling**  
 If payment processing fails, you will receive a JSON response with details about the error, including the status code.
 
-- **HTTP 404 Not Found:** User not found.
+- **HTTP 401 Unauthorized:** User is not logged in.
 - **HTTP 500 Internal Server Error:** An error occurred while processing the request.
 
 
@@ -605,6 +605,13 @@ It is used for receiving and processing payment-related webhooks from Paystack. 
 
 - Usage: You should configure this endpoint as a webhook endpoint in your Paystack account settings.
 
+
+
+
+
+
+
+
 ## Items Endpoints (products & services)
 Items is the name used to represent both products and services uploaded to the Marketplace. The items endpoints consist of endpoints to fetch all items, fetch a single item, upload items, update items, and delete item.
 
@@ -612,25 +619,52 @@ Items is the name used to represent both products and services uploaded to the M
 ### Fetch All Items
 **Endpoint:** `/api/items`  
 **HTTP Method:** GET  
-**Description:** Fetch all items in the database.  
+**Description:** Fetch all Items (products and services) from the Marketplace.  
 **Query Parameters:** `page` - The page number to retrieve. It Defaults to 1 if not provided.
 
-This endpoint fetches all products & services from the Marketplace.
-For better performance, the returned items are paginated. Only 10 items are returned per page. So to get more items from a particular page, the query parameter `page` needs to be present the endpoint.
+This endpoint fetches all products & services available in the Marketplace.  
+For better performance, the returned items are paginated. Only 10 items are returned per page. To retrieve more items from a particular page, include the `page` query parameter in the endpoint.
 
-A successful response will look like this:
-```javascript
+**Example Request:**  `GET /api/items?page=1`
+
+**Key Response Details:**
+
+- `total` (integer): The total number of items available in the Marketplace.
+- `all_items` (list): A list containing details of products and services (up to 10 per page).
+- `current_page` (integer): The current page number.
+- `total_pages` (integer): Total number of pages to retrieve items.
+
+
+
+**A Successful Response Example:**
+```json
 {
     "status": "success",
-    "message": "products & services fetched successfully",
+    "message": "Products & services fetched successfully",
     "status_code": 200,
-    "total_items": 12, // total number of items available
-    "items": [item1, item2, ...], // items on the current page
     "current_page": 1,
-    "total_pages": 12,
+    "total_pages": 7,
+    "total": 30,
+    "all_items": [
+        {
+            "brand_name": "Apple",
+            "category": "tech",
+            "colors": "black",
+            // ... (item details)
+        },
+        {
+            "brand_name": "Samsung",
+            "category": "tech",
+            "colors": "white",
+            // ... (item details)
+        },
+        // ... (up to 10 items per page)
+    ]
 }
 ```
-To fetch items from a specific page, include the `page` query parameter in the endpoint. For example, to fetch items from page 2, you would send a GET request to `api/items?page=2.`
+**To fetch items from a specific page:**  
+Include the `page` query parameter in the endpoint. For example, to fetch items from page 2, send a GET request to `/api/items?page=2`.
+
 
 **Error Handling**  
 If fetching items fails, you will receive a JSON response with details about the error, including the status code.
@@ -643,52 +677,65 @@ If fetching items fails, you will receive a JSON response with details about the
 
 
 ### Fetch Single Item
-**Endpoint:** `/api/items/<item_id_slug>`  
+**Endpoint:** `/api/items/{item_id_slug}`  
 **HTTP Method:** GET  
-Description: Fetch a single item by it's ID or slug.  
+**Description:** Retrieve details for a single a single item using it's ID or slug.  
+
+**Path Parameter:**
+- `{item_id_slug}` (required): The ID or slug of the item to retrieve.
 
 
-This endpoint will fetch a single item using either it's ID or slug.  
-- Fetch an item using it's id: `/api/items/1`
-- Fetch an item using it's slug: `/api/items/hair-dryer`
+This endpoint fetches details for a specific item (product or service) in the Marketplace. You can use either the item's ID or slug in the path parameter.  
+
+**Example Request:**   
+- Fetch an item using it's id: `/api/items/2`
+- Fetch an item using it's slug: `/api/items/surface-duo-t63a`
+
+Ensure you replace surface-duo-t63a with the actual item ID or slug you want to retrieve. Adjust the request accordingly based on your specific requirements.
+
+
+**Key Response Details:**
+
+- `item` (object): An object containing details of the requested item.
+
 
 A successful response will look like this:
 
 ``` json
 {
     "status": "success",
-    "message": "Item fetched successfully",
+    "message": "product fetched successfully",
     "status_code": 200,
     "item": {
+        "brand_name": "Apple",
+        "category": "tech",
+        "colors": "black",
+        "created_at": "Thu, 07 Dec 2023 17:39:49 GMT",
+        "description": "This is a description",
         "id": 1,
-        "name": "hair dryer",
-        "description": "this is a description....",
-        "item_img": "https://cloudinary/img.jpg",
-        "price": 400,
-        "category": "fashion",
-        "brand_name": "LG",
-        "sizes": "",
-        "colors": "red",
-        "material": "metal",
-        "phone": "07089227345",
-        "slug": "hair-dryer",
-        "views_count": 13,
-        "total_likes": 30,
-        "total_comments": 2,
-        "created_at": "Sun, 03 Dec 2023 20:50:09 GMT",
-        "updated_at": "Sun, 03 Dec 2023 20:50:09 GMT",
+        "item_img": "http://res.cloudinary.com/dcozguaw3/img.png",
         "item_type": "product",
+        "material": "plastic",
+        "name": "surface duo",
+        "phone": "09077648550",
+        "price": 9900,
+        "sizes": "large",
+        "slug": "surface-duo-t63a",
+        "total_comments": 0,
+        "total_likes": 0,
+        "updated_at": "Thu, 07 Dec 2023 17:39:49 GMT",
+        "views_count": 0
         "seller": {
-            "id": 2,
-            "username": "trendit_user",
-            "email": "trendit_user@gmail.com"
-        }
+            "email": "trendit_user@gmail.com",
+            "id": 1,
+            "username": "trendit_user"
+        },
     }
 }
 
  ```
 **Error Handling**  
-If fetching the item fails, you will receive a JSON response with details about the error, including the status code.
+If fetching the item details fails (e.g., if the item with the provided ID or slug does not exist), you will receive a JSON response with details about the error, including the status code.
 
 - HTTP 404 Not Found: product or service not found.
 - HTTP 500 Internal Server Error: An error occurred while processing the request.
@@ -730,29 +777,35 @@ fetch('/api/items/new', {
 ### Create (Upload) a New Item
 **Endpoint:** `/api/items/new`  
 **HTTP Method:** POST  
-**Description:** Create a new item. This endpoint requires JWT authentication.
+**Description:** Create a new item (product or service) in the Marketplace.  
 **Login Required:** True
 
-To create(upload) an item, you need to send a form data to this endpoint.   
-Following the example above on how to send form data, you can send form data with the necessary fields to this endpoint /api/items/new:
-```
-item_type: "product", // either product or service
-name: "Gorgeous Fresh Chips",
-description: "This is a description"
-price: 4000
-category: "Groceries"
-brand_name: "Oraimo"
-size: "small"
-color: "black"
-material: "plastic"
-phone: 09077648550
-item_img: (binary data)
-...
+To create(upload) an item, you need to send a form data to this endpoint.    
+Following the example above on how to send form data, you can send form data with the necessary fields to this endpoint `/api/items/new`:
 
-```
+**Form Data Parameters (for POST request):**
+- `country` (required): The country of the user.
+- `state` (required): The state of the user.
+- `city` (required): The city (LGA) of the user.
+- `item_type` (required): The type of the item. Options: `product` or `service`.
+- `name` (required): The name of the item.
+- `description` (required): A description of the item.
+- `price` (required): The price of the product or service.
+- `category` (required): The category to which the item belongs.
+- `brand_name` (required): The brand name of the item.
+- `size` (optional): The size of the item (if applicable).
+- `color` (optional): The color of the item (if applicable).
+- `material` (optional): The material of the item (if applicable).
+- `phone` (required if it's a service): The contact phone number associated with the item.
+- `item_img` (required): Binary data representing the image of the item.
 
-Upon successful creation, a 200 OK status code will be returned along with details of the uploaded item. A successful response will look like this:
-```javascript
+**Key Response Details:**
+
+- `item` (object): An object containing details of the created item.
+
+Upon successful creation, a 200 OK status code will be returned along with details of the uploaded item.  
+**A Successful Response Example:**
+```json
 {
     "status": "success",
     "message": "Item created successfully",
@@ -768,7 +821,6 @@ Upon successful creation, a 200 OK status code will be returned along with detai
         "material": "plastic",
         "phone": "09077648550",
         "price": 4000,
-        "seller_id": 1, // this is the ID of the user that uploaded
         "sizes": "small",
         "slug": "gorgeous-fresh-chips",
         "total_comments": 0,
@@ -776,45 +828,127 @@ Upon successful creation, a 200 OK status code will be returned along with detai
         "views_count": 0,
         "created_at": "Tue, 17 Oct 2023 01:09:01 GMT",
         "updated_at": "Tue, 17 Oct 2023 01:09:01 GMT",
-    },
+        "seller": {
+            "email": "trendit_user@gmail.com",
+            "id": 1,
+            "username": "trendit_user"
+        },
+    }
 }
 ```
+
+**Error Handling**  
+If creating the item fails (e.g., due to validation errors or server issues), you will receive a JSON response with details about the error, including the status code.
+
+- **HTTP 400 Bad Request:** Validation error or invalid input data.
+- **HTTP 401 Unauthorized:** User is not logged in.
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request.
+
+
+
+
+
+
+
 
 ### Update an Item
-**Endpoint:** `/api/items/update/<item_id_slug>`  
-**HTTP Method:** PUT  
-**Description:** Update an existing item. 
+**Endpoint:** `/api/items/update/{item_id_slug}`  
+**HTTP Method:** `PUT`  
+**Description:** Update details for an existing Item (product or service) in the Marketplace.  
 **Login Required:** True
 
-Include the necessary form data in the request body:
-```
-item_type: "new_item_type" // either product or service
-name: "new item name"
-...
-item_img: (binary data)
+**Path Parameter:**
+- `{item_id_slug}` (required): The ID or slug of the item to update.
 
-```
+Include the needed form data in the request body:  
+**Form Data Parameters:**
+- `country` (required): The country of the user.
+- `state` (required): The state of the user.
+- `city` (required): The city (LGA) of the user.
+- `item_type` (required): The type of the item. Options: `product` or `service`.
+- `name` (required): The updated name of the item.
+- `description` (required): The updated description of the item.
+- `price` (required): The updated price of the product or service.
+- `category` (required): The updated category to which the item belongs.
+- `brand_name` (required): The updated brand name of the item.
+- `size` (optional): The updated size of the item (if applicable).
+- `color` (optional): The updated color of the item (if applicable).
+- `material` (optional): The updated material of the item (if applicable).
+- `phone` (required): The updated contact phone number associated with the item.
+- `item_img` (optional): Binary data representing the updated image of the item.
 
-A successful response will include a 200 OK status code and the details of the updated item:
-```javascript
+
+**Key Response Details:**
+
+- `item` (object): An object containing details of the updated item.
+
+**A Successful Response Example:**
+```json
 {
-    "status": "success",
     "message": "Item updated successfully",
+    "status": "success",
     "status_code": 200,
-    "item": {updated item details...}
+    "item": {
+        "brand_name": "Samsung",
+        "category": "tech",
+        "colors": "black",
+        "created_at": "Thu, 07 Dec 2023 17:40:53 GMT",
+        "description": "This is a new product",
+        "id": 2,
+        "item_img": null,
+        "item_type": "product",
+        "material": "iron",
+        "name": "Galaxy Z Fold",
+        "phone": "09077648550",
+        "price": 100,
+        "sizes": "large",
+        "slug": "galaxy-z-fold",
+        "total_comments": 0,
+        "total_likes": 0,
+        "views_count": 0,
+        "updated_at": "Sat, 09 Dec 2023 07:17:21 GMT",
+        "seller": {
+            "email": "trendit_user@gmail.com",
+            "id": 1,
+            "username": "trendit_user"
+        }
+    }
 }
-
 ```
+
+**Error Handling**  
+If updating the item fails (e.g., due to validation errors or server issues), you will receive a JSON response with details about the error, including the status code.
+
+- **HTTP 400 Bad Request:** Validation error or invalid input data.
+- **HTTP 401 Unauthorized:** User is not logged in.
+- **HTTP 404 Not Found:** The requested item was not found.
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request.
 
 
 
 ### Delete an Item
-**Endpoint:** `/api/items/delete/<item_id_slug>`  
-**HTTP Method:** DELETE  
-**Description:** Delete an item by its ID. 
+**Endpoint:** `/api/items/delete/{item_id_slug}`  
+**HTTP Method:** `DELETE`  
+**Description:** Delete an existing item (product or service) using its ID or slug.  
 **Login Required:** True  
 
-A successful response will look like this:
+**Path Parameter:**
+- `{item_id_slug}` (required): The ID or slug of the item to delete.
+
+
+**Example Request:**  
+
+- Delete an item using it's id: `/api/items/delete/2`
+- Delete an item using it's slug: `/api/items/delete/surface-duo-t63a`
+
+
+**Key Response Details:**
+
+- `status` (string): The status of the request, e.g., "success."
+- `message` (string): A success message indicating that the item was deleted successfully.
+- `status_code` (integer): The HTTP status code indicating the success of the request (e.g., 200).
+
+**A Successful Response Example:**
 ```json
 {
     "status": "success",
@@ -823,12 +957,153 @@ A successful response will look like this:
 }
 ```
 
+**Error Handling**  
+If deleting the item fails (e.g., if the item with the provided ID or slug does not exist), you will receive a JSON response with details about the error, including the status code.
+
+- **HTTP 401 Unauthorized:** User is not logged in.
+- **HTTP 404 Not Found:** The requested item was not found.
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request.
+
 Please remember to handle errors and exceptions gracefully in your frontend application by checking the response status codes and displaying appropriate messages to the user.
 
 
+---
+
+## Item Interactions
+The endpoint in this category are used to Interact with an Item (product or service).  
+Item interactions includes likes, views and comments.
 
 
 
+### Like Item
+**Endpoint:** `/api/items/<item_id_slug>/like`  
+**HTTP Method:** `POST`  
+**Description:** Add a like to a specific product or service in the Marketplace.  
+**Login Required:** True
+
+**Path Parameter:**
+- `{item_id_slug}` (required): The ID or slug of the item to like.
+
+**Example Request:**  `POST /api/items/galaxy-z-fold/like`
+
+**Key Response Details:**
+
+- `status` (string): The status of the request, e.g., "success."
+- `message` (string): A success message indicating that the like was added successfully.
+- `status_code` (integer): The HTTP status code indicating the success of the request (e.g., 200).
+
+**A Successful Response Example:**
+```json
+{
+    "status": "success",
+    "message": "product liked successfully",
+    "status_code": 200
+}
+```
+
+**Error Handling**  
+If adding a like to the item fails (e.g., if the item with the provided ID or slug does not exist), you will receive a JSON response with details about the error, including the status code.
+
+- **HTTP 401 Unauthorized:** User is not logged in.
+- **HTTP 404 Not Found:** The requested item was not found.
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request.
+
+
+
+### View Item
+
+**Endpoint:** `/api/items/<item_id_slug>/view`  
+**HTTP Method:** `POST`  
+**Description:** Register a view for a specific product or service in the Marketplace.  
+**Login Required:** True
+
+**Path Parameter:**
+- `{item_id_slug}` (required): The ID or slug of the item to view.
+
+
+**Example Request:**  `POST /api/items/galaxy-z-fold/view`
+
+
+**Key Response Details:**
+
+- `status` (string): The status of the request, e.g., "success."
+- `message` (string): A success message indicating that the view was registered successfully.
+- `status_code` (integer): The HTTP status code indicating the success of the request (e.g., 200).
+
+**A Successful Response Example:**
+```json
+{
+    "status": "success",
+    "message": "product viewed successfully",
+    "status_code": 200
+}
+```
+
+**Error Handling**  
+If registering a view for the item fails (e.g., if the item with the provided ID or slug does not exist), you will receive a JSON response with details about the error, including the status code.
+
+- **HTTP 401 Unauthorized:** User is not logged in.
+- **HTTP 404 Not Found:** The requested item was not found.
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request.
+
+
+
+
+
+### Add Comment to Item
+
+**Endpoint:** `/api/items/comment`  
+**HTTP Method:** `POST`  
+**Description:** Add a comment to a product or service in the Marketplace.  
+**Login Required:** True
+
+**Request Body:**
+- `comment` (required): The text content of the comment.
+
+**Key Response Details:**
+
+- `status` (string): The status of the request, e.g., "success."
+- `message` (string): A success message indicating that the comment was added successfully.
+- `status_code` (integer): The HTTP status code indicating the success of the request (e.g., 200).
+- `comment_details` (object): An object containing details of the added comment.
+
+**Request Body Example:**
+```json
+{
+    "comment": "This is the first comment ever on Trendit³"
+}
+```
+
+**A Successful Response Example:**
+```json
+{
+    "status": "success",
+    "message": "Comment added successfully",
+    "status_code": 200,
+    "comment_details": {
+        "comment": "This is the second comment ever on trendit3",
+        "created_at": "Sat, 09 Dec 2023 11:39:50 GMT",
+        "id": 3,
+        "item_id": 2,
+        "updated_at": "Sat, 09 Dec 2023 11:39:50 GMT",
+        "user": {
+            "email": "trendit_user@gmail.com",
+            "id": 1,
+            "username": "trendit_user"
+        }
+    }
+}
+```
+
+**Error Handling**  
+If adding a comment to the item fails (e.g., if the required data is missing or the item does not exist), you will receive a JSON response with details about the error, including the status code.
+
+- **HTTP 400 Bad Request:** Validation error or invalid input data.
+- **HTTP 401 Unauthorized:** User is not logged in.
+- **HTTP 404 Not Found:** The requested item was not found.
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request.
+
+---
 ## Location Endpoints
 The endpoints in this collection can be used to get supported countries, states and local government area.
 
@@ -1053,7 +1328,7 @@ For better performance, the tasks are paginated. So by default, 10 Tasks are ret
             "posts_count": 3,
             "target_country": "Nigeria",
             "target_state": "Lagos",
-            "task_reference": "task-vie26tzy",
+            "task_key": "vie26tzysa",
             "type": "advert"
             "creator": {
                 "id": 1,
@@ -1069,7 +1344,7 @@ For better performance, the tasks are paginated. So by default, 10 Tasks are ret
             "media_path": null,
             "payment_status": "Complete",
             "platform": "instagram",
-            "task_reference": "task-bwg2ubla",
+            "task_key": "bwg2ublad3",
             "type": "engagement"
             "creator": {
                 "id": 1,
@@ -1141,15 +1416,15 @@ If fetching Tasks fails, you will receive a JSON response with details about the
 
 ### Fetch Single Task
 
-**Endpoint:** `/api/tasks/{task_id}`  
+**Endpoint:** `/api/tasks/{task_id_key}`  
 **HTTP Method:** `GET`  
-**Description:** Retrieve detailed information about a specific task based on its unique ID.  
-**Path Parameter::** `{task_id}` (required)
+**Description:** Retrieve detailed information about a specific task based on its unique ID or key.  
+**Path Parameter::** `{task_id_key}` (required)
 
 This endpoint allows you to fetch a single task by providing its unique identifier in the URL.
 
 **Path Parameter::**
-- `{task_id}` (required): The unique identifier of the task. Example: `/api/tasks/123`
+- `{task_id_key}` (required): The unique identifier of the task. Example: `/api/tasks/123` or `/api/tasks/vie26tzyx1`
 
 **Key Response Details:**
 
@@ -1173,7 +1448,7 @@ This endpoint allows you to fetch a single task by providing its unique identifi
         "posts_count": 3,
         "target_country": "Nigeria",
         "target_state": "Lagos",
-        "task_reference": "task-vie26tzy",
+        "task_key": "vie26tzyx1",
         "type": "advertisement"
         "creator": {
             "id": 1,
@@ -1187,6 +1462,9 @@ This endpoint allows you to fetch a single task by providing its unique identifi
 If fetching Task fails, you will receive a JSON response with details about the error, including the status code.
 
 - HTTP 500 Internal Server Error: An error occurred while processing the request.
+
+
+
 
 
 ### Create New Task
@@ -1243,7 +1521,7 @@ In this endpoint, payment is required before the task is created. If the payment
         "posts_count": 3,
         "target_country": "Nigeria",
         "target_state": "Lagos",
-        "task_reference": "task-leplrxf9",
+        "task_key": "leplrxf9sd",
         "type": "advert"
         "creator": {
             "email": "trendit_user@gmail.com",
@@ -1300,6 +1578,7 @@ This endpoint fetches all advert tasks specifically.
 
 - `total` (integer): The total number of advert tasks on Trendit³.
 - `advert_tasks` (list): A list containing advert tasks (up to 10 per page).
+    - `creator` (object): details on the user that created the task
 - `current_page` (integer): The current page number.
 - `total_pages` (integer): Total number of pages to retrieve advert tasks.
 
@@ -1324,7 +1603,7 @@ This endpoint fetches all advert tasks specifically.
             "posts_count": 3,
             "target_country": "Nigeria",
             "target_state": "Lagos",
-            "task_reference": "task-leplrxf9",
+            "task_key": "leplfdrxf9",
             "type": "advert",
             "creator": {
                 "email": "trendit_user@gmail.com",
@@ -1368,6 +1647,7 @@ Example Request:
 - `current_page` (integer): The current page number.
 - `total_pages` (integer): Total number of pages to retrieve advert tasks for the specified platform.
 - `advert_tasks` (list): A list containing advert tasks (up to 10 per page) for the specified platform.
+    - `creator` (object): details on the user that created the task
 
 **A Successful Response Example:**
 ```json
@@ -1390,7 +1670,7 @@ Example Request:
             "posts_count": 3,
             "target_country": "Nigeria",
             "target_state": "Lagos",
-            "task_reference": "task-leplrxf9",
+            "task_key": "leplrxf9x1",
             "type": "advert",
             "creator": {
                 "email": "trendit_user@gmail.com",
@@ -1453,7 +1733,7 @@ If fetching advert tasks for the specified platform fails, you will receive a JS
                     "posts_count": 3,
                     "target_country": "Nigeria",
                     "target_state": "Lagos",
-                    "task_reference": "task-vie26tzy",
+                    "task_key": "vie26tzy0m",
                     "type": "advert"
                 },
                 // ... (up to 10 tasks per platform)
@@ -1467,5 +1747,118 @@ If fetching advert tasks for the specified platform fails, you will receive a JS
 
 **Error Handling**  
 If fetching advert tasks grouped by platform fails, you will receive a JSON response with details about the error, including the status code.
+
+- HTTP 500 Internal Server Error: An error occurred while processing the request.
+
+
+
+
+### Fetch Engagement Tasks
+**Endpoint:** `/api/tasks/engagement`  
+**HTTP Method:** `GET`  
+**Description:** Retrieve all engagement tasks.  
+**Query Parameters:** - `page` (optional): The page number to retrieve. Defaults to 1 if not provided.
+
+This endpoint fetches all engagement tasks specifically.  
+The tasks are paginated, returning 10 engagement tasks per page by default.
+
+
+
+**Key Response Details:**
+- `total` (integer): The total number of engagement tasks on Trendit³.
+- `engagement_tasks` (list): A list containing engagement tasks (up to 10 per page).
+    - `creator` (object): details on the user that created the task
+- `current_page` (integer): The current page number.
+- `total_pages` (integer): Total number of pages to retrieve engagement tasks.
+
+
+**A Successful Response Example:**
+```json
+{
+    "message": "All Engagement Tasks fetched successfully",
+    "status": "success",
+    "status_code": 200,
+    "total_pages": 2,
+    "current_page": 1,
+    "total": 7,
+    "engagement_tasks": [
+        {
+            "account_link": "https://hjsj.com",
+            "engagements_count": 1,
+            "goal": "Follow my account",
+            "id": 1,
+            "media_path": null,
+            "payment_status": "Complete",
+            "platform": "instagram",
+            "task_key": "bwg2ublaxc",
+            "type": "engagement"
+            "creator": {
+                "email": "trendit_user@gmail.com",
+                "id": 1,
+                "username": "trendit_user"
+            },
+        },
+        // ... (up to 10 tasks per page)
+    ]
+}
+```
+
+**To Fetch Engagement Tasks from a Specific Page:**  
+Include the page query parameter in the endpoint. For example, to fetch tasks from page 2, send a GET request to `/api/tasks/engagement?page=2`.
+
+**Error Handling**  
+If fetching engagement tasks fails, you will receive a JSON response with details about the error, including the status code.
+
+- HTTP 500 Internal Server Error: An error occurred while processing the request.
+
+
+
+
+
+
+### Fetch Engagement Tasks Grouped by Field
+
+**Endpoint:** `/api/tasks/engagement/grouped-by/{field}`  
+**HTTP Method:** `GET`  
+**Description:** Retrieve all engagement tasks grouped by a specified field. 
+
+**Path Parameter:**
+- `{field}` (required): The field by which to group engagement tasks, e.g., `goal` or `platform`.
+
+**Example Request:**  `GET /api/tasks/engagement/grouped-by/goal`
+
+**Key Response Details:**
+
+- `tasks_grouped_by_field` (object): An object containing field values as keys, each with an associated list of engagement tasks (`tasks`) and the total number of tasks (`total`) for that field.
+
+**A Successful Response Example (Grouped by Goal):**
+```json
+{
+    "message": "Engagement tasks grouped by goal fetched successfully.",
+    "status": "success",
+    "status_code": 200,
+    "tasks_grouped_by_goal": {
+        "Follow my account": {
+            "tasks": [
+                {
+                    "account_link": "https://hjsj.com",
+                    "creator": {
+                        "email": "trendit_user@gmail.com",
+                        "id": 1,
+                        "username": "trendit_user"
+                    },
+                    // ... (task details)
+                },
+                // ... (up to 10 tasks for the specified goal)
+            ],
+            "total": 1
+        },
+        // ... (more goals)
+    }
+}
+```
+
+**Error Handling**   
+If fetching engagement tasks grouped by the specified field fails, you will receive a JSON response with details about the error, including the status code.
 
 - HTTP 500 Internal Server Error: An error occurred while processing the request.

@@ -1,25 +1,38 @@
 from app.extensions import db
 from sqlalchemy.orm import backref
+from sqlalchemy.exc import IntegrityError
 from datetime import datetime
 
 from app.models import Media
+from app.utils.helpers.basic_helpers import generate_random_string
 
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    type = db.Column(db.String(50), nullable=False)
+    type = db.Column(db.String(50), nullable=False) # advert task, or engagement task
     platform = db.Column(db.String(80), nullable=False)
     fee = db.Column(db.Float, nullable=False)
     media_id = db.Column(db.Integer, db.ForeignKey('media.id'), nullable=True)
-    task_ref = db.Column(db.String(120), unique=True, nullable=False)
-    payment_status = db.Column(db.String(80), nullable=False)
+    task_key = db.Column(db.String(120), unique=True, nullable=False)
+    payment_status = db.Column(db.String(80), nullable=False) # complete, pending, failed
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
     trendit3_user = db.relationship('Trendit3User', backref=db.backref('tasks', lazy='dynamic'))
     
     @classmethod
-    def create_task(cls, trendit3_user_id, type, platform, fee, task_ref, payment_status, media_id=None, **kwargs):
-        task = cls(trendit3_user_id=trendit3_user_id, type=type, platform=platform, fee=fee, task_ref=task_ref, payment_status=payment_status, media_id=media_id, **kwargs)
+    def create_task(cls, trendit3_user_id, type, platform, fee, payment_status, media_id=None, **kwargs):
+        the_task_ref = generate_random_string(8)
+        counter = 1
+        max_attempts = 6  # maximum number of attempts to create a unique task_key
+        
+        while cls.query.filter_by(task_key=the_task_ref).first() is not None:
+            if counter > max_attempts:
+                raise ValueError(f"Unable to create a unique task after {max_attempts} attempts.")
+            the_task_ref = f"{generate_random_string(8)}-{generate_random_string(2)}-{counter}"
+            counter += 1
+        
+        task = cls(trendit3_user_id=trendit3_user_id, type=type, platform=platform, fee=fee, task_key=the_task_ref, payment_status=payment_status, media_id=media_id, **kwargs)
         
         # Set additional attributes from kwargs
         for key, value in kwargs.items():
@@ -27,6 +40,7 @@ class Task(db.Model):
         
         db.session.add(task)
         db.session.commit()
+        
         return task
     
     def update(self, **kwargs):
@@ -75,13 +89,13 @@ class Task(db.Model):
             'type': self.type,
             'platform': self.platform,
             'media_path': self.get_task_media(),
-            'task_reference': self.task_ref,
+            'task_key': self.task_key,
             'payment_status': self.payment_status,
             'creator': {
                 'id': self.trendit3_user_id,
                 'username': self.trendit3_user.username,
                 'email': self.trendit3_user.email
-            }
+            },
             **advert_task_dict,
             **engagement_task_dict 
         }
@@ -105,7 +119,7 @@ class AdvertTask(Task):
             'type': self.type,
             'platform': self.platform,
             'media_path': self.get_task_media(),
-            'task_reference': self.task_ref,
+            'task_key': self.task_key,
             'payment_status': self.payment_status,
             'posts_count': self.posts_count,
             'target_country': self.target_country,
@@ -136,7 +150,7 @@ class EngagementTask(Task):
             'type': self.type,
             'platform': self.platform,
             'media_path': self.get_task_media(),
-            'task_reference': self.task_ref,
+            'task_key': self.task_key,
             'payment_status': self.payment_status,
             'goal': self.goal,
             'account_link': self.account_link,
