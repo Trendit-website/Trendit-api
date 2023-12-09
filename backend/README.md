@@ -1266,7 +1266,7 @@ This endpoint returns a list of local government areas in a given state. The lis
 If the request fails, you will receive a JSON response with details about the error, including the status code.
 
 - HTTP 500 Internal Server Error: An error occurred while processing the request.
-
+---
 ## Tasks Endpoints
 
 One of the core features of Trendit³ is allowing users to create task for other users to perform.  
@@ -1401,8 +1401,8 @@ To fetch Tasks from a specific page, include the page query parameter in the end
 **Error Handling**  
 If fetching Tasks fails, you will receive a JSON response with details about the error, including the status code.
 
-- HTTP 401 Unauthorized: User is not logged in
-- HTTP 500 Internal Server Error: An error occurred while processing the request.
+- **HTTP 401 Unauthorized:** User is not logged in
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request.
 
 
 
@@ -1461,7 +1461,7 @@ This endpoint allows you to fetch a single task by providing its unique identifi
 **Error Handling**  
 If fetching Task fails, you will receive a JSON response with details about the error, including the status code.
 
-- HTTP 500 Internal Server Error: An error occurred while processing the request.
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request.
 
 
 
@@ -1551,8 +1551,8 @@ As you can see there is `trxref` query parameter in the URL. This query paramete
 **Error Handling**  
 If fetching Task fails, you will receive a JSON response with details about the error, including the status code.
 
-- HTTP 400 Bad Request Error: Insufficient balance/User does not have a wallet
-- HTTP 500 Internal Server Error: An error occurred while processing the request.
+- **HTTP 400 Bad Request Error:** Insufficient balance/User does not have a wallet
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request.
 
 
 
@@ -1622,7 +1622,7 @@ Include the page query parameter in the endpoint. For example, to fetch tasks fr
 **Error Handling**  
 If fetching advert tasks fails, you will receive a JSON response with details about the error, including the status code.
 
-- HTTP 500 Internal Server Error: An error occurred while processing the request.
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request.
 
 
 
@@ -1689,7 +1689,7 @@ Include the page query parameter in the endpoint. For example, to fetch tasks fr
 **Error Handling**  
 If fetching advert tasks for the specified platform fails, you will receive a JSON response with details about the error, including the status code.
 
-- HTTP 500 Internal Server Error: An error occurred while processing the request.
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request.
 
 
 
@@ -1748,7 +1748,7 @@ If fetching advert tasks for the specified platform fails, you will receive a JS
 **Error Handling**  
 If fetching advert tasks grouped by platform fails, you will receive a JSON response with details about the error, including the status code.
 
-- HTTP 500 Internal Server Error: An error occurred while processing the request.
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request.
 
 
 
@@ -1809,7 +1809,7 @@ Include the page query parameter in the endpoint. For example, to fetch tasks fr
 **Error Handling**  
 If fetching engagement tasks fails, you will receive a JSON response with details about the error, including the status code.
 
-- HTTP 500 Internal Server Error: An error occurred while processing the request.
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request.
 
 
 
@@ -1861,4 +1861,607 @@ If fetching engagement tasks fails, you will receive a JSON response with detail
 **Error Handling**   
 If fetching engagement tasks grouped by the specified field fails, you will receive a JSON response with details about the error, including the status code.
 
-- HTTP 500 Internal Server Error: An error occurred while processing the request.
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request.
+
+
+***
+
+
+## Tasks Performance
+
+
+
+### Perform Task
+
+**Endpoint:** `/api/perform-task`  
+**HTTP Method:** `POST`  
+**Description:** Perform a Task  
+**Login Required:** True  
+
+
+This endpoint aims to record Performed task in the Trendit³ database. Perfomed task can later be reviewed and approved by an admin.
+
+
+**Form Data Parameters:**
+- `task_id_key` (required): The ID or key of the task to be performed.
+- `screenshot` (required): The screenshot as proof of task completion.
+- `reward_money` (required): The amount of money to be earned for performing the task.
+
+**Key Response Details:**
+
+- `status` (string): The status of the request, e.g., "success."
+- `message` (string): A success message indicating that the task was performed successfully.
+- `status_code` (integer): The HTTP status code indicating the success of the request (e.g., 201).
+- `performed_task` (object): An object containing details of the performed task.
+
+**A Successful Response Example:**
+```json
+{
+    "status": "success",
+    "message": "Task performed successfully",
+    "status_code": 201,
+    "performed_task": {
+        "id": 2,
+        "proof_screenshot_path": "http://res.cloudinary.com/dco3/image/upload/yy0.png",
+        "reward_money": 100.0,
+        "status": "Pending",
+        "task_id": 2,
+        "task_type": "advert",
+        "date_completed": "Sat, 09 Dec 2023 13:51:05 GMT",
+        "user": {
+            "email": "trendit_user@gmail.com",
+            "id": 1,
+            "username": "trendit_user"
+        }
+    }
+}
+```
+
+**Error Handling**  
+If performing the task fails (e.g., if the required data is missing, the task does not exist, or there's an issue with the server), you will receive a JSON response with details about the error, including the status code.
+
+
+- **HTTP 400 Bad Request:** Validation error or invalid input data.
+- **HTTP 401 Unauthorized:** User is not logged in
+- **HTTP 404 Not Found:** The requested task was not found.
+- **HTTP 409 Not Found:** The task already performed by user.
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request.
+
+
+
+
+### Fetch All Performed TaskS
+
+**Endpoint:** `/api/performed-tasks`  
+**HTTP Method:** `GET`  
+**Description:** Fetch all tasks performed by the current logged-in user.  
+**Login Required:** True  
+
+**Key Response Details:**
+
+- `status` (string): The status of the request, e.g., "success."
+- `message` (string): A success message indicating that the performed tasks were fetched successfully.
+- `status_code` (integer): The HTTP status code indicating the success of the request (e.g., 200).
+- `performed_tasks` (list): A list containing details of all performed tasks by the current user.
+
+**Note for Admins:**  
+Admins can use the `/api/admin/performed-tasks` endpoint to fetch all performed tasks, regardless of the user.
+
+**A Successful Response Example:**
+```json
+{
+    "status": "success",
+    "message": "Performed tasks fetched successfully",
+    "status_code": 200,
+    "all_performed_tasks": [
+        {
+            "id": 1,
+            "proof_screenshot_path": "http://res.cloudinary.com/dco3/image/upload/xx0.png",
+            "reward_money": 50.0,
+            "status": "Completed",
+            "task_id": 1,
+            "task_type": "engagement",
+            "date_completed": "Sat, 09 Dec 2023 14:30:00 GMT"
+            "user": {
+                "email": "trendit_user@gmail.com",
+                "id": 1,
+                "username": "trendit_user"
+            }
+        },
+        {
+            "id": 2,
+            "proof_screenshot_path": "http://res.cloudinary.com/dco3/image/upload/yy0.png",
+            "reward_money": 100.0,
+            "status": "Pending",
+            "task_id": 2,
+            "task_type": "advert",
+            "date_completed": "Sat, 09 Dec 2023 13:51:05 GMT"
+            "user": {
+                "email": "trendit_user@gmail.com",
+                "id": 1,
+                "username": "trendit_user"
+            }
+        }
+    ]
+}
+```
+
+**Error Handling**  
+If fetching performed tasks fails (e.g., if there's an issue with the server), you will receive a JSON response with details about the error, including the status code.
+
+- **HTTP 401 Unauthorized:** User is not logged in
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request.
+
+
+
+
+
+
+### Fetch Single Performed Task
+
+**Endpoint:** `/api/performed-tasks/{performed_task_id}`  
+**HTTP Method:** `GET`  
+**Description:** Fetch details of a single task performed by the current logged-in user based on the task's ID.  
+**Login Required:** True  
+
+**URL Parameters:**
+- `{performed_task_id}` (integer, required): The ID of the performed task to be fetched.
+
+**Key Response Details:**
+
+- `status` (string): The status of the request, e.g., "success."
+- `message` (string): A success message indicating that the performed task was fetched successfully.
+- `status_code` (integer): The HTTP status code indicating the success of the request (e.g., 200).
+- `performed_task` (object): An object containing details of the performed task.
+
+**A Successful Response Example:**
+```json
+{
+    "status": "success",
+    "message": "Task performed by the current user fetched successfully",
+    "status_code": 200,
+    "performed_task": {
+        "date_completed": "Sat, 09 Dec 2023 13:53:51 GMT",
+        "id": 3,
+        "proof_screenshot_path": "http://res.cloudinary.com/dc3/image/upload/v1/q7v.png",
+        "reward_money": 100.0,
+        "status": "Pending",
+        "task_id": 2,
+        "task_type": "advert",
+        "user": {
+            "email": "trendit_user@gmail.com",
+            "id": 1,
+            "username": "trendit_user"
+        }
+    }
+}
+```
+
+**Error Handling**  
+If fetching the single performed task fails (e.g., if the task does not exist or there's an issue with the server), you will receive a JSON response with details about the error, including the status code.
+
+- **HTTP 401 Unauthorized:** User is not logged in
+- **HTTP 404 Not Found:** The requested performed task was not found.
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request.
+
+
+
+### Update Performed Task
+
+**Endpoint:** `/api/performed-tasks/{performed_task_id}`  
+**HTTP Method:** `PUT`  
+**Description:** Update details of a single task performed by the current logged-in user.  
+**Login Required:** True  
+
+**URL Parameters:**
+- `{performed_task_id}` (integer, required): The ID of the performed task to be updated.
+
+**Form Data Parameters:**
+- `status` (optional): The status of the performed task (e.g., "Completed" or "Pending").
+- `reward_money` (optional): The updated amount of money earned for performing the task.
+- `proof_screenshot` (optional): The updated screenshot as proof of task completion.
+
+**Key Response Details:**
+
+- `status` (string): The status of the request, e.g., "success."
+- `message` (string): A success message indicating that the performed task was updated successfully.
+- `status_code` (integer): The HTTP status code indicating the success of the request (e.g., 200).
+- `performed_task` (object): An object containing details of the updated performed task.
+
+**A Successful Response Example:**
+```json
+{
+    "status": "success",
+    "message": "Performed task updated successfully",
+    "status_code": 200,
+    "performed_task": {
+        "date_completed": "Sat, 09 Dec 2023 13:53:51 GMT",
+        "id": 3,
+        "proof_screenshot_path": "http://res.cloudinary.com/dcozguaw3/image/upload/v1702130032/2023/12/mts-icon-6q7v.png",
+        "reward_money": 150.0,
+        "status": "Completed",
+        "task_id": 2,
+        "task_type": "advert",
+        "user": {
+            "email": "trendit_user@gmail.com",
+            "id": 1,
+            "username": "trendit_user"
+        }
+    }
+}
+```
+
+**Error Handling**  
+If updating the performed task fails (e.g., if the task does not exist, validation error, or there's an issue with the server), you will receive a JSON response with details about the error, including the status code.
+
+- **HTTP 400 Bad Request:** Validation error or invalid input data.
+- **HTTP 401 Unauthorized:** User is not logged in
+- **HTTP 404 Not Found:** The requested performed task was not found.
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request.
+
+
+
+### Delete Performed Task
+
+**Endpoint:** `/api/performed-tasks/{performed_task_id}`  
+**HTTP Method:** `DELETE`  
+**Description:** Delete a single performed task by the current logged-in user.  
+**Login Required:** True  
+
+**URL Parameters:**
+- `{performed_task_id}` (integer, required): The ID of the performed task to be deleted.
+
+**Key Response Details:**
+
+- `status` (string): The status of the request, e.g., "success."
+- `message` (string): A success message indicating that the performed task was deleted successfully.
+- `status_code` (integer): The HTTP status code indicating the success of the request (e.g., 200).
+
+**A Successful Response Example:**
+```json
+{
+    "status": "success",
+    "message": "Performed task deleted successfully",
+    "status_code": 200
+}
+```
+**Error Handling**  
+If deleting the performed task fails (e.g., if the task does not exist or there's an issue with the server), you will receive a JSON response with details about the error, including the status code.
+
+- **HTTP 404 Not Found:** The requested performed task was not found.
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request.
+
+***
+## Pofile
+
+### Get User Profile
+
+**Endpoint:** `/api/profile`  
+**HTTP Method:** `GET`  
+**Description:** Fetch the profile details of the current logged-in user.  
+**Login Required:** True
+
+**Key Response Details:**
+
+- `status` (string): The status of the request, e.g., "success."
+- `message` (string): A success message indicating that the user profile was fetched successfully.
+- `status_code` (integer): The HTTP status code indicating the success of the request (e.g., 200).
+- `user_profile` (object): An object containing details of the user's profile.
+
+**User Profile Object:**
+- `id` (integer): The unique identifier of the user.
+- `username` (string): The username of the user.
+- `email` (string): The email address of the user.
+- `firstname` (string): The first name of the user.
+- `lastname` (string): The last name of the user.
+- `gender` (string): The gender of the user.
+- `country` (string): The country of residence of the user.
+- `state` (string): The state of residence of the user.
+- `local_government` (string): The local government area of residence of the user.
+- `date_joined` (string): The date and time when the user joined the platform.
+- `profile_picture` (string): The URL of the user's profile picture.
+- `referral_link` (string): The referral link associated with the user.
+- `wallet` (object): An object containing details of the user's wallet.
+    - `balance` (float): The current balance in the user's wallet.
+    - `currency_code` (string): The currency code (e.g., "NGN").
+    - `currency_name` (string): The currency name (e.g., "Nigerian naira").
+
+**A Successful Response Example:**
+```json
+{
+    "status": "success",
+    "message": "User profile fetched successfully",
+    "status_code": 200,
+    "user_profile": {
+        "id": 1,
+        "username": "trendit_user",
+        "email": "trendit_user@gmail.com",
+        "firstname": "",
+        "lastname": "",
+        "gender": "Male",
+        "country": "Nigeria",
+        "state": "Lagos",
+        "local_government": "Alimosho",
+        "date_joined": "Fri, 24 Nov 2023 21:43:24 GMT",
+        "profile_picture": "",
+        "referral_link": "",
+        "wallet": {
+            "balance": 923.0,
+            "currency_code": "NGN",
+            "currency_name": "Nigerian naira"
+        }
+    }
+}
+```
+**Error Handling**  
+If fetching the user profile fails (e.g., if there's an issue with the server), you will receive a JSON response with details about the error, including the status code.
+
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request.
+
+
+
+
+
+
+### Edit User Profile
+
+**Endpoint:** `/api/profile/edit`  
+**HTTP Method:** `PUT`  
+**Description:** Update the profile details of the current logged-in user.  
+**Login Required:** True  
+
+**Form Data Parameters (optional):**
+- `firstname` (string): The updated first name of the user.
+- `lastname` (string): The updated last name of the user.
+- `username` (string): The updated username of the user.
+- `gender` (string): The updated gender of the user.
+- `country` (string): The updated country of residence of the user.
+- `state` (string): The updated state of residence of the user.
+- `local_government` (string): The updated local government area of residence of the user.
+- `profile_picture` (binary data, optional): The updated profile picture of the user.
+
+
+**Note:** Each parameter is optional, and you only need to include the ones that require an update. If a parameter is not included, the corresponding information will remain unchanged.
+
+
+**Key Response Details:**
+
+- `status` (string): The status of the request, e.g., "success."
+- `message` (string): A success message indicating that the user profile was updated successfully.
+- `status_code` (integer): The HTTP status code indicating the success of the request (e.g., 200).
+- `user_profile` (object): An object containing details of the updated user profile.
+
+**A Successful Response Example:**
+```json
+{
+    "status": "success",
+    "message": "User profile updated successfully",
+    "status_code": 200,
+    "user_profile": {
+        "id": 1,
+        "username": "new_trendit_user",
+        "email": "trendit_user@gmail.com",
+        "firstname": "trendit",
+        "lastname": "new user",
+        "gender": "Male",
+        "country": "Nigeria",
+        "state": "Lagos",
+        "local_government": "Alimosho",
+        "date_joined": "Sat, 09 Dec 2023 12:28:06 GMT",
+        "profile_picture": "http://res.cloudinary.com/dc/image/upload/vk0.png",
+        "referral_link": null
+    }
+}
+```
+
+**Error Handling**  
+If updating the user profile fails (e.g., if there's an issue with the server or validation error), you will receive a JSON response with details about the error, including the status code.
+
+- **HTTP 400 Bad Request:** Validation error or invalid input data.
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request.
+
+
+
+
+
+
+### Fetch User Profile Picture
+
+**Endpoint:** `/api/profile-pic`  
+**HTTP Method:** `GET`  
+**Description:** Retrieve the profile picture of the current logged-in user.  
+**Login Required:** True  
+
+**Key Response Details:**
+
+- `status` (string): The status of the request, e.g., "success."
+- `message` (string): A success message indicating that the profile picture was fetched successfully.
+- `status_code` (integer): The HTTP status code indicating the success of the request (e.g., 200).
+- `profile_pic` (string): The URL of the user's profile picture.
+
+**A Successful Response Example:**
+```json
+{
+    "status": "success",
+    "message": "Profile picture fetched successfully",
+    "status_code": 200,
+    "profile_pic": "http://res.cloudinary.com/dco/image/upload/v1/0nk0.png"
+}
+```
+**Error Handling**  
+If fetching the profile picture fails (e.g., if there's an issue with the server or the user does not have a profile picture), you will receive a JSON response with details about the error, including the status code.
+
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request.
+
+
+
+
+### Edit User Profile Picture
+
+**Endpoint:** `/api/profile-pic/edit`  
+**HTTP Method:** `PUT`  
+**Description:** Update the profile picture of the current logged-in user.  
+**Login Required:** True  
+
+**Form Data Parameters:**
+- `profile_picture` (binary data): The updated profile picture of the user.
+
+**Key Response Details:**
+
+- `status` (string): The status of the request, e.g., "success."
+- `message` (string): A success message indicating that the user's profile picture was updated successfully.
+- `status_code` (integer): The HTTP status code indicating the success of the request (e.g., 200).
+- `profile_pic` (string): The URL of the user's profile picture.
+
+**A Successful Response Example:**
+```json
+{
+    "status": "success",
+    "message": "Profile picture updated successfully",
+    "status_code": 200
+    "profile_pic": "http://res.cloudinary.com/dco/image/upload/v1/0nk0.png"
+}
+```
+
+**Error Handling**  
+If updating the profile picture fails (e.g., if there's an issue with the server or invalid input data), you will receive a JSON response with details about the error, including the status code.
+
+- **HTTP 400 Bad Request:** Invalid input data.
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request.
+
+
+
+
+
+### Edit User Email
+**Endpoint:** `/api/profile/email-edit`  
+**HTTP Method:** `POST`  
+**Description:** Initiate the process to update the user's email. A verification code will be sent to the new email.  
+**Login Required:** True  
+
+**Request Body:**
+```json
+{
+    "new_email": "new_trendit_user@gmail.com"
+}
+
+```
+
+**Key Response Details:**
+
+- `status` (string): The status of the request, e.g., "success."
+- `message` (string): A success message indicating that the verification code was sent successfully.
+- `status_code` (integer): The HTTP status code indicating the success of the request (e.g., 200).
+- `edit_email_token` (string): A token that will be used to verify and complete the email update process.
+
+
+**A Successful Response Example:**
+```json
+{
+    "status": "success",
+    "message": "Verification code sent successfully",
+    "status_code": 200,
+    "edit_email_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...."
+}
+```
+
+**Error Handling**  
+If request, you will receive a JSON response with details about the error, including the status code.
+
+- **HTTP 406 Not Acceptable:** email provided isn't a new email
+- **HTTP 409 Conflict:** User with the same email already exists.
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request.
+
+
+### Verify and Update User Email
+**Endpoint:** `/api/profile/email-verify`  
+**HTTP Method:** `POST`  
+**Description:** Verify the provided verification code and update the user's email.  
+**Login Required:** True  
+
+
+**Request Body:**
+```json
+{
+    "entered_code": 688900,
+    "edit_email_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...."
+}
+```
+
+**Key Response Details:**
+
+- `status` (string): The status of the request, e.g., "success."
+- `message` (string): A success message indicating that the user's email was updated successfully.
+- `status_code` (integer): The HTTP status code indicating the success of the request (e.g., 200).
+
+**A Successful Response Example:**
+```json
+{
+    "status": "success",
+    "message": "Email updated successfully",
+    "status_code": 200,
+    "user_email": "new_trendit@gmail.com"
+}
+```
+
+**Error Handling**  
+If verification fails (e.g., incorrect verification code), you will receive a JSON response with details about the error, including the status code.
+
+- **HTTP 400 Bad Request:** Invalid input data or Verification code is incorrect.
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request.
+
+
+
+
+
+
+
+
+
+
+
+### Resend Verification Code Request
+**Endpoint:** `/api/resend-code`  
+**HTTP Method:** `POST`  
+**Description:** Initiate the process to update the user's email. A verification code will be sent to the new email.  
+**Login Required:** True  
+
+**Query Parameters:**
+
+- `code_type` (string): The type of operation for which the verification code should be resent. Options include email-edit.
+
+
+**Request Body:**
+```json
+{
+    "new_email": "new_trendit_user@gmail.com"
+}
+
+```
+
+**Example Request for Resending Verification Code:**  `GET /api/resend-code?code_type=email-edit`
+
+**Key Response Details:**
+
+- `status` (string): The status of the request, e.g., "success."
+- `message` (string): A success message indicating that the verification code was resent successfully.
+- `status_code` (integer): The HTTP status code indicating the success of the request (e.g., 200).
+- `edit_email_token` (string): A new token that will be used for the verification process.
+
+
+**A Successful Response Example:**
+```json
+{
+    "status": "success",
+    "message": "Verification code sent successfully",
+    "status_code": 200,
+    "edit_email_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...."
+}
+```
+
+**Error Handling**  
+If there is an issue with resending the verification code, you will receive a JSON response with details about the error, including the status code.
+
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request.
+
+***
