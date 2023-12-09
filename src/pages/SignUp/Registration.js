@@ -215,6 +215,7 @@ function SignUpComponent() {
           setCurrentStep(currentStep + 1); // Proceed to Step 3 after 3 seconds
         }, 3000);
       } catch (error) {
+        console.log(error)
         toast({
           title: "Error",
           description: `${error?.data?.message || error?.error}`,
