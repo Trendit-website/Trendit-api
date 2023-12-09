@@ -20,6 +20,7 @@ import {
   FormControl,
 } from "@chakra-ui/react";
 import { LogoJPG } from "../constants/image_assets";
+import { FaXTwitter } from "react-icons/fa6";
 
 
 const Footer =() =>{
@@ -55,11 +56,8 @@ return (
             ></iconify-icon>
           </a>
           <a href="https://twitter.com/trendithq" target="_blank" rel="noreferrer" >
-            <iconify-icon
-              icon="devicon:twitter"
-              style={{ color: "white" }}
-              width="25"
-            ></iconify-icon>
+          <FaXTwitter className="text-white text-[25px]" />
+
           </a>
           <a href="https://www.youtube.com/@Trendithq" target="_blank" rel="noreferrer">
             <iconify-icon

@@ -59,6 +59,12 @@ const LinkItems = [
 ];
 
 const SidebarContent = ({ onClose, ...rest }) => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/log-in");
+  };
   return (
     <Box
       transition="3s ease"
@@ -79,7 +85,7 @@ const SidebarContent = ({ onClose, ...rest }) => {
           color="white"
         />
       </Flex>
-      <Box mt="30px" pb={20} maxH="100vh" overflowY="auto">
+      <Box mt="10px" pb={20} maxH="100vh" overflowY="auto">
         {LinkItems.map((link) => (
           <NavItem
             key={link.name}
@@ -91,7 +97,16 @@ const SidebarContent = ({ onClose, ...rest }) => {
             {link.name}
           </NavItem>
         ))}
+        <Box
+        fontFamily="clash grotesk"
+        p="10px 15px"
+        color="white"
+        onClick={handleLogout}
+      >
+        Log out
       </Box>
+      </Box>
+      
     </Box>
   );
 };
@@ -115,10 +130,6 @@ const NavItem = ({ icon, children, path, onClose, ...rest }) => {
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const handleLogout = () => {
-    dispatch(logout());
-    navigate("/log-in");
-  };
 
   return (
     <Box>
@@ -319,6 +330,12 @@ const MobileNav = ({ onOpen, ...rest }) => {
 };
 
 const SidebarWithHeader = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/log-in");
+  };
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   return (
