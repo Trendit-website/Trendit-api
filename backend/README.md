@@ -2465,3 +2465,98 @@ If there is an issue with resending the verification code, you will receive a JS
 - **HTTP 500 Internal Server Error:** An error occurred while processing the request.
 
 ***
+## Referral System
+
+The Trendit³ platform includes a referrer system, allowing users to refer others to the platform. Each referrer has a unique code associated with their account, which is appended to the signup URL. Frontend developers are responsible for extracting this code and including it as a query parameter when making the signup API request.
+
+
+### Generate Referral Link
+
+**Endpoint:** `/api/referral/generate-link`  
+**HTTP Method:** `GET`  
+**Description:** Generate a unique referral link for the current logged-in user.  
+**Login Required:** True
+
+**Key Response Details:**
+
+- `status` (string): The status of the request, e.g., "success."
+- `message` (string): A success message indicating that the referral link was generated successfully.
+- `status_code` (integer): The HTTP status code indicating the success of the request (e.g., 200).
+- `referral_link` (string): The unique referral link associated with the current logged-in user.
+
+
+**A Successful Response Example:**
+```JSON
+{
+    "status": "success",
+    "message": "Referral link generated successfully",
+    "status_code": 200,
+    "referral_link": "www.trendit3.com/signup/oe9uw83k"
+}
+```
+
+**Error Handling**  
+If there is an issue with generating the referral link, you will receive a JSON response with details about the error, including the status code.
+
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request.
+
+
+
+
+### Fetch Referral History
+
+**Endpoint:** `/api/referral/history`  
+**HTTP Method:** `GET`  
+**Description:** Fetch the referral history for the current logged-in user.  
+**Query Parameters:** `page` - The page number to retrieve. It Defaults to 1 if not provided.  
+**Login Required:** True
+
+**Key Response Details:**
+
+- `total`  (integer): The total number of referral records for the user.
+- `total_pages` (integer): The total number of pages available based on the pagination.
+- `current_page` (integer): The current page number.
+- `referral_history` (list): A list containing referral history records.
+    - `id` (integer): The unique identifier for the referral history record.
+    - `referrer_id` (integer): The user ID of the referrer.
+    - `status` (string): The status of the referral, e.g., "Registered, Pending."
+    - `username` (string): The username of the referred user.
+    - `date` (string): The date and time when the referral occurred.
+
+**Pagination:**  
+This endpoint is paginated, returning 10 referral history records per page.  
+To access other pages, include the page parameter in the request, e.g., `?page=2`.
+The default page is 1 if not provided.
+
+**Example Request for Fetching Referral History:**   
+`GET /api/referral/history?page=1`
+
+**A Successful Response Example:**
+```json
+{
+    "status": "success",
+    "message": "Referral history fetched successfully",
+    "status_code": 200,
+    "total": 20,
+    "total_pages": 2,
+    "current_page": 1,
+    "referral_history": [
+        {
+            "date": "Sun, 10 Dec 2023 21:35:16 GMT",
+            "id": 1,
+            "referrer_id": 1,
+            "status": "Registered",
+            "username": "a_trendit_user"
+        },
+        // ... (records for page 1 up to 10)
+    ]
+}
+
+```
+
+**Error Handling**  
+If there is an issue with fetching the referral history, you will receive a JSON response with details about the error, including the status code.
+
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request.
+
+***
