@@ -310,7 +310,7 @@ class TaskController:
             if payment_method == 'trendit_wallet':
                 # Debit the user's wallet
                 try:
-                    debit_wallet(current_user_id, amount)
+                    debit_wallet(current_user_id, amount, 'task_creation')
                 except ValueError as e:
                     msg = f'Error creating new Task: {e}'
                     return error_response(msg, 400)

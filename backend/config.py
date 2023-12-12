@@ -7,11 +7,11 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 class Config:
     # other app configurations
     SECRET_KEY = os.environ.get('SECRET_KEY') or os.urandom(32)
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'postgresql://postgres:zeddy@localhost:5432/trendit3'
+    #SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'postgresql://postgres:zeddy@localhost:5432/trendit3'
     #SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'postgresql://trendit3_user:WXyn8pubfYkYkG5pwuTHwCDDIZR7b3Bp@dpg-ckmg2qqv7m0s739krnvg-a.oregon-postgres.render.com/trendit3'
     
     
-    #SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'postgresql://trendit3user:F1dIvuYINM5EJZiF7Vdlpzr0aPafLzVX@dpg-clq5ihhjvg7s73e3amig-a.oregon-postgres.render.com/trendit_db_vhh7'
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'postgresql://trendit3user:F1dIvuYINM5EJZiF7Vdlpzr0aPafLzVX@dpg-clq5ihhjvg7s73e3amig-a.oregon-postgres.render.com/trendit_db_vhh7'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     STATIC_DIR = 'app/static'
     UPLOADS_DIR = 'app/static/uploads'
@@ -31,6 +31,7 @@ class Config:
     JWT_COOKIE_CSRF_PROTECT = True
     
     # Paystack Configurations
+    PAYMENT_GATEWAY = 'Paystack'
     PAYSTACK_API_URL = os.environ.get('PAYSTACK_API_URL') or "https://api.paystack.co"
     PAYSTACK_INITIALIZE_URL = os.environ.get('PAYSTACK_INITIALIZE_URL') or "https://api.paystack.co/transaction/initialize"
     PAYSTACK_COUNTIES_URL = os.environ.get('PAYSTACK_COUNTIES_URL') or "https://api.paystack.co/country"

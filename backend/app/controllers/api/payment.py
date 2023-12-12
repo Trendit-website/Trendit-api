@@ -7,7 +7,7 @@ from app.extensions import db
 from app.models.user import Trendit3User
 from app.models.payment import Payment, Transaction
 from app.utils.helpers.response_helpers import error_response, success_response
-from app.utils.helpers.basic_helpers import console_log
+from app.utils.helpers.basic_helpers import console_log, generate_random_string
 from app.utils.helpers.payment_helpers import initialize_payment, credit_wallet, payment_recorded
 from app.utils.helpers.task_helpers import get_task_by_key
 from config import Config
@@ -82,10 +82,9 @@ class PaymentController:
                         # Record the payment in the database
                         transaction.status = 'Complete'
                         
-                        if not payment_recorded(reference):
-                            payment = Payment(trendit3_user_id=user_id, amount=amount, payment_type=payment_type, tx_ref=reference)
-                            with db.session.begin_nested():
-                                db.session.add(payment)
+                        payment = Payment(trendit3_user_id=user_id, amount=amount, payment_type=payment_type, key=generate_random_string(10), payment_method='payment_gateway')
+                        with db.session.begin_nested():
+                            db.session.add(payment)
                     
                         # Update user's membership status in the database
                         if payment_type == 'account-activation-fee':
@@ -182,7 +181,7 @@ class PaymentController:
             msg = 'An error occurred while processing the request.'
             status_code = 500
             db.session.rollback()
-            logging.exception("An exception occurred during payment verification.\n", str(e))
+            logging.exception("An exception occurred during payment verification==>", str(e))
         finally:
             db.session.close()
         if error:
@@ -220,7 +219,7 @@ class PaymentController:
             
             # Extract needed data
             amount = data['data']['amount'] / 100  # Convert from kobo to naira
-            tx_ref = f"rave-{data['data']['reference']}"
+            tx_ref = f"{data['data']['reference']}"
             
             transaction = Transaction.query.filter_by(tx_ref=tx_ref).first()
             if transaction:
@@ -235,10 +234,9 @@ class PaymentController:
                         # Record the payment in the database
                         transaction.status = 'Complete'
                         
-                        if not payment_recorded(tx_ref):
-                            payment = Payment(trendit3_user_id=user_id, amount=amount, payment_type=payment_type, tx_ref=tx_ref)
-                            with db.session.begin_nested():
-                                db.session.add(payment)
+                        payment = Payment(trendit3_user_id=user_id, amount=amount, payment_type=payment_type, key=generate_random_string(10), payment_method='payment_gateway')
+                        with db.session.begin_nested():
+                            db.session.add(payment)
                     
                         # Update user's membership status in the database
                         if payment_type == 'account-activation-fee':

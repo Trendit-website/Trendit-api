@@ -5,7 +5,7 @@ from flask_jwt_extended import get_jwt_identity
 from app.extensions import db
 from app.models.payment import Payment, Transaction
 from app.models.user import Trendit3User
-from app.utils.helpers.basic_helpers import console_log
+from app.utils.helpers.basic_helpers import console_log, generate_random_string
 from app.utils.helpers.response_helpers import error_response, success_response
 from config import Config
 
@@ -121,7 +121,7 @@ def is_paid(user_id, payment_type):
     return paid
 
 
-def debit_wallet(user_id, amount):
+def debit_wallet(user_id, amount, payment_type=None):
     user = Trendit3User.query.get(user_id)
     console_log('USER', user)
     
@@ -141,6 +141,7 @@ def debit_wallet(user_id, amount):
     try:
         # Debit the wallet
         wallet.balance -= amount
+        payment = Payment(trendit3_user_id=user_id, amount=amount, payment_type=payment_type, key=generate_random_string(10), payment_method='trendit_wallet')
         
         db.session.commit()
         return 'Wallet debited successful'
