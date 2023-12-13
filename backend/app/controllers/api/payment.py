@@ -8,7 +8,7 @@ from app.models.user import Trendit3User
 from app.models.payment import Payment, Transaction
 from app.utils.helpers.response_helpers import error_response, success_response
 from app.utils.helpers.basic_helpers import console_log, generate_random_string
-from app.utils.helpers.payment_helpers import initialize_payment, credit_wallet, payment_recorded
+from app.utils.helpers.payment_helpers import initialize_payment, credit_wallet
 from app.utils.helpers.task_helpers import get_task_by_key
 from config import Config
 

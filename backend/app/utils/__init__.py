@@ -6,7 +6,7 @@ class AppJSON:
     naija_states = {
         "states": [
 			{
-			"name": "Abia",
+			"name": "Abia State",
 			"local_governments": [
 				"Aba North",
 				"Aba South",
@@ -28,7 +28,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Adamawa",
+			"name": "Adamawa State",
 			"local_governments": [
 				"Demsa",
 				"Fufore",
@@ -54,7 +54,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Akwa Ibom",
+			"name": "Akwa Ibom State",
 			"local_governments": [
 				"Abak",
 				"Eastern Obolo",
@@ -90,7 +90,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Anambra",
+			"name": "Anambra State",
 			"local_governments": [
 				"Aguata",
 				"Anambra East",
@@ -116,7 +116,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Bauchi",
+			"name": "Bauchi State",
 			"local_governments": [
 				"Alkaleri",
 				"Bauchi",
@@ -140,7 +140,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Bayelsa",
+			"name": "Bayelsa State",
 			"local_governments": [
 				"Brass",
 				"Ekeremor",
@@ -153,7 +153,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Benue",
+			"name": "Benue State",
 			"local_governments": [
 				"Ado",
 				"Agatu",
@@ -181,7 +181,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Borno",
+			"name": "Borno State",
 			"local_governments": [
 				"Abadam",
 				"Askira/Uba",
@@ -213,7 +213,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Cross River",
+			"name": "Cross River State",
 			"local_governments": [
 				"Akpabuyo",
 				"Akpamkpa",
@@ -235,7 +235,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Delta",
+			"name": "Delta State",
 			"local_governments": [
 				"Aniocha North",
 				"Aniocha South",
@@ -265,7 +265,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Ebonyi",
+			"name": "Ebonyi State",
 			"local_governments": [
 				"Abakaliki",
 				"Afikpo North",
@@ -283,7 +283,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Edo",
+			"name": "Edo State",
 			"local_governments": [
 				"Akoko-Edo",
 				"Egor",
@@ -306,7 +306,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Ekiti",
+			"name": "Ekiti State",
 			"local_governments": [
 				"Ado Ekiti",
 				"Efon",
@@ -327,7 +327,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Enugu",
+			"name": "Enugu State",
 			"local_governments": [
 				"Aninri",
 				"Awgu",
@@ -349,7 +349,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Gombe",
+			"name": "Gombe State",
 			"local_governments": [
 				"Akko",
 				"Balanga",
@@ -365,7 +365,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Imo",
+			"name": "Imo State",
 			"local_governments": [
 				"Aboh Mbaise",
 				"Ahiazu Mbaise",
@@ -397,7 +397,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Jigawa",
+			"name": "Jigawa State",
 			"local_governments": [
 				"Auyo",
 				"Babura",
@@ -430,7 +430,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Kaduna",
+			"name": "Kaduna State",
 			"local_governments": [
 				"Birnin Gwari",
 				"Chikun",
@@ -458,7 +458,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Kano",
+			"name": "Kano State",
 			"local_governments": [
 				"Ajingi",
 				"Albasu",
@@ -507,7 +507,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Katsina",
+			"name": "Katsina State",
 			"local_governments": [
 				"Bakori",
 				"Batagarawa",
@@ -546,7 +546,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Kebbi",
+			"name": "Kebbi State",
 			"local_governments": [
 				"Aleiro",
 				"Arewa Dandi",
@@ -572,7 +572,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Kogi",
+			"name": "Kogi State",
 			"local_governments": [
 				"Adavi",
 				"Ajaokuta",
@@ -598,7 +598,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Kwara",
+			"name": "Kwara State",
 			"local_governments": [
 				"Asa",
 				"Baruten",
@@ -619,7 +619,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Lagos",
+			"name": "Lagos State",
 			"local_governments": [
 				"Agege",
 				"Ajeromi-Ifelodun",
@@ -644,7 +644,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Nasarawa",
+			"name": "Nasarawa State",
 			"local_governments": [
 				"Akwanga",
 				"Awe",
@@ -662,7 +662,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Niger",
+			"name": "Niger State",
 			"local_governments": [
 				"Agaie",
 				"Agwara",
@@ -692,7 +692,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Ogun",
+			"name": "Ogun State",
 			"local_governments": [
 				"Abeokuta North",
 				"Abeokuta South",
@@ -717,7 +717,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Ondo",
+			"name": "Ondo State",
 			"local_governments": [
 				"Akoko North-East",
 				"Akoko North-West",
@@ -740,7 +740,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Osun",
+			"name": "Osun State",
 			"local_governments": [
 				"Aiyedaade",
 				"Aiyedire",
@@ -775,7 +775,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Oyo",
+			"name": "Oyo State",
 			"local_governments": [
 				"Afijio",
 				"Akinyele",
@@ -814,7 +814,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Plateau",
+			"name": "Plateau State",
 			"local_governments": [
 				"Barkin Ladi",
 				"Bassa",
@@ -836,7 +836,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Rivers",
+			"name": "Rivers State",
 			"local_governments": [
 				"Abua/Odual",
 				"Ahoada East",
@@ -864,7 +864,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Sokoto",
+			"name": "Sokoto State",
 			"local_governments": [
 				"Binji",
 				"Bodinga",
@@ -892,7 +892,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Taraba",
+			"name": "Taraba State",
 			"local_governments": [
 				"Ardo Kola",
 				"Bali",
@@ -913,7 +913,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Yobe",
+			"name": "Yobe State",
 			"local_governments": [
 				"Bade",
 				"Bursari",
@@ -935,7 +935,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Zamfara",
+			"name": "Zamfara State",
 			"local_governments": [
 				"Anka",
 				"Bakura",
