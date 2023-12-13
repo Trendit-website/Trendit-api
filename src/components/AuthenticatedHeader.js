@@ -128,8 +128,7 @@ const NavItem = ({ icon, children, path, onClose, ...rest }) => {
     );
   };
 
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
+
 
   return (
     <Box>

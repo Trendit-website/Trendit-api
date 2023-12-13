@@ -27,16 +27,28 @@ import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
 import { Spinner } from "@chakra-ui/react";
 
 import Onboard from "../../assets/images/onboard.png";
-import { useRegisterMutation, useResendCodeMutation, useVerifyEmailMutation } from "../../services/routes/authRoute";
+import {
+  useRegisterMutation,
+  useResendCodeMutation,
+  useVerifyEmailMutation,
+} from "../../services/routes/authRoute";
 import { isStrongPassword, isValidEmail } from "../../utils";
+import {
+  useGetCountriesQuery,
+  useLazyGetLocalsQuery,
+  useLazyGetStatesQuery,
+} from "../../services/routes/locationRoute";
 
 function SignUpComponent() {
   const navigate = useNavigate();
   const toast = useToast();
-
+  const { data } = useGetCountriesQuery();
+  const [trigger] = useLazyGetStatesQuery();
+  const [triggerForLocalsQuery] = useLazyGetLocalsQuery();
+  // console.log  (data)
   const [register, { isLoading }] = useRegisterMutation();
-  const [verifyEmail, {isLoading: mailLoading}] = useVerifyEmailMutation();
-  const [resendCode, {isLoading: codeLoad}] = useResendCodeMutation()
+  const [verifyEmail, { isLoading: mailLoading }] = useVerifyEmailMutation();
+  const [resendCode, { isLoading: codeLoad }] = useResendCodeMutation();
   const [currentStep, setCurrentStep] = useState(1);
 
   const [username, setUsername] = useState("");
@@ -44,7 +56,9 @@ function SignUpComponent() {
   const [password1, setPassword1] = useState("");
   const [password2, setPassword2] = useState("");
   const [token, setToken] = useState("");
-  const [selectedCountry, setSelectedCountry] = useState(""); // State to store the selected country
+  const [selectedCountry, setSelectedCountry] = useState("");
+  const [fetchedStates, setFetchedStates] = useState([]);
+  const [fetchedLocals, setFetchedLocals] = useState([]); // State to store the selected country
   const [selectedState, setSelectedState] = useState(""); // State to store the selected state
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedGender, setSelectedGender] = useState("");
@@ -56,18 +70,11 @@ function SignUpComponent() {
   const [error, setError] = useState("");
   const [resendSuccess, setResendSuccess] = useState(false);
 
-
-
- 
-
   // Function to go back to the previous step
 
   const handlePreviousStep = () => {
     setCurrentStep(currentStep - 1);
   };
-
-
-
 
   // Function to handle gender selection
   const handleGenderChange = (event) => {
@@ -75,16 +82,32 @@ function SignUpComponent() {
     setgenderError(""); // Reset the Gender error
   };
 
-  const handleCountryChange = (event) => {
+  const handleCountryChange = async (event) => {
     const selectedCountry = event.target.value;
     setSelectedCountry(selectedCountry);
+    try {
+      const res = await trigger(selectedCountry).unwrap();
+      setFetchedStates(res.states);
+      console.log(fetchedStates);
+    } catch (error) {
+      console.log(error);
+    }
+
     setSelectedState(""); // Reset selected state when changing the country
     setSelectedCity(""); // Reset selected city when changing the country
     setCountryError(""); // Reset the country error
   };
 
-  const handleStateChange = (event) => {
-    setSelectedState(event.target.value);
+  const handleStateChange = async (event) => {
+    const selectedState = event.target.value;
+    setSelectedState(selectedState);
+    try {
+      const res = await triggerForLocalsQuery(selectedState).unwrap();
+      setFetchedLocals(res.state_lga);
+      console.log(res);
+    } catch (error) {
+      console.log(error);
+    }
     setSelectedCity(""); // Reset selected city when changing the country
     setStateError(""); // Reset the state error
   };
@@ -93,17 +116,15 @@ function SignUpComponent() {
     setSelectedCity(event.target.value);
     setCityError(""); // Reset the city error
   };
-
+  //locationData.map((data) => data.country);
   // Create arrays of countries, states, and cities based on the selected values
-  const countries = locationData.map((data) => data.country);
-  const states =
-    locationData
-      .find((data) => data.country === selectedCountry)
-      ?.states.map((state) => state.state) || [];
-  const cities =
-    locationData
-      .find((data) => data.country === selectedCountry)
-      ?.states.find((state) => state.state === selectedState)?.cities || [];
+  const countries = data?.countries.map((data) => data.name);
+  const states = fetchedStates?.map((state) => state.name) || [];
+  const cities = fetchedLocals?.map((state) => state) || [];
+  // const cities =
+  //   locationData
+  //     .find((data) => data.country === selectedCountry)
+  //     ?.states.find((state) => state.state === selectedState)?.cities || [];
 
   // Define CSS styles for the dropdown options
   const dropdownOptionStyles = {
@@ -111,8 +132,6 @@ function SignUpComponent() {
   };
 
   // States to handle the code verificaation step
-
-
 
   const handlePinChange = (e, index) => {
     const updatedPin = [...pin];
@@ -208,14 +227,20 @@ function SignUpComponent() {
 
       try {
         const res = await register(data).unwrap();
-        toast.success(res.message);
+        toast({
+          title: "Success",
+          description: `${res.message}`,
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        });
         setToken(res.signup_token);
-        console.log(res)
+        console.log(res);
         setTimeout(() => {
           setCurrentStep(currentStep + 1); // Proceed to Step 3 after 3 seconds
         }, 3000);
       } catch (error) {
-        console.log(error)
+        console.log(error);
         toast({
           title: "Error",
           description: `${error?.data?.message || error?.error}`,
@@ -224,42 +249,42 @@ function SignUpComponent() {
           isClosable: true,
         });
       }
-
     }
   };
 
-  const handleVerifyEmail =async () => {
+  const handleVerifyEmail = async () => {
     const entered_code = pin.join(""); // Combine the array into a string
     setError("");
 
     try {
-      console.log({signup_token:token, entered_code: parseInt(entered_code)})
-      const res = await verifyEmail({signup_token:token, entered_code: parseInt(entered_code)}).unwrap();
+      console.log({
+        signup_token: token,
+        entered_code: parseInt(entered_code),
+      });
+      const res = await verifyEmail({
+        signup_token: token,
+        entered_code: parseInt(entered_code),
+      }).unwrap();
       console.log(res);
       navigate("/log-in");
     } catch (error) {
-      console.log(error)
+      console.log(error);
       toast.error(error.data.message);
-      
     }
-    
-
   };
 
   // Function to handle resending of code
-  const handleResendClick = async() => {
+  const handleResendClick = async () => {
     const data = {
       signup_token: token,
-    }
+    };
     try {
       const res = await resendCode(data).unwrap();
       console.log(res);
     } catch (error) {
       toast.error(error.data.message);
     }
-
-  }
-   
+  };
 
   // Function to collect and log step 1 and step 2 input values into console
   const logInputs = () => {
@@ -577,11 +602,7 @@ function SignUpComponent() {
                     isDisabled={codeLoad && true}
                     fontWeight="400"
                   >
-                    {codeLoad ? (
-                      <Spinner size="sm" color="white" />
-                    ) : (
-                      "Resend"
-                    )}
+                    {codeLoad ? <Spinner size="sm" color="white" /> : "Resend"}
                   </Button>
                 </Text>
               </FormControl>

@@ -114,6 +114,7 @@ const DesktopNav = () => {
             transition: "color 0.3s ease-in-out",
             opacity: "0.9",
           }}
+          color="white"
           fontWeight="400"
           as={Link}
           to="/log-in"

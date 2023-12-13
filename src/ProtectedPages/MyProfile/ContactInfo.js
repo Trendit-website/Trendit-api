@@ -12,8 +12,11 @@ import UpdatePassword from './UpdatePassword'
 import { useSelector } from "react-redux";
 import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
 import React, { useState } from "react";
+import { useGetProfileQuery } from "../../services/routes/profileRoute";
 
 const ContactInfo = () => {
+  const {data} = useGetProfileQuery();
+  console.log(data)
   const [showPassword1, setShowPassword1] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false); // Define isModalOpen state
 

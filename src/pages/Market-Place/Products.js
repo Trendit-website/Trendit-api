@@ -9,9 +9,10 @@ import {
   Container,
 } from "@chakra-ui/react";
 
-import { useFetch } from "../../React-query-hook/hook"; // Import the useFetch hook
+// import { useFetch } from "../../React-query-hook/hook"; // Import the useFetch hook
 import Loader from "../../Loader";
 import Pagination from "../../components/Pagination";
+import { useGetProductsQuery } from "../../services/routes/productRoute";
 
 const ProductCard = ({ product }) => (
   <Box
@@ -61,7 +62,7 @@ const ProductCard = ({ product }) => (
         color="#808080"
         fontSize={{ base: "8px", md: "11.41px" }}
       >
-        @luxuryfashionbyBOD
+        {product.seller.username}
       </Box>
 
       <Heading
@@ -127,9 +128,12 @@ const ProductCard = ({ product }) => (
 );
 
 const Products = () => {
+  const {data, isLoading, error} = useGetProductsQuery();
+  console.log(data);
+  const {all_items, current_page, total_pages, } = data
   // Initialize the useFetch hook with your API endpoint
-  const { data, isLoading, error, handlePageChange, totalPages, currentPage } =
-    useFetch("https://api.escuelajs.co/api/v1/products");
+  // const { data, isLoading, error, handlePageChange, totalPages, currentPage } =
+  //   useFetch("https://api.escuelajs.co/api/v1/products");
 
   if (isLoading) {
     return (
@@ -158,7 +162,7 @@ const Products = () => {
         justifyContent="center"
         alignItems="center"
       >
-        {data.map((product, index) => (
+        {all_items.map((product, index) => (
           <ProductCard key={index} product={product} />
         ))}
        
@@ -167,12 +171,12 @@ const Products = () => {
       </Flex>
       <Box mx='auto' width={{base: '65%', md: '35%'}}  mb={15}>
         <Pagination
-          totalPages={totalPages}
-          currentPage={currentPage}
-          onPageChange={(page) => {
-            handlePageChange(page);
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          }}
+          totalPages={total_pages}
+          currentPage={current_page}
+          // onPageChange={(page) => {
+          //   handlePageChange(page);
+          //   window.scrollTo({ top: 0, behavior: "smooth" });
+          // }}
         />
         </Box>
         </Box>

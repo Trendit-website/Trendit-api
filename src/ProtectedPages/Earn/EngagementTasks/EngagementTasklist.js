@@ -14,8 +14,6 @@ import Telegram from "../../../assets/SocialMediaLogo/Telegram.png";
 import Youtube from "../../../assets/SocialMediaLogo/Youtube.png";
 import { useGetEngagementTasksQuery } from "../../../services/routes/taskRoute";
 
-
-
 export const contentArray = [
   {
     id: 1,
@@ -25,7 +23,7 @@ export const contentArray = [
     taskCount: 100,
     description1:
       "Follow people and pages on Instagram, TikTok, Facebook and Twitter.",
-   
+
     route: "/earn/engagement/follow-pages",
   },
 
@@ -35,8 +33,7 @@ export const contentArray = [
     headerText:
       'Like posts on social media || Earn  <span class="dollar-amount"> $10 </span> per like',
     taskCount: 2,
-    description1:
-      "Like posts on Instagram, TikTok, Facebook and Twitter..",
+    description1: "Like posts on Instagram, TikTok, Facebook and Twitter..",
     route: "/earn/engagement/like-posts",
   },
 
@@ -57,8 +54,7 @@ export const contentArray = [
     headerText:
       'Re-share posts on social media || Earn <span class="dollar-amount"> $10 </span> per re-share',
     taskCount: 0, // Set task count to 0
-    description1:
-      "Re-share posts on Instagram, Facebook and Twitter..",
+    description1: "Re-share posts on Instagram, Facebook and Twitter..",
     route: "/earn/engagement/reshare-posts",
   },
 
@@ -79,8 +75,7 @@ export const contentArray = [
     headerText:
       'View, like and comment on YouTube || Earn  <span class="dollar-amount"> $10 </span> for this task',
     taskCount: 2,
-    description1:
-      "View, like and comment on a YouTube video.",
+    description1: "View, like and comment on a YouTube video.",
     route: "/earn/engagement/youtube-tasks",
   },
 
@@ -123,8 +118,7 @@ export const contentArray = [
     headerText:
       'Download and review apps on Play store || Earn <span class="dollar-amount"> $10 </span> for this task',
     taskCount: 2,
-    description1:
-      "Download apps and review them on the Play store.",
+    description1: "Download apps and review them on the Play store.",
     description2:
       "Carrying out the task while having less than 100 Whatsapp status view attracts no pay.",
     route: "/earn/engagement/google-play-tasks",
@@ -135,8 +129,7 @@ export const contentArray = [
     headerText:
       'Download and review apps on App store || Earn <span class="dollar-amount"> $10 </span> for this task',
     taskCount: 2,
-    description1:
-      "Download apps and review them on the Play store.",
+    description1: "Download apps and review them on the Play store.",
     route: "/earn/engagement/appstore-tasks",
   },
 
@@ -154,73 +147,93 @@ export const contentArray = [
 ];
 
 function EngagementTasklist() {
- 
-  const {data} = useGetEngagementTasksQuery();
-  // console.log(data)
+  const { data } = useGetEngagementTasksQuery();
+  const engagementTasks = data?.engagement_tasks;
+  console.log(data);
   return (
     <Box mb={10}>
-      {contentArray.map((content, index) => (
-        <div key={content.id}>
-          <Link to={content.route}>
-            <Flex
-              justifyContent="space-between"
-              alignItems="flex-start"
-              width={{ base: "100%", md: "100%", lg: "80%" }}
-              mt={3}
-            >
-              {/* First Container */}
-              <Box display="flex">
-                <Image
-                  src={content.imageSrc}
-                  alt="Image Alt Text"
-                  width={{ base: "30px", md: "30px" }}
-                  height={{ base: "30px", md: "30px" }}
-                  mr={{ base: "2", md: "5" }}
-                />
-                <Box>
-                  <Heading
-                    color="white"
-                    fontFamily="clash grotesk"
-                    fontWeight="500"
-                    textAlign="left"
-                    fontSize={{ base: "14px", md: "18px" }}
-                    lineHeight={1.5}
-                  >
-                    <span
-                      dangerouslySetInnerHTML={{ __html: content.headerText }}
-                    />
-                  </Heading>
+      {engagementTasks?.length === 0 ? (
+        <Text
+          fontSize="25px"
+          mt="20px"
+          color="white"
+          lineHeight={1.5}
+          textAlign="center"
+        >
+          No tasks available at the moment
+        </Text>
+      ) : (
+        engagementTasks?.map((content, index) => (
+          <div key={content.id}>
+            <Link to={content.route}>
+              <Flex
+                justifyContent="space-between"
+                alignItems="flex-start"
+                width={{ base: "100%", md: "100%", lg: "80%" }}
+                mt={3}
+              >
+                {/* First Container */}
+                <Box display="flex">
+                  <Image
+                    src={content.imageSrc}
+                    alt="Image Alt Text"
+                    width={{ base: "30px", md: "30px" }}
+                    height={{ base: "30px", md: "30px" }}
+                    mr={{ base: "2", md: "5" }}
+                  />
+                  <Box>
+                    <Heading
+                      color="white"
+                      fontFamily="clash grotesk"
+                      fontWeight="500"
+                      textAlign="left"
+                      fontSize={{ base: "14px", md: "18px" }}
+                      lineHeight={1.5}
+                    >
+                      <span
+                        dangerouslySetInnerHTML={{ __html: content.headerText }}
+                      />
+                    </Heading>
+                  </Box>
                 </Box>
-              </Box>
 
-              {/* Second Container */}
-              <Box pl={{ base: "3", md: "0" }}>
-                <Box
-                  bg={content.taskCount === 0 ? "#808080" : "#3A9800"} // Change the color to yellow when taskCount is 0
-                  color="white"
-                  rounded="full"
-                  px={2}
-                  py={1}
-                  width={{ base: "120px", md: "150px" }}
-                  textAlign="center"
-                >
-                  <Text fontSize="12px">
-                    {content.taskCount} Tasks Available
-                  </Text>
+                {/* Second Container */}
+                <Box pl={{ base: "3", md: "0" }}>
+                  <Box
+                    bg={content.taskCount === 0 ? "#808080" : "#3A9800"} // Change the color to yellow when taskCount is 0
+                    color="white"
+                    rounded="full"
+                    px={2}
+                    py={1}
+                    width={{ base: "120px", md: "150px" }}
+                    textAlign="center"
+                  >
+                    <Text fontSize="12px">
+                      {content.taskCount} Tasks Available
+                    </Text>
+                  </Box>
                 </Box>
+              </Flex>
+              <Box
+                ml={{ base: "10", md: "12" }}
+                mt={{ base: "0", md: "2", lg: "0" }}
+              >
+                <Text
+                  fontSize="sm"
+                  color="#808080"
+                  lineHeight={1.5}
+                  textAlign="left"
+                >
+                  {content.description1}
+                </Text>
               </Box>
-            </Flex>
-            <Box ml={{ base: "10", md: "12"}} mt={{ base: "0", md: "2", lg: "0" }}>
-              <Text fontSize="sm" color="#808080" lineHeight={1.5} textAlign='left'>
-                {content.description1}
-              </Text>
-            </Box>
-          </Link>
-          {index < contentArray.length - 1 && (
-            <Divider borderColor="#808080" mt={4} />
-          )}
-        </div>
-      ))}
+            </Link>
+            {index < contentArray.length - 1 && (
+              <Divider borderColor="#808080" mt={4} />
+            )}
+          </div>
+        ))
+      )}
     </Box>
   );
 }
