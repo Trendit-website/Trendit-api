@@ -39,7 +39,7 @@ class ErrorHandlers:
     def internal_server_error(error):
         return jsonify({
             "status": 'failed',
-            'error': 500,
+            'status_code': 500,
             "message": "Internal server error"
         }), 500
     
@@ -49,7 +49,7 @@ class ErrorHandlers:
         return jsonify({
             "status": 'failed',
             'message': 'User is not logged in',
-            'status code': 401,
+            'status_code': 401,
         }), 401
     
     @staticmethod
@@ -57,7 +57,7 @@ class ErrorHandlers:
         return jsonify({
             "status": 'failed',
             'message': 'Access token has expired. Please log in again.',
-            'status code': 401,
+            'status_code': 401,
         }), 401
     
     @staticmethod
@@ -65,7 +65,7 @@ class ErrorHandlers:
         return jsonify({
             "status": 'failed',
             'message': 'Invalid JWT header. Token may be tampered.',
-            'status code': 401,
+            'status_code': 401,
         }), 401
     
     @staticmethod
@@ -73,7 +73,7 @@ class ErrorHandlers:
         return jsonify({
             "status": 'failed',
             'message': 'Wrong type of JWT token.',
-            'status code': 401,
+            'status_code': 401,
         }), 401
     
     @staticmethod
@@ -81,7 +81,7 @@ class ErrorHandlers:
         return jsonify({
             "status": 'failed',
             'message': 'CSRF token is missing or invalid.',
-            'status code': 401,
+            'status_code': 401,
         }), 401
 
 
