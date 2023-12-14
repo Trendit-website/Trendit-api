@@ -12,15 +12,15 @@ const taskSlice = apiSlice.injectEndpoints({
         },
       }),
     }),
-    getStates: builder.mutation({
-      query: () => ({
-        url: "/profile/edit",
-        method: "POST",
-        headers: {
-          "X-CSRF-TOKEN": Cookies.get("csrf_access_token"),
-        },
-      }),
-    }),
+    // getStates: builder.mutation({
+    //   query: () => ({
+    //     url: "/profile/edit",
+    //     method: "POST",
+    //     headers: {
+    //       "X-CSRF-TOKEN": Cookies.get("csrf_access_token"),
+    //     },
+    //   }),
+    // }),
     getProfilePic: builder.query({
       query: () => ({
         url: "/profile-pic",
@@ -35,6 +35,6 @@ const taskSlice = apiSlice.injectEndpoints({
 
 export const {
     useGetProfileQuery,
-    useGetStatesMutation,
+    // useGetStatesMutation,
     useGetProfilePicQuery,
 } = taskSlice;
