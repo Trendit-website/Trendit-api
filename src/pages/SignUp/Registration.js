@@ -43,8 +43,9 @@ function SignUpComponent() {
   const navigate = useNavigate();
   const toast = useToast();
   const { data } = useGetCountriesQuery();
-  const [trigger] = useLazyGetStatesQuery();
-  const [triggerForLocalsQuery] = useLazyGetLocalsQuery();
+  const [trigger, { isLoading: stateLoad }] = useLazyGetStatesQuery();
+  const [triggerForLocalsQuery, { isLoading: localLoad }] =
+    useLazyGetLocalsQuery();
   // console.log  (data)
   const [register, { isLoading }] = useRegisterMutation();
   const [verifyEmail, { isLoading: mailLoading }] = useVerifyEmailMutation();
@@ -182,13 +183,37 @@ function SignUpComponent() {
         !password1.trim() ||
         !password2.trim()
       ) {
-        toast.error("Please fill all fields");
+        toast({
+          title: "Error",
+          description: "Please fill all fields",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
       } else if (!isValidEmail(email)) {
-        toast.error("Invalid email address");
+        toast({
+          title: "Error",
+          description: "Invalid email address",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
       } else if (isStrongPassword(password1 || password2)) {
-        toast.error("Please enter a strong password");
+        toast({
+          title: "Error",
+          description: "Please enter a strong password",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
       } else if (password1 !== password2) {
-        toast.error("Passwords do not match");
+        toast({
+          title: "Error",
+          description: "Passwords do not match",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
       } else {
         setCurrentStep((curr) => curr + 1);
       }
@@ -196,22 +221,46 @@ function SignUpComponent() {
 
     if (currentStep === 2) {
       if (!selectedGender.trim()) {
-        toast.error("Please select your gender.");
+        toast({
+          title: "Error",
+          description: "Please select a gender.",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
         return;
       }
 
       if (!selectedCountry.trim()) {
-        toast.error("Please select a country.");
+        toast({
+          title: "Error",
+          description: "Please select a Country.",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
         return;
       }
 
       if (!selectedState.trim()) {
-        toast.error("Please select a state.");
+        toast({
+          title: "Error",
+          description: "Please select a State.",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
         return;
       }
 
       if (!selectedCity.trim()) {
-        toast.error("Please select a city.");
+        toast({
+          title: "Error",
+          description: "Please select a city.",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
         return;
       }
 
@@ -269,7 +318,13 @@ function SignUpComponent() {
       navigate("/log-in");
     } catch (error) {
       console.log(error);
-      toast.error(error.data.message);
+      toast({
+        title: "Error",
+        description: `${error?.data?.message || error?.error}`,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     }
   };
 
@@ -282,7 +337,13 @@ function SignUpComponent() {
       const res = await resendCode(data).unwrap();
       console.log(res);
     } catch (error) {
-      toast.error(error.data.message);
+      toast({
+        title: "Error",
+        description: `${error?.data?.message || error?.error}`,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     }
   };
 
@@ -486,16 +547,19 @@ function SignUpComponent() {
                   value={selectedState}
                   onChange={handleStateChange}
                 >
-                  <option value="">Select State</option>
-                  {states.map((state) => (
-                    <option
-                      key={state}
-                      value={state}
-                      style={dropdownOptionStyles}
-                    >
-                      {state}
-                    </option>
-                  ))}
+                  {stateLoad ? (
+                    <option value="">Loading States...</option>
+                  ) : (
+                    states.map((state) => (
+                      <option
+                        key={state}
+                        value={state}
+                        style={dropdownOptionStyles}
+                      >
+                        {state}
+                      </option>
+                    ))
+                  )}
                 </Select>
                 {stateError && <Text color="#CB29BE">{stateError}</Text>}
               </FormControl>
@@ -508,16 +572,19 @@ function SignUpComponent() {
                   value={selectedCity}
                   onChange={handleCityChange}
                 >
-                  <option value="">Select City</option>
-                  {cities.map((city) => (
-                    <option
-                      key={city}
-                      value={city}
-                      style={dropdownOptionStyles}
-                    >
-                      {city}
-                    </option>
-                  ))}
+                  {localLoad ? (
+                    <option value="">Loading Cities...</option>
+                  ) : (
+                    cities.map((city) => (
+                      <option
+                        key={city}
+                        value={city}
+                        style={dropdownOptionStyles}
+                      >
+                        {city}
+                      </option>
+                    ))
+                  )}
                 </Select>
                 <Text color="#808080" fontSize="14px">
                   This helps us match you with vendors close to your market
