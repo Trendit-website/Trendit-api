@@ -369,10 +369,13 @@ class AuthController:
             data = request.get_json()
             email_username = data.get('email_username')
             
+            console_log('email_username', email_username)
+            
             # get user from db with the email/username.
             user = get_trendit3_user(email_username)
             
             if user:
+                console_log('user_dict', user.to_dict())
                 # Generate a random six-digit number
                 reset_code = generate_six_digit_code()
                 
@@ -399,6 +402,7 @@ class AuthController:
                 msg = 'Password reset code sent successfully'
                 extra_data = { 'reset_token': reset_token, 'email': user.email, }
             else:
+                console_log('user_dict', user)
                 error = True
                 status_code = 404
                 msg = 'email or username isn\'t registered with us'

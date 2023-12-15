@@ -49,7 +49,9 @@ class ReferralController:
         try:
             page = request.args.get("page", 1, type=int)
             items_per_page = int(10)
-            pagination = ReferralHistory.query.order_by(ReferralHistory.date_joined.desc()).paginate(page=page, per_page=items_per_page, error_out=False)
+            
+            current_user_id = get_jwt_identity()
+            pagination = ReferralHistory.query.filter_by(trendit3_user_id=current_user_id).order_by(ReferralHistory.date_joined.desc()).paginate(page=page, per_page=items_per_page, error_out=False)
             
             referral_history = pagination.items
             current_referral_history = [rh.to_dict() for rh in referral_history]

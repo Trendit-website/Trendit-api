@@ -98,7 +98,7 @@ class LocationController:
             error = True
             msg = 'An error occurred while processing the request.'
             status_code = 500
-            logging.exception("An exception occurred getting PAYSTACK supported countries.", str(e)) # Log the error details for debugging
+            logging.exception("An exception occurred getting the states of PAYSTACK supported countries.", str(e)) # Log the error details for debugging
         
         if error:
             return error_response(msg, status_code, response_data)
@@ -108,6 +108,24 @@ class LocationController:
 
     @staticmethod
     def get_states_cities(state):
+        error = False
+        
+        try:
+            pass
+        except Exception as e:
+            error = True
+            msg = 'An error occurred while processing the request.'
+            status_code = 500
+            logging.exception("An exception occurred getting PAYSTACK supported countries.", str(e)) # Log the error details for debugging
+        
+        if error:
+            return error_response(msg, status_code)
+        else:
+            return success_response(msg, status_code)
+    
+    
+    @staticmethod
+    def get_naija_state_lga(state):
         error = False
         
         try:
@@ -136,4 +154,3 @@ class LocationController:
             return error_response(msg, status_code)
         else:
             return success_response(msg, status_code, extra_data)
-    
