@@ -27,7 +27,7 @@ class AuthController:
             return success_response(f'{username} is available', 200)
             
         except Exception as e:
-            logging.exception(f"An exception occurred during registration. {e}")
+            logging.exception(f"An exception occurred checking username. {e}")
             return error_response('An error occurred while processing the request.', 500)
         
         
@@ -40,7 +40,7 @@ class AuthController:
             return success_response(f'{email} is available', 200)
             
         except Exception as e:
-            logging.exception(f"An exception occurred during registration. {e}")
+            logging.exception(f"An exception occurred checking email. {e}")
             return error_response('An error occurred while processing the request.', 500)
 
     
