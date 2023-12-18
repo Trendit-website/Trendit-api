@@ -3,6 +3,7 @@ from datetime import timedelta
 from flask import request, jsonify, make_response
 from sqlalchemy.exc import ( IntegrityError, DataError, DatabaseError, InvalidRequestError, )
 from werkzeug.security import generate_password_hash
+from werkzeug.exceptions import UnsupportedMediaType
 from flask_jwt_extended import create_access_token, decode_token, set_access_cookies, unset_jwt_cookies
 from flask_jwt_extended.exceptions import JWTDecodeError
 from jwt import ExpiredSignatureError
@@ -19,30 +20,60 @@ from app.utils.helpers.user_helpers import is_email_exist, is_username_exist, ge
 
 class AuthController:
     @staticmethod
-    def username_check(username):
+    def username_check():
+        error = False
         try:
+            data = request.get_json()
+            username = data.get('username', '')
+            if not username:
+                return error_response("username parameter is required in request's body.", 400)
+            
             if is_username_exist(username):
                 return error_response(f'{username} is already Taken', 409)
             
-            return success_response(f'{username} is available', 200)
+            msg = f'{username} is available'
+            status_code = 200
             
-        except Exception as e:
+        except UnsupportedMediaType as e:
+            error = True
+            msg = "username parameter is required in request's body."
+            status_code = 415
             logging.exception(f"An exception occurred checking username. {e}")
-            return error_response('An error occurred while processing the request.', 500)
+        except Exception as e:
+            error = True
+            msg = "An error occurred while processing the request."
+            status_code = 500
+            logging.exception(f"An exception occurred checking username. {e}")
         
+        return error_response(msg, status_code) if error else success_response(msg, status_code)
         
     @staticmethod
-    def email_check(email):
+    def email_check():
+        error = False
         try:
+            data = request.get_json()
+            email = data.get('email', '')
+            if not email:
+                return error_response("email parameter is required in request's body.", 400)
+            
             if is_email_exist(email):
                 return error_response(f'{email} is already taken', 409)
             
-            return success_response(f'{email} is available', 200)
+            msg = f'{email} is available'
+            status_code = 200
             
-        except Exception as e:
+        except UnsupportedMediaType as e:
+            error = True
+            msg = "email parameter is required in request's body."
+            status_code = 415
             logging.exception(f"An exception occurred checking email. {e}")
-            return error_response('An error occurred while processing the request.', 500)
+        except Exception as e:
+            error = True
+            msg = "An error occurred while processing the request."
+            status_code = 500
+            logging.exception(f"An exception occurred checking email. {e}")
 
+        return error_response(msg, status_code) if error else success_response(msg, status_code)
     
     @staticmethod
     def signUp():

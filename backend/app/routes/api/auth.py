@@ -50,10 +50,10 @@ def logout():
     return AuthController.logout()
 
 
-@bp.route('/usernames/<username>', methods=['GET'])
-def username_check(username):
-    return AuthController.username_check(username)
+@bp.route('/check-username', methods=['GET'])
+def username_check():
+    return AuthController.username_check()
 
-@bp.route('/emails/<email>', methods=['GET'])
-def email_check(email):
-    return AuthController.email_check(email)
+@bp.route('/check-email', methods=['GET'])
+def email_check():
+    return AuthController.email_check()
