@@ -19,6 +19,32 @@ from app.utils.helpers.user_helpers import is_email_exist, is_username_exist, ge
 
 class AuthController:
     @staticmethod
+    def username_check(username):
+        try:
+            if is_username_exist(username):
+                return error_response(f'{username} is already Taken', 409)
+            
+            return success_response(f'{username} is available', 200)
+            
+        except Exception as e:
+            logging.exception(f"An exception occurred during registration. {e}")
+            return error_response('An error occurred while processing the request.', 500)
+        
+        
+    @staticmethod
+    def email_check(email):
+        try:
+            if is_email_exist(email):
+                return error_response(f'{email} is already taken', 409)
+            
+            return success_response(f'{email} is available', 200)
+            
+        except Exception as e:
+            logging.exception(f"An exception occurred during registration. {e}")
+            return error_response('An error occurred while processing the request.', 500)
+
+    
+    @staticmethod
     def signUp():
         error = False
         
@@ -369,13 +395,10 @@ class AuthController:
             data = request.get_json()
             email_username = data.get('email_username')
             
-            console_log('email_username', email_username)
-            
             # get user from db with the email/username.
             user = get_trendit3_user(email_username)
             
             if user:
-                console_log('user_dict', user.to_dict())
                 # Generate a random six-digit number
                 reset_code = generate_six_digit_code()
                 
@@ -402,7 +425,6 @@ class AuthController:
                 msg = 'Password reset code sent successfully'
                 extra_data = { 'reset_token': reset_token, 'email': user.email, }
             else:
-                console_log('user_dict', user)
                 error = True
                 status_code = 404
                 msg = 'email or username isn\'t registered with us'

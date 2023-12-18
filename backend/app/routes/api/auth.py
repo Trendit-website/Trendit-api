@@ -4,6 +4,8 @@ from flask_jwt_extended import jwt_required
 from app.routes.api import bp
 from app.controllers.api import AuthController, ProfileController
 
+
+# REGISTRATION ENDPOINTS
 @bp.route("/signup", methods=['POST'])
 def signUp():
     return AuthController.signUp()
@@ -12,6 +14,7 @@ def signUp():
 def verify_email():
     return AuthController.verify_email()
 
+# AUTHENTICATION ENDPOINTS
 @bp.route("/login", methods=['POST'])
 def login():
     return AuthController.login()
@@ -45,3 +48,12 @@ def resend_code():
 @jwt_required()
 def logout():
     return AuthController.logout()
+
+
+@bp.route('/usernames/<username>', methods=['GET'])
+def username_check(username):
+    return AuthController.username_check(username)
+
+@bp.route('/emails/<email>', methods=['GET'])
+def email_check(email):
+    return AuthController.email_check(email)
