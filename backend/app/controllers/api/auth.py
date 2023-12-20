@@ -16,7 +16,7 @@ from app.utils.helpers.basic_helpers import console_log
 from app.utils.helpers.response_helpers import error_response, success_response
 from app.utils.helpers.location_helpers import get_currency_info
 from app.utils.helpers.auth_helpers import generate_six_digit_code, send_code_to_email, save_pwd_reset_token
-from app.utils.helpers.user_helpers import is_email_exist, is_username_exist, get_trendit3_user, referral_code_exists
+from app.utils.helpers.user_helpers import is_user_exist, get_trendit3_user, referral_code_exists
 
 class AuthController:
     @staticmethod
@@ -28,7 +28,7 @@ class AuthController:
             if not username:
                 return error_response("username parameter is required in request's body.", 400)
             
-            if is_username_exist(username):
+            if is_user_exist(username, 'username'):
                 return error_response(f'{username} is already Taken', 409)
             
             msg = f'{username} is available'
@@ -54,9 +54,9 @@ class AuthController:
             data = request.get_json()
             email = data.get('email', '')
             if not email:
-                return error_response("email parameter is required in request's body.", 400)
+                return error_response("email parameter is required in request's body.", 415)
             
-            if is_email_exist(email):
+            if is_user_exist(email, 'email'):
                 return error_response(f'{email} is already taken', 409)
             
             msg = f'{email} is available'
@@ -75,6 +75,7 @@ class AuthController:
 
         return error_response(msg, status_code) if error else success_response(msg, status_code)
     
+    
     @staticmethod
     def signUp():
         error = False
@@ -90,11 +91,11 @@ class AuthController:
             password = data.get('password')
             referrer_code = request.args.get('referrer_code') # get code of referrer
             
-            if is_email_exist(email):
+            if is_user_exist(email, 'email'):
                 return error_response('Email already taken', 409)
-                
-            if is_username_exist(username):
-                return error_response('Username already Taken', 409)
+            
+            if is_user_exist(username, 'username'):
+                return error_response('Username already taken', 409)
             
             if referrer_code and not referral_code_exists(referrer_code):
                 return error_response('Referrer code is invalid', 404)
@@ -330,7 +331,7 @@ class AuthController:
             except Exception as e:
                 return error_response(f'An error occurred sending the 2FA code to the email address', 500)
             
-            # Create a JWT that includes the user's info and the reset code
+            # Create a JWT that includes the user's info and the 2FA code
             expires = timedelta(minutes=15)
             two_FA_token = create_access_token(identity={
                 'username': user.username,
@@ -341,12 +342,16 @@ class AuthController:
             status_code = 200
             msg = '2 Factor Authentication code sent successfully'
             extra_data = { 'two_FA_token': two_FA_token }
-            
+        except UnsupportedMediaType as e:
+            error = True
+            status_code = 415
+            msg = f"{str(e)}"
+            logging.exception(f"An UnsupportedMediaType exception occurred: {e}")
         except Exception as e:
             error = True
             status_code = 500
             msg = f'An error occurred while processing the request.'
-            logging.exception(f"An exception occurred trying to login: {e}") # Log the error details for debugging
+            logging.exception(f"An exception occurred trying to login: {e}")
         finally:
             db.session.close()
         if error:
@@ -395,6 +400,10 @@ class AuthController:
             set_access_cookies(resp, access_token)
             
             return resp
+        except UnsupportedMediaType as e:
+            error = True
+            logging.exception(f"An UnsupportedMediaType exception occurred: {e}")
+            return error_response(f"{str(e)}", 415)
         except Exception as e:
             error = True
             logging.exception(f"An exception occurred trying to login: {e}") # Log the error details for debugging
@@ -500,6 +509,12 @@ class AuthController:
             pwd_reset_token.update(used=True)
             status_code = 200
             msg = 'Password changed successfully'
+        except UnsupportedMediaType as e:
+            error = True
+            status_code = 415
+            msg = f"{str(e)}"
+            db.session.rollback()
+            logging.exception(f"An UnsupportedMediaType exception occurred: {e}")
         except JWTDecodeError:
             error = True
             msg = f"Invalid or expired reset code"

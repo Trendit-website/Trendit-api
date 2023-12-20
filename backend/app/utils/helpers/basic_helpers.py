@@ -152,4 +152,4 @@ def console_log(label='Label', data=None):
 
 
 def log_exception(label='EXCEPTION', data='Nothing'):
-    logging.exception(f"\n\n{label:-^50}\n An exception occurred during registration.\n", str(data)) # Log the error details for debugging
+    logging.exception(f'\n\n{label:-^50}\n {str(data)} \n {"//":-^50}\n\n') # Log the error details for debugging

@@ -17,6 +17,10 @@ def not_found(error):
 def method_not_allowed(error):
     return ErrorHandlers.method_not_allowed(error)
 
+@bp.app_errorhandler(415)
+def unsupported_media_type(error):
+    return ErrorHandlers.unsupported_media_type(error)
+
 @bp.app_errorhandler(422)
 def unprocessable(error):
     return ErrorHandlers.unprocessable(error)

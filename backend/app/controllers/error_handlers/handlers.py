@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, render_template
 from app.routes.error_handlers import bp
 from app.utils.helpers.basic_helpers import console_log
+from app.utils.helpers.response_helpers import error_response
 
 class ErrorHandlers:
     @staticmethod
@@ -28,6 +29,10 @@ class ErrorHandlers:
         }), 405
 
     @staticmethod
+    def unsupported_media_type(error):
+        return error_response(f"Unsupported Media Type: {str(error)}", 415)
+    
+    @staticmethod
     def unprocessable(error):
         return jsonify({
             "status": 'failed',
@@ -37,11 +42,8 @@ class ErrorHandlers:
 
     @staticmethod
     def internal_server_error(error):
-        return jsonify({
-            "status": 'failed',
-            'status_code': 500,
-            "message": "Internal server error"
-        }), 500
+        return error_response("Internal server error", 500)
+    
     
     @staticmethod
     def jwt_auth_error(error):
