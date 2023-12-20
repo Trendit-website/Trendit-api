@@ -15,7 +15,7 @@ from app.models.payment import Wallet
 from app.utils.helpers.basic_helpers import console_log
 from app.utils.helpers.response_helpers import error_response, success_response
 from app.utils.helpers.location_helpers import get_currency_info
-from app.utils.helpers.auth_helpers import generate_six_digit_code, send_code_to_email, save_pwd_reset_token, save_2fa_token
+from app.utils.helpers.auth_helpers import generate_six_digit_code, send_code_to_email, save_pwd_reset_token
 from app.utils.helpers.user_helpers import is_email_exist, is_username_exist, get_trendit3_user, referral_code_exists
 
 class AuthController:
@@ -316,38 +316,32 @@ class AuthController:
             # get user from db with the email/username.
             user = get_trendit3_user(email_username)
             
-            if user:
-                if user.verify_password(pwd):
-                    # Generate a random six-digit number
-                    two_FA_code = generate_six_digit_code()
-                    
-                    # Create a JWT that includes the user's info and the reset code
-                    expires = timedelta(minutes=15)
-                    two_FA_token = create_access_token(identity={
-                        'username': user.username,
-                        'email': user.email,
-                        'two_FA_code': two_FA_code
-                    }, expires_delta=expires)
-                    
-                    the_two_FA_token = save_2fa_token(two_FA_token, user)
-                    
-                    if the_two_FA_token is None:
-                        return error_response('Error saving the 2FA token to the database', 500)
-                    
-                    try:
-                        send_code_to_email(user.email, two_FA_code, code_type='2FA') # send 2FA code to user's email
-                    except Exception as e:
-                        console_log('EXCEPTION', f'An error occurred while sending the 2 factor Authentication code: {str(e)}')
-                        return error_response(f'An error occurred sending the 2FA code to the email address', 500)
-                    
-                    status_code = 200
-                    msg = '2 Factor Authentication code sent successfully'
-                    extra_data = { 'two_FA_token': two_FA_token }
-                    
-                else:
-                    return error_response('Password is incorrect', 401)
-            else:
+            if not user:
                 return error_response('Email/username is incorrect or doesn\'t exist', 401)
+            
+            if not user.verify_password(pwd):
+                return error_response('Password is incorrect', 401)
+            
+            # Generate a random six-digit number
+            two_FA_code = generate_six_digit_code()
+            
+            try:
+                send_code_to_email(user.email, two_FA_code, code_type='2FA') # send 2FA code to user's email
+            except Exception as e:
+                return error_response(f'An error occurred sending the 2FA code to the email address', 500)
+            
+            # Create a JWT that includes the user's info and the reset code
+            expires = timedelta(minutes=15)
+            two_FA_token = create_access_token(identity={
+                'username': user.username,
+                'email': user.email,
+                'two_FA_code': two_FA_code
+            }, expires_delta=expires)
+            
+            status_code = 200
+            msg = '2 Factor Authentication code sent successfully'
+            extra_data = { 'two_FA_token': two_FA_token }
+            
         except Exception as e:
             error = True
             status_code = 500
@@ -382,14 +376,6 @@ class AuthController:
             if not decoded_token:
                 return error_response('Invalid or expired 2FA code', 401)
             
-            # Check if the 2FA token exists in the database
-            the_two_FA_token = OneTimeToken.query.filter_by(token=two_FA_token).first()
-            if not the_two_FA_token:
-                console_log('DB 2FA token', the_two_FA_token)
-                return error_response('The 2FA code not found. Please check your mail for the correct code and try again.', 404)
-            
-            if the_two_FA_token.used:
-                return error_response('The 2FA Code has already been used', 403)
             
             # Check if the entered code matches the one in the JWT
             if int(entered_code) != int(token_data['two_FA_code']):
@@ -407,9 +393,6 @@ class AuthController:
             
             # Set access token in a secure HTTP-only cookie
             set_access_cookies(resp, access_token)
-            
-            # 2FA token is valid, mark it as used
-            the_two_FA_token.update(used=True)
             
             return resp
         except Exception as e:
@@ -433,6 +416,11 @@ class AuthController:
                 # Generate a random six-digit number
                 reset_code = generate_six_digit_code()
                 
+                try:
+                    send_code_to_email(user.email, reset_code, code_type='pwd_reset') # send reset code to user's email
+                except Exception as e:
+                    return error_response(f'An error occurred while sending the reset code to the email address', 500)
+                
                 # Create a JWT that includes the user's info and the reset code
                 expires = timedelta(minutes=15)
                 reset_token = create_access_token(identity={
@@ -446,11 +434,6 @@ class AuthController:
                 if pwd_reset_token is None:
                     return error_response('Error saving the reset token in the database', 500)
                 
-                try:
-                    send_code_to_email(user.email, reset_code, code_type='pwd_reset') # send reset code to user's email
-                except Exception as e:
-                    console_log('EXCEPTION', f'An error occurred while sending the reset code: {str(e)}')
-                    return error_response(f'An error occurred while sending the reset code to the email address', 500)
                 
                 status_code = 200
                 msg = 'Password reset code sent successfully'
