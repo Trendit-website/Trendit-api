@@ -23,6 +23,7 @@ class Trendit3User(db.Model):
     membership = db.relationship('Membership', back_populates="trendit3_user", uselist=False, cascade="all, delete-orphan")
     wallet = db.relationship('Wallet', back_populates="trendit3_user", uselist=False, cascade="all, delete-orphan")
     otp_token = db.relationship('OneTimeToken', back_populates="trendit3_user", uselist=False, cascade="all, delete-orphan")
+    roles = db.relationship('Role', secondary='user_roles', backref=db.backref('users', lazy='dynamic'))
     
     @property
     def password(self):

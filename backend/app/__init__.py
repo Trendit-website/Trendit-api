@@ -5,10 +5,9 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 
 from app.models.user import Trendit3User
+from app.models.role import create_roles
 from app.models.item import Item
 from app.models.task import Task, AdvertTask, EngagementTask
-from app.utils.helpers.location_helpers import get_currency_code, get_currency_info
-from app.utils.helpers.basic_helpers import console_log
 
 from config import Config
 from app.extensions import db
@@ -52,6 +51,10 @@ def create_app(config_class=Config):
     
     from app.routes.error_handlers import bp as errorHandler_bp
     app.register_blueprint(errorHandler_bp)
+    
+    
+    with app.app_context():
+        create_roles()  # Create roles for trendit3
     
     @app.route("/test", methods=['PUT'])
     def update_platform_to_lowercase():

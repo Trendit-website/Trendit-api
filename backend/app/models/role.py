@@ -1,25 +1,25 @@
-'''
 from app.extensions import db
 
-# Define the User Role data model
-class Role(db.Model):
-    id = db.Column(db.Integer(), primary_key=True)
-    name = db.Column(db.String(50), nullable=False, unique=True)
-    
-    # Define the many-to-many relationship with Permission
-    permissions = db.relationship('Permission', secondary='role_permission', back_populates='roles')
 
-class Permission(db.Model):
-    id = db.Column(db.Integer(), primary_key=True)
-    name = db.Column(db.String(50), nullable=False, unique=True)
-
-    # Define the many-to-many relationship with Role
-    roles = db.relationship('Role', secondary='role_permission', back_populates='permissions')
-    
-
-# Intermediate table for Role-Permission relationship
-role_permission = db.Table('role_permission',
-    db.Column('role_id', db.Integer, db.ForeignKey('role.id'), primary_key=True),
-    db.Column('permission_id', db.Integer, db.ForeignKey('permission.id'), primary_key=True)
+# Association table for the many-to-many relationship
+user_roles = db.Table('user_roles',
+    db.Column('user_id', db.Integer, db.ForeignKey('trendit3_user.id')),
+    db.Column('role_id', db.Integer, db.ForeignKey('role.id'))
 )
-'''
+
+# Role data model
+class Role(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(20), unique=True, nullable=False)
+    description = db.Column(db.String(100), nullable=True)
+
+
+def create_roles():
+    roles = ['Admin', 'Moderator', 'Advertiser', 'Earner']
+
+    for role in roles:
+        if not Role.query.filter_by(name=role).first():
+            new_role = Role(name=role)
+            db.session.add(new_role)
+
+    db.session.commit()

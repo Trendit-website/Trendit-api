@@ -9,6 +9,7 @@ from flask_jwt_extended.exceptions import JWTDecodeError
 from jwt import ExpiredSignatureError
 
 from app.extensions import db
+from app.models.role import Role
 from app.models.user import Trendit3User, Address, Profile, OneTimeToken, ReferralHistory
 from app.models.membership import Membership
 from app.models.payment import Wallet
@@ -239,12 +240,16 @@ class AuthController:
                 newMembership = Membership(trendit3_user=newUser)
                 newUserProfile = Profile(trendit3_user=newUser)
                 newUserWallet = Wallet(trendit3_user=newUser, currency_name=currency_info['name'], currency_code=currency_info['code'])
+                role = Role.query.filter_by(name='Advertiser').first()
+                if role:
+                    newUser.roles.append(role)
                 
                 db.session.add_all([newUser, newUserAddress, newUserProfile, newMembership, newUserWallet])
                 db.session.commit()
                 
                 user_data = newUser.to_dict()
                 
+                # TODO: Make asynchronous
                 if 'referrer_code' in user_info:
                     referrer_code = user_info['referrer_code']
                     profile = Profile.query.filter(Profile.referral_code == referrer_code).first()
