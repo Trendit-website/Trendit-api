@@ -348,19 +348,7 @@ function SignUpComponent() {
   };
 
   // Function to collect and log step 1 and step 2 input values into console
-  const logInputs = () => {
-    console.log("Step 1 Inputs:");
-    console.log("Username:", username);
-    console.log("Email:", email);
-    console.log("Password1:", password1);
-    console.log("Password2:", password2);
 
-    console.log("Step 2 Inputs:");
-    console.log("Gender:", selectedGender);
-    console.log("Country:", selectedCountry);
-    console.log("State:", selectedState);
-    console.log("City:", selectedCity);
-  };
 
   const renderStepContent = () => {
     switch (currentStep) {

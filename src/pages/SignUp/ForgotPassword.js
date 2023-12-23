@@ -56,7 +56,7 @@ const ForgotPasswordPage = () => {
       return;
     } else {
       try {
-        const res = await forgotPassword({ email }).unwrap();
+        const res = await forgotPassword({ email_username: email }).unwrap();
         setToken(res.reset_token);
         setCurrentStep(currentStep + 1);
       } catch (error) {

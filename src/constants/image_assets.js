@@ -1,5 +1,5 @@
 
-import LogoJPG from "../assets/logo.jpg"
+import LogoJPG from "../assets/logo.png"
 
 
 
