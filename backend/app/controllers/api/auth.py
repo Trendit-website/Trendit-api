@@ -92,7 +92,7 @@ class AuthController:
             state = data.get('state')
             local_government = data.get('local_government')
             password = data.get('password')
-            referrer_code = request.args.get('referrer_code') # get code of referrer
+            referrer_code = data.get('referrer_code') # get code of referrer
             
             if is_user_exist(email, 'email'):
                 return error_response('Email already taken', 409)
