@@ -401,7 +401,7 @@ class AuthController:
             # User authentication successful
             # get user from db with the email/username.
             user = get_trendit3_user(token_data['email'])
-            access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=10080), additional_claims={'type': 'access'})
+            access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=43200), additional_claims={'type': 'access'})
             extra_data = {}
             
             # Create response
