@@ -61,9 +61,6 @@ def initialize_payment(user_id, data, payment_type=None, meta_data=None):
         # Initialize the transaction
         response = requests.post(Config.PAYSTACK_INITIALIZE_URL, headers=auth_headers, data=json.dumps(auth_data))
         response_data = response.json()
-        console_log('response_data', response_data)
-        response_data = json.loads(response.text)
-        console_log('response_data', response_data)
         
         if response_data['status']:
             transaction = Transaction(tx_ref=response_data['data']['reference'], user_id=user_id, payment_type=payment_type, status='Pending')
@@ -103,7 +100,7 @@ def is_paid(user_id, payment_type):
 
     Args:
         user_id (int): The ID of the user to check.
-        payment_type (str): The type of payment to check. Can be 'activation_fee' or 'membership_fee'.
+        payment_type (str): The type of payment to check. Can be 'membership_fee'.
 
     Returns:
         bool: True if the user has paid the specified fee, False otherwise.
@@ -113,9 +110,7 @@ def is_paid(user_id, payment_type):
     
     Trendit3_user = Trendit3User.query.get(user_id)
     
-    if payment_type == 'account-activation-fee':
-        paid = Trendit3_user.membership.activation_fee_paid
-    elif payment_type == 'membership-fee':
+    if payment_type == 'membership-fee':
         paid = Trendit3_user.membership.membership_fee_paid
     
     return paid

@@ -1,4 +1,5 @@
 from flask import Flask, jsonify
+from requests.exceptions import JSONDecodeError
 from flask_jwt_extended.exceptions import NoAuthorizationError, InvalidHeaderError, WrongTokenError, CSRFError
 from jwt import ExpiredSignatureError
 
@@ -49,3 +50,8 @@ def wrong_jwt_token(error):
 @bp.app_errorhandler(CSRFError)
 def jwt_csrf_error(error):
     return ErrorHandlers.jwt_csrf_error(error)
+
+
+@bp.app_errorhandler(JSONDecodeError)
+def json_decode_error(error):
+    return ErrorHandlers.json_decode_error(error)

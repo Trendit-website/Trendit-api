@@ -87,19 +87,11 @@ class PaymentController:
                             db.session.add(payment)
                     
                         # Update user's membership status in the database
-                        if payment_type == 'account-activation-fee':
-                            trendit3_user.activation_fee(paid=True)
-                            activation_fee_paid = trendit3_user.membership.activation_fee_paid
-                            
-                            msg = 'Payment verified successfully and Account has been activated'
-                            extra_data.update({
-                                'activation_fee_paid': activation_fee_paid,
-                            })
-                        elif payment_type == 'membership-fee':
+                        if payment_type == 'membership-fee':
                             trendit3_user.membership_fee(paid=True)
                             membership_fee_paid = trendit3_user.membership.membership_fee_paid
                             
-                            msg = 'Payment verified successfully and Monthly subscription fee accepted'
+                            msg = 'Payment verified successfully and Account has been activated'
                             extra_data.update({
                                 'membership_fee_paid': membership_fee_paid,
                             })
@@ -126,11 +118,8 @@ class PaymentController:
                             extra_data.update({'user': trendit3_user.to_dict()})
                     
                     elif transaction.status == 'Complete':
-                        if payment_type == 'account-activation-fee':
+                        if payment_type == 'membership-fee':
                             msg = 'Payment Completed successfully and Account is already activated'
-                            extra_data.update({'activation_fee_paid': trendit3_user.membership.activation_fee_paid})
-                        elif payment_type == 'membership-fee':
-                            msg = 'Payment Completed successfully and Membership fee already accepted'
                             extra_data.update({'membership_fee_paid': trendit3_user.membership.membership_fee_paid,})
                         elif payment_type == 'task_creation':
                             task_key = verification_response['data']['metadata']['task_key']
@@ -239,9 +228,7 @@ class PaymentController:
                             db.session.add(payment)
                     
                         # Update user's membership status in the database
-                        if payment_type == 'account-activation-fee':
-                            trendit3_user.activation_fee(paid=True)
-                        elif payment_type == 'membership-fee':
+                        if payment_type == 'membership-fee':
                             trendit3_user.membership_fee(paid=True)
                         elif payment_type == 'task_creation':
                             task_key = data['data']['metadata']['task_key']

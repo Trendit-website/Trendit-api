@@ -83,6 +83,8 @@ class AuthController:
         
         try:
             data = request.get_json()
+            firstname = data.get('firstname')
+            lastname = data.get('lastname')
             username = data.get('username')
             email = data.get('email')
             gender = data.get('gender')
@@ -115,6 +117,8 @@ class AuthController:
             # Create a JWT that includes the user's info and the verification code
             expires = timedelta(minutes=30)
             identity = {
+                'firstname': firstname,
+                'lastname': lastname,
                 'username': username,
                 'email': email,
                 'gender': gender,
@@ -216,6 +220,8 @@ class AuthController:
             # Decode the JWT and extract the user's info and the verification code
             decoded_token = decode_token(signup_token)
             user_info = decoded_token['sub']
+            firstname = user_info['firstname']
+            lastname = user_info['lastname']
             username = user_info['username']
             email = user_info['email']
             gender = user_info['gender']
@@ -238,7 +244,7 @@ class AuthController:
                 newUser = Trendit3User(username=username, email=email, gender=gender, thePassword=hashed_pwd)
                 newUserAddress = Address(country=country, state=state, local_government=local_government, currency_code=currency_info['code'], trendit3_user=newUser)
                 newMembership = Membership(trendit3_user=newUser)
-                newUserProfile = Profile(trendit3_user=newUser)
+                newUserProfile = Profile(trendit3_user=newUser, firstname=firstname, lastname=lastname)
                 newUserWallet = Wallet(trendit3_user=newUser, currency_name=currency_info['name'], currency_code=currency_info['code'])
                 role = Role.query.filter_by(name='Advertiser').first()
                 if role:

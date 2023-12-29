@@ -87,3 +87,6 @@ class ErrorHandlers:
         }), 401
 
 
+    @staticmethod
+    def json_decode_error(error):
+        return error_response("response body does not contain valid json.", 500)
