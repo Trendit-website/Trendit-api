@@ -92,7 +92,7 @@ class AuthController:
             state = data.get('state')
             local_government = data.get('local_government')
             password = data.get('password')
-            referrer_code = data.get('referrer_code') # get code of referrer
+            referral_code = data.get('referral_code') # get code of referrer
             
             if is_user_exist(email, 'email'):
                 return error_response('Email already taken', 409)
@@ -100,7 +100,7 @@ class AuthController:
             if is_user_exist(username, 'username'):
                 return error_response('Username already taken', 409)
             
-            if referrer_code and not referral_code_exists(referrer_code):
+            if referral_code and not referral_code_exists(referral_code):
                 return error_response('Referrer code is invalid', 404)
             
             hashed_pwd = generate_password_hash(password, "pbkdf2:sha256")
@@ -128,8 +128,8 @@ class AuthController:
                 'hashed_pwd': hashed_pwd,
                 'verification_code': verification_code
             }
-            if referrer_code:
-                identity.update({'referrer_code': referrer_code})
+            if referral_code:
+                identity.update({'referral_code': referral_code})
             
             signup_token = create_access_token(identity=identity, expires_delta=expires, additional_claims={'type': 'signup'})
             extra_data = {'signup_token': signup_token}
@@ -256,9 +256,9 @@ class AuthController:
                 user_data = newUser.to_dict()
                 
                 # TODO: Make asynchronous
-                if 'referrer_code' in user_info:
-                    referrer_code = user_info['referrer_code']
-                    profile = Profile.query.filter(Profile.referral_code == referrer_code).first()
+                if 'referral_code' in user_info:
+                    referral_code = user_info['referral_code']
+                    profile = Profile.query.filter(Profile.referral_code == referral_code).first()
                     referrer = profile.trendit3_user
                     referral_history = ReferralHistory.create_referral_history(username=username, status='Registered', trendit3_user=referrer, date_joined=newUser.date_joined)
             else:
