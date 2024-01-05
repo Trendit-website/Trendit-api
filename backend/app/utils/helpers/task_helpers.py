@@ -1,6 +1,6 @@
 import sys, logging
 from flask import request, jsonify, current_app
-from sqlalchemy import or_
+from sqlalchemy import func, or_
 from flask_jwt_extended import get_jwt_identity
 
 from app.extensions import db
@@ -61,6 +61,37 @@ def get_tasks_dict_grouped_by_field(field, task_type):
         raise e
 
     return tasks_dict
+
+
+def get_aggregated_task_counts_by_field(field, task_type):
+    """Retrieves aggregated task counts grouped by the specified field,
+    optimized using database-level aggregation.
+
+    Args:
+        field (str): The field to group tasks by.
+        task_type (str): The type of tasks to retrieve ('advert' or 'engagement').
+
+    Returns:
+        list: A list of dictionaries, each containing the field value and its count.
+
+    Raises:
+        ValueError: If an invalid field or task_type is provided.
+    """
+
+    try:
+        task_model = AdvertTask if task_type == 'advert' else EngagementTask
+        results = db.session.query(getattr(task_model, field), func.count(task_model.id).label('task_count')) \
+                            .filter_by(payment_status='Complete') \
+                            .group_by(getattr(task_model, field)) \
+                            .all()
+        
+        return [{'name': key, 'total': count} for key, count in results]
+
+    except AttributeError as e:
+        raise ValueError(f"Invalid field: {field}")
+    except Exception as e:
+        raise e
+
 
 
 def get_task_by_key(task_key):

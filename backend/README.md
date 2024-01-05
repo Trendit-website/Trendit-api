@@ -1751,6 +1751,49 @@ If fetching advert tasks grouped by platform fails, you will receive a JSON resp
 - **HTTP 500 Internal Server Error:** An error occurred while processing the request.
 
 
+### Fetch Advert Task Counts Grouped By Platform
+**Endpoint:** `/api/tasks/advert/counts/{field}`  
+**HTTP Method:** `GET`  
+**Description:** Retrieves aggregated task counts for advert tasks, grouped by the specified field.
+
+**Path Parameter:**
+
+- `{field}` (required): The field by which to group advert tasks, e.g., `platform` or `gender`.
+    
+
+**Key Response Details:**
+
+- `platforms` (list): A list containing grouped objects of field values as keys, and the total number of tasks (`total`) for that field.
+    - `name`: field values.
+    - `total`: total task in a particular field name.
+
+**A Successful Response Example (Grouped by Platform):**
+
+``` json
+{
+    "message": "Advert task counts grouped by platform retrieved successfully.",
+    "status": "success",
+    "status_code": 200,
+    "platforms": [
+        {
+            "name": "tiktok",
+            "total": 3
+        },
+        {
+            "name": "instagram",
+            "total": 7
+        },
+    ],
+}
+
+ ```
+
+**Error Handling**  
+If fetching advert tasks count grouped by a specified field fails, you will receive a JSON response with details about the error, including the status code.
+
+- HTTP 500 Internal Server Error: An error occurred while processing the request.
+
+
 
 
 ### Fetch Engagement Tasks
