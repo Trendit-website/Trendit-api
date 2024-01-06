@@ -13,6 +13,10 @@ def get_current_user_tasks():
 def get_all_tasks():
     return TaskController.get_tasks()
 
+@bp.route('/tasks/counts/<field>', methods=['GET'])
+def get_all_aggregated_task_counts(field):
+    return TaskController.get_all_aggregated_task_counts(field)
+
 @bp.route('/tasks/<task_id_key>', methods=['GET'])
 def get_single_task(task_id_key):
     return TaskController.get_single_task(task_id_key)

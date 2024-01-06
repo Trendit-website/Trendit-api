@@ -63,7 +63,7 @@ def get_tasks_dict_grouped_by_field(field, task_type):
     return tasks_dict
 
 
-def get_aggregated_task_counts_by_field(field, task_type):
+def get_aggregated_task_counts_by_field(field, task_type=None):
     """Retrieves aggregated task counts grouped by the specified field,
     optimized using database-level aggregation.
 
@@ -80,6 +80,8 @@ def get_aggregated_task_counts_by_field(field, task_type):
 
     try:
         task_model = AdvertTask if task_type == 'advert' else EngagementTask
+        task_model = (AdvertTask if task_type == 'advert' else EngagementTask if task_type == 'engagement' else Task)
+        
         results = db.session.query(getattr(task_model, field), func.count(task_model.id).label('task_count')) \
                             .filter_by(payment_status='Complete') \
                             .group_by(getattr(task_model, field)) \

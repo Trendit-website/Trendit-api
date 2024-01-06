@@ -12,6 +12,38 @@ from app.utils.helpers.payment_helpers import initialize_payment, debit_wallet
 
 class TaskController:
     @staticmethod
+    def get_all_aggregated_task_counts(field):
+        
+        error = False
+        try:
+            aggregated_task_counts = get_aggregated_task_counts_by_field(field)
+            
+            if len(aggregated_task_counts) < 1:
+                return success_response('There are no advert tasks yet', 200)
+            
+            msg = f'All task counts grouped by {field} retrieved successfully.'
+            status_code = 200
+            extra_data = {
+                f'{field}s': aggregated_task_counts,
+            }
+        except ValueError as e:
+            error = True
+            msg = f'{e}'
+            status_code = 500
+            logging.exception(f"An exception occurred getting aggregated task counts grouped by {field}:\n", str(e))
+        except Exception as e:
+            error = True
+            msg = f'An error occurred getting aggregated task counts grouped by {field}: {e}'
+            status_code = 500
+            logging.exception(f"An exception occurred getting aggregated task counts grouped by {field}:\n", str(e))
+        
+        if error:
+            return error_response(msg, status_code)
+        else:
+            return success_response(msg, status_code, extra_data)
+    
+    
+    @staticmethod
     def get_current_user_tasks():
         error = False
         
