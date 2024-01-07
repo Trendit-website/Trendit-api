@@ -3,14 +3,18 @@ from flask import request, jsonify
 from flask_jwt_extended import get_jwt_identity
 
 from app.extensions import db
-from app.models.user import Trendit3User
-from app.models.task import TaskPerformance, Task
+from app.models.task import TaskPerformance
 from app.utils.helpers.task_helpers import save_performed_task, fetch_task
 from app.utils.helpers.response_helpers import error_response, success_response
-from app.utils.helpers.basic_helpers import generate_random_string, console_log
+from app.utils.helpers.basic_helpers import console_log
 
 
 class TaskPerformanceController:
+    @staticmethod
+    def assign_task():
+        error = False
+        pass
+    
     @staticmethod
     def perform_task():
         error = False

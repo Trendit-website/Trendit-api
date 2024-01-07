@@ -87,7 +87,7 @@ def get_aggregated_task_counts_by_field(field, task_type=None):
                             .group_by(getattr(task_model, field)) \
                             .all()
         
-        return [{'name': key, 'total': count} for key, count in results]
+        return {key: {'name': key, 'total': count} for key, count in results}
 
     except AttributeError as e:
         raise ValueError(f"Invalid field: {field}")
