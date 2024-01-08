@@ -65,21 +65,21 @@ def get_tasks_dict_grouped_by_field(field, task_type):
 
 def get_aggregated_task_counts_by_field(field, task_type=None):
     """Retrieves aggregated task counts grouped by the specified field,
-    optimized using database-level aggregation.
+    optimized using database-level aggregation, and returns results as a dictionary.
 
     Args:
         field (str): The field to group tasks by.
         task_type (str): The type of tasks to retrieve ('advert' or 'engagement').
 
     Returns:
-        list: A list of dictionaries, each containing the field value and its count.
+        dict: A dictionary where keys are the field values and values are dictionaries
+                containing the field value ('name') and its count ('total').
 
     Raises:
         ValueError: If an invalid field or task_type is provided.
     """
 
     try:
-        task_model = AdvertTask if task_type == 'advert' else EngagementTask
         task_model = (AdvertTask if task_type == 'advert' else EngagementTask if task_type == 'engagement' else Task)
         
         results = db.session.query(getattr(task_model, field), func.count(task_model.id).label('task_count')) \

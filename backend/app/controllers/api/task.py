@@ -6,11 +6,12 @@ from config import Config
 from app.models.task import Task, AdvertTask, EngagementTask
 from app.utils.helpers.task_helpers import save_task, get_tasks_dict_grouped_by_field, fetch_task, get_aggregated_task_counts_by_field
 from app.utils.helpers.response_helpers import error_response, success_response
-from app.utils.helpers.basic_helpers import generate_random_string, console_log
+from app.utils.helpers.basic_helpers import console_log
 from app.utils.helpers.payment_helpers import initialize_payment, debit_wallet
 
 
 class TaskController:
+    # ALL TASKS
     @staticmethod
     def get_all_aggregated_task_counts(field):
         
@@ -146,6 +147,8 @@ class TaskController:
             return success_response(msg, status_code, extra_data)
     
     
+    
+    # ADVERT TASKS
     @staticmethod
     def get_advert_tasks():
         error = False
@@ -183,42 +186,6 @@ class TaskController:
             return success_response(msg, status_code, extra_data)
 
 
-    @staticmethod
-    def get_engagement_tasks():
-        error = False
-        try:
-            page = request.args.get("page", 1, type=int)
-            tasks_per_page = int(Config.TASKS_PER_PAGE)
-            pagination = EngagementTask.query.filter_by(payment_status='Complete') \
-                .order_by(EngagementTask.date_created.desc()) \
-                .paginate(page=page, per_page=tasks_per_page, error_out=False)
-            
-            tasks = pagination.items
-            current_tasks = [task.to_dict() for task in tasks]
-            extra_data = {
-                'total': pagination.total,
-                "engagement_tasks": current_tasks,
-                "current_page": pagination.page,
-                "total_pages": pagination.pages,
-            }
-            
-            if not tasks:
-                return success_response(f'There are no engagement tasks yet', 200, extra_data)
-            
-            msg = 'All Engagement Tasks fetched successfully'
-            status_code = 200
-            
-        except Exception as e:
-            error = True
-            msg = 'Error getting all engagement tasks'
-            status_code = 500
-            logging.exception("An exception trying to get all Engagement Tasks:", str(e))
-        if error:
-            return error_response(msg, status_code)
-        else:
-            return success_response(msg, status_code, extra_data)
-    
-    
     @staticmethod
     def get_advert_tasks_by_platform(platform):
         error = False
@@ -339,6 +306,44 @@ class TaskController:
             return success_response(msg, status_code, extra_data)
     
     
+    
+    # ENGAGEMENT TASKS
+    @staticmethod
+    def get_engagement_tasks():
+        error = False
+        try:
+            page = request.args.get("page", 1, type=int)
+            tasks_per_page = int(Config.TASKS_PER_PAGE)
+            pagination = EngagementTask.query.filter_by(payment_status='Complete') \
+                .order_by(EngagementTask.date_created.desc()) \
+                .paginate(page=page, per_page=tasks_per_page, error_out=False)
+            
+            tasks = pagination.items
+            current_tasks = [task.to_dict() for task in tasks]
+            extra_data = {
+                'total': pagination.total,
+                "engagement_tasks": current_tasks,
+                "current_page": pagination.page,
+                "total_pages": pagination.pages,
+            }
+            
+            if not tasks:
+                return success_response(f'There are no engagement tasks yet', 200, extra_data)
+            
+            msg = 'All Engagement Tasks fetched successfully'
+            status_code = 200
+            
+        except Exception as e:
+            error = True
+            msg = 'Error getting all engagement tasks'
+            status_code = 500
+            logging.exception("An exception trying to get all Engagement Tasks:", str(e))
+        if error:
+            return error_response(msg, status_code)
+        else:
+            return success_response(msg, status_code, extra_data)
+    
+    
     @staticmethod
     def get_engagement_tasks_grouped_by_field(field):
         error = False
@@ -371,6 +376,40 @@ class TaskController:
             return success_response(msg, status_code, extra_data)
     
     
+    @staticmethod
+    def get_engagement_aggregated_task_counts(field):
+        
+        error = False
+        try:
+            aggregated_task_counts = get_aggregated_task_counts_by_field(field, 'engagement')
+            
+            if len(aggregated_task_counts) < 1:
+                return success_response('There are no engagement tasks yet', 200)
+            
+            msg = f'Engagement task counts grouped by {field} retrieved successfully.'
+            status_code = 200
+            extra_data = {
+                f'{field}s': aggregated_task_counts,
+            }
+        except ValueError as e:
+            error = True
+            msg = f'{e}'
+            status_code = 500
+            logging.exception(f"An exception occurred getting aggregated task counts grouped by {field}:\n", str(e))
+        except Exception as e:
+            error = True
+            msg = f'An error occurred getting aggregated task counts grouped by {field}: {e}'
+            status_code = 500
+            logging.exception(f"An exception occurred getting aggregated task counts grouped by {field}:\n", str(e))
+        
+        if error:
+            return error_response(msg, status_code)
+        else:
+            return success_response(msg, status_code, extra_data)
+    
+    
+    
+    # CREATE NEW TASK
     @staticmethod
     def create_task():
         error = False

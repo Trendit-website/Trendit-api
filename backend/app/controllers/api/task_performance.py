@@ -11,7 +11,7 @@ from app.utils.helpers.basic_helpers import console_log
 
 class TaskPerformanceController:
     @staticmethod
-    def assign_task():
+    def generate_task():
         error = False
         pass
     
