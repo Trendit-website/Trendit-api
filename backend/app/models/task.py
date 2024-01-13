@@ -16,6 +16,8 @@ class Task(db.Model):
     payment_status = db.Column(db.String(80), nullable=False) # complete, pending, failed
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    total_allocated = db.Column(db.Integer, default=0, nullable=True)
+    total_success = db.Column(db.Integer, default=0, nullable=True)
     
     trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
     trendit3_user = db.relationship('Trendit3User', backref=db.backref('tasks', lazy='dynamic'))
@@ -91,6 +93,8 @@ class Task(db.Model):
             'media_path': self.get_task_media(),
             'task_key': self.task_key,
             'payment_status': self.payment_status,
+            'total_allocated': self.total_allocated,
+            'total_success': self.total_success,
             'creator': {
                 'id': self.trendit3_user_id,
                 'username': self.trendit3_user.username,
@@ -121,6 +125,8 @@ class AdvertTask(Task):
             'media_path': self.get_task_media(),
             'task_key': self.task_key,
             'payment_status': self.payment_status,
+            'total_allocated': self.total_allocated,
+            'total_success': self.total_success,
             'posts_count': self.posts_count,
             'target_country': self.target_country,
             'target_state': self.target_state,
@@ -152,6 +158,8 @@ class EngagementTask(Task):
             'media_path': self.get_task_media(),
             'task_key': self.task_key,
             'payment_status': self.payment_status,
+            'total_allocated': self.total_allocated,
+            'total_success': self.total_success,
             'goal': self.goal,
             'account_link': self.account_link,
             'engagements_count': self.engagements_count,
@@ -165,13 +173,14 @@ class EngagementTask(Task):
 
 class TaskPerformance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    key = db.Column(db.String(120), unique=True, nullable=False, default=generate_random_string(8))
+    key = db.Column(db.String(120), unique=True, nullable=False, default=generate_random_string(12))
     task_id = db.Column(db.Integer, nullable=False)  # either an AdvertTask id or an EngagementTask id
     task_type = db.Column(db.String(80), nullable=False)  # either 'advert' or 'engagement'
-    reward_money = db.Column(db.Float(), default=00.00, nullable=False)
-    proof_screenshot_id = db.Column(db.Integer, db.ForeignKey('media.id'), nullable=False)
-    status = db.Column(db.String(80), default='Pending')
-    date_completed = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    reward_money = db.Column(db.Float(), default=00.00, nullable=True)
+    proof_screenshot_id = db.Column(db.Integer, db.ForeignKey('media.id'), nullable=True)
+    status = db.Column(db.String(80), default='pending') # pending, in_review, timed_out
+    started_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    date_completed = db.Column(db.DateTime, nullable=True)
     
     user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
     trendit3_user = db.relationship('Trendit3User', backref=db.backref('performed_tasks', lazy='dynamic'))

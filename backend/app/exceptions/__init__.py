@@ -1,4 +1,20 @@
 
+class PendingTaskError(Exception):
+    """Exception raised when user still has a pending task."""
+
+    def __init__(self, message="There is still a pending task yet to be done."):
+        self.message = message
+        super().__init__(self.message)
+
+
+class NoUnassignedTaskError(Exception):
+    """Exception raised when no unassigned task is found."""
+
+    def __init__(self, message="No unassigned task found"):
+        self.message = message
+        super().__init__(self.message)
+
+
 class UniqueSlugError(Exception):
     """
     Exception raised when a unique slug cannot be created.

@@ -5,8 +5,9 @@ from flask_jwt_extended import get_jwt_identity
 
 from app.extensions import db
 from app.models.task import Task, AdvertTask, EngagementTask, TaskPerformance
-from app.utils.helpers.basic_helpers import generate_random_string, console_log
+from app.utils.helpers.basic_helpers import console_log
 from app.utils.helpers.media_helpers import save_media
+from app.exceptions import PendingTaskError, NoUnassignedTaskError
 
 
 def fetch_task(task_id_key):
@@ -95,6 +96,55 @@ def get_aggregated_task_counts_by_field(field, task_type=None):
         raise e
 
 
+def generate_random_task(task_type, filter_value):
+    """Retrieves a random task of the specified type, filtering by platform or goal, ensuring it's not assigned to another user.
+
+        Args:
+            task_type (str): The type of task to retrieve ('advert' or 'engagement').
+            filter_value (str): The value to filter tasks by (platform for adverts, goal for engagements).
+
+        Returns:
+            JSON: A JSON object containing the randomly selected task.
+
+        Raises:
+            LookupError: If no unassigned task was found
+            ValueError: If an invalid task type or platform is provided.
+            Exception: If an unexpected error occurs during retrieval.
+    """
+    try:
+        current_user_id = int(get_jwt_identity())
+        performed_task = TaskPerformance.query.filter_by(status='pending', user_id=current_user_id).first()
+        
+        if performed_task:
+            raise PendingTaskError
+        
+        task_model = (AdvertTask if task_type == 'advert' else EngagementTask if task_type == 'engagement' else None)
+        
+        # Dynamically filter by platform, goal, posts_count or engagements_count based on task type
+        filter_field = 'platform' if task_type == 'advert' else 'goal'
+        count_field = 'posts_count' if task_type == 'advert' else 'engagements_count'
+        
+        # Filter for unassigned tasks
+        unassigned_task = task_model.query.filter(
+            getattr(task_model, filter_field) == filter_value,
+            task_model.payment_status == 'Complete',
+            getattr(task_model, count_field) > getattr(task_model, 'total_success')
+        ).order_by(func.random()).first()
+        
+        
+        if not unassigned_task:
+            raise NoUnassignedTaskError(f"There are no unassigned {task_type} tasks for the {filter_field} {filter_value}.")
+        
+        # Initiate task performance
+        initiate_task(unassigned_task)
+        
+        return unassigned_task.to_dict()  # Return the generated task
+
+    except AttributeError as e:
+        raise ValueError(f"Invalid Task Type or Filter: {task_type}/{filter_value}")
+    except Exception as e:
+        raise e
+
 
 def get_task_by_key(task_key):
     task = EngagementTask.query.filter_by(task_key=task_key).first()
@@ -178,7 +228,31 @@ def save_task(data, task_id_key=None, payment_status='Pending'):
         return None
 
 
-def save_performed_task(data, pt_id=None, status='Pending'):
+
+
+def initiate_task(task, status='pending'):
+    try:
+        current_user_id = int(get_jwt_identity())
+        
+        if task is None:
+            raise NoUnassignedTaskError("Task not found.")
+        
+        
+        # Create a new TaskPerformance instance
+        initiated_task = TaskPerformance.create_task_performance(user_id=current_user_id, task_id=task.id, task_type=task.type, status=status, reward_money=0.0, proof_screenshot_id=None)
+        
+        # Mark the task as assigned
+        task.allocated += 1
+        db.session.add(task)
+        db.session.commit()
+        
+    except Exception as e:
+        logging.exception("An exception occurred trying to initiate task performance: ==>", str(e))
+        db.session.rollback()
+        raise e
+
+
+def save_performed_task(data, pt_id=None, status='pending'):
     try:
         user_id = int(get_jwt_identity())
         
@@ -252,3 +326,26 @@ def fetch_performed_task(pt_id_key):
         return performed_task
     else:
         return None
+
+
+def fetch_performed_tasks_by_status(status):
+    try:
+        current_user_id = int(get_jwt_identity())
+        page = request.args.get("page", 1, type=int)
+        tasks_per_page = int(6)
+        pagination = TaskPerformance.query.filter_by(user_id=current_user_id, status=status) \
+            .order_by(TaskPerformance.started_at.desc()) \
+            .paginate(page=page, per_page=tasks_per_page, error_out=False)
+        
+        
+        performed_tasks = pagination.items
+        current_tasks = [performed_task.to_dict() for performed_task in performed_tasks]
+        json_data = {
+            'total': pagination.total,
+            "performed_tasks": current_tasks,
+            "current_page": pagination.page,
+            "total_pages": pagination.pages,
+        }
+        return json_data
+    except Exception as e:
+        raise e
