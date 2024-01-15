@@ -28,15 +28,15 @@ def perform_task():
 @bp.route('/performed-tasks', methods=['GET'])
 @jwt_required()
 def get_current_user_performed_tasks():
-    try:
-        data = request.get_json()
-        status = data.get('status', '')
+    status = request.args.get('status', '')
+    console_log('status', status)
         
-        # Get Performed Tasks by status. (in_review, failed, completed, canceled)
-        if status:
-            return TaskPerformanceController.get_user_performed_tasks_by_status(status.lower())
-    except Exception as e:
-        return TaskPerformanceController.get_current_user_performed_tasks()
+    # Get Performed Tasks by status. (in_review, failed, completed, canceled)
+    if status:
+        return TaskPerformanceController.get_user_performed_tasks_by_status(status.lower())
+    
+    return TaskPerformanceController.get_current_user_performed_tasks()
+
 
 
 @bp.route('/performed-tasks/<int:pt_id>', methods=['GET'])
