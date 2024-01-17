@@ -58,3 +58,8 @@ class Config:
     CLOUDINARY_CLOUD_NAME = os.environ.get('CLOUDINARY_CLOUD_NAME') or "dcozguaw3"
     CLOUDINARY_API_KEY = os.environ.get('CLOUDINARY_API_KEY') or "798295575458768"
     CLOUDINARY_API_SECRET = os.environ.get('CLOUDINARY_API_SECRET') or "HwXtPdaC5M1zepKZUriKCYZ9tsI"
+    
+    # Celery
+    CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL') or 'rediss://red-cmjaqc7qd2ns7388kg00:ZwH1Z5rmf95QMrSZh5C9mVwxFKx1A6Qd@oregon-redis.render.com:6379'
+    CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND') or 'rediss://red-cmjaqc7qd2ns7388kg00:ZwH1Z5rmf95QMrSZh5C9mVwxFKx1A6Qd@oregon-redis.render.com:6379'
+

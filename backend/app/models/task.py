@@ -1,8 +1,8 @@
-from app.extensions import db
+from datetime import datetime
 from sqlalchemy.orm import backref
 from sqlalchemy.exc import IntegrityError
-from datetime import datetime
 
+from app.extensions import db
 from app.models import Media
 from app.utils.helpers.basic_helpers import generate_random_string
 

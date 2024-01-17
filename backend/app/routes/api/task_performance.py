@@ -29,8 +29,7 @@ def perform_task():
 @jwt_required()
 def get_current_user_performed_tasks():
     status = request.args.get('status', '')
-    console_log('status', status)
-        
+    
     # Get Performed Tasks by status. (in_review, failed, completed, canceled)
     if status:
         return TaskPerformanceController.get_user_performed_tasks_by_status(status.lower())

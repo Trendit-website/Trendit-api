@@ -85,7 +85,8 @@ class Trendit3User(db.Model):
                 'firstname': self.profile.firstname,
                 'lastname': self.profile.lastname,
                 'profile_picture': self.profile.get_profile_img(),
-                'referral_link': self.profile.referral_link
+                'referral_link': self.profile.referral_link,
+                'referral_code': self.profile.referral_code
             })
 
         return {
