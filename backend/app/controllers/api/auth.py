@@ -545,7 +545,6 @@ class AuthController:
     def logout():
         try:
             resp = make_response(success_response('User logged out successfully', 200))
-            unset_jwt_cookies(resp)
             return resp
         except Exception as e:
             resp = make_response(error_response(f'Log out failed: {e}', 500))
