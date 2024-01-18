@@ -86,7 +86,9 @@ class Trendit3User(db.Model):
                 'lastname': self.profile.lastname,
                 'profile_picture': self.profile.get_profile_img(),
                 'referral_link': self.profile.referral_link,
-                'referral_code': self.profile.referral_code
+                'referral_code': self.profile.referral_code,
+                'bank': self.profile.bank,
+                'account_no': self.profile.account_no
             })
 
         return {
@@ -114,6 +116,8 @@ class Profile(db.Model):
     phone = db.Column(db.String(120), nullable=True)
     profile_picture_id = db.Column(db.Integer(), db.ForeignKey('media.id'), nullable=True)
     referral_code = db.Column(db.String(255), nullable=True)
+    bank = db.Column(db.String(100), nullable=True)
+    account_no = db.Column(db.Integer(12), nullable=True)
     
     trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id', ondelete='CASCADE'), nullable=False,)
     trendit3_user = db.relationship('Trendit3User', back_populates="profile")
@@ -149,7 +153,9 @@ class Profile(db.Model):
             'lastname': self.lastname,
             'phone': self.phone,
             'profile_picture': self.get_profile_img(),
-            'referral_link': f'{self.referral_link}'
+            'referral_link': f'{self.referral_link}',
+            'bank': self.bank,
+            'account_no': self.account_no
         }
 
 
