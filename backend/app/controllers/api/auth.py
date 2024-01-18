@@ -402,13 +402,10 @@ class AuthController:
             # get user from db with the email/username.
             user = get_trendit3_user(token_data['email'])
             access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=43200), additional_claims={'type': 'access'})
-            extra_data = {}
+            extra_data = {'access_token':access_token}
             
             # Create response
             resp = make_response(success_response('User logged in successfully', 200, extra_data))
-            
-            # Set access token in a secure HTTP-only cookie
-            set_access_cookies(resp, access_token)
             
             return resp
         except UnsupportedMediaType as e:

@@ -18,17 +18,13 @@ class Config:
     DOMAIN_NAME = os.environ.get('DOMAIN_NAME') or 'www.trendit3.com'
     TASKS_PER_PAGE = os.environ.get('TASKS_PER_PAGE') or 10
     ITEMS_PER_PAGE = os.environ.get('ITEMS_PER_PAGE') or 10
-    CLIENT_ORIGINS = os.environ.get('CLIENT_ORIGINS') or 'http://localhost:3000,https://trendit3.vercel.app'
+    CLIENT_ORIGINS = os.environ.get('CLIENT_ORIGINS') or 'http://localhost:3000,http://localhost:5173,https://trendit3.vercel.app'
     CLIENT_ORIGINS = [origin.strip() for origin in CLIENT_ORIGINS.split(',')]
     
     # JWT configurations
     JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY') or "super-secret" # Change This
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=30)
-    JWT_TOKEN_LOCATION = ['cookies']
-    JWT_COOKIE_SECURE = False  # Set to True in a production environment
-    JWT_ACCESS_COOKIE_PATH = '/api/'
-    JWT_REFRESH_COOKIE_PATH = '/token/refresh'
-    JWT_COOKIE_CSRF_PROTECT = True
+    
     
     # Paystack Configurations
     PAYMENT_GATEWAY = 'Paystack'
