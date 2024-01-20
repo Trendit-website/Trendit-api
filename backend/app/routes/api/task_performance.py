@@ -6,7 +6,7 @@ from app.controllers.api import TaskPerformanceController
 from app.utils.helpers.basic_helpers import console_log
 
 
-@bp.route('/generate-task', methods=['GET'])
+@bp.route('/generate-task', methods=['GET, POST'])
 @jwt_required()
 def generate_task():
     return TaskPerformanceController.generate_task()
