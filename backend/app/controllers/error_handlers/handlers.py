@@ -1,3 +1,4 @@
+import logging
 from flask import Flask, jsonify, render_template
 from app.routes.error_handlers import bp
 from app.utils.helpers.basic_helpers import console_log
@@ -34,6 +35,7 @@ class ErrorHandlers:
     
     @staticmethod
     def unprocessable(error):
+        logging.exception("An unprocessable error occurred:", str(error))
         return jsonify({
             "status": 'failed',
             "status_code": 422,
