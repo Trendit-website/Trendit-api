@@ -32,8 +32,6 @@ class TaskPerformanceController:
             task_type = data.get('task_type')
             filter_value = data.get('platform') or data.get('goal', '')
             
-            console_log('task_type', task_type)
-            console_log('filter_value', filter_value)
             random_task = generate_random_task(task_type, filter_value)
             
             msg = f'An unassigned {task_type.capitalize()} task for {filter_value} retrieved successfully.'

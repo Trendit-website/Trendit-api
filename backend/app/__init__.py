@@ -69,7 +69,8 @@ def create_app(config_class=Config):
         try:
             tasks = Task.query.all()
             for task in tasks:
-                task.platform = task.platform.lower() if task.platform else task.platform
+                task.total_success = 0
+                task.total_allocated = 0
             db.session.commit()
             
             return jsonify({

@@ -119,14 +119,10 @@ def generate_random_task(task_type, filter_value):
             raise PendingTaskError
         
         task_model = (AdvertTask if task_type == 'advert' else EngagementTask if task_type == 'engagement' else None)
-        console_log('task_model', task_model)
         
         # Dynamically filter by platform, goal, posts_count or engagements_count based on task type
         filter_field = 'platform' if task_type == 'advert' else 'goal'
         count_field = 'posts_count' if task_type == 'advert' else 'engagements_count'
-        
-        console_log('filter_field', filter_field)
-        console_log('count_field', count_field)
         
         # Filter for unassigned tasks
         unassigned_task = task_model.query.filter(
@@ -134,8 +130,6 @@ def generate_random_task(task_type, filter_value):
             task_model.payment_status == 'Complete',
             getattr(task_model, count_field) > getattr(task_model, 'total_success')
         ).order_by(func.random()).first()
-        
-        console_log('unassigned_task', unassigned_task)
         
         
         if not unassigned_task:
@@ -248,7 +242,7 @@ def initiate_task(task, status='pending'):
         initiated_task = TaskPerformance.create_task_performance(user_id=current_user_id, task_id=task.id, task_type=task.type, status=status, reward_money=0.0, proof_screenshot_id=None)
         
         # Mark the task as assigned
-        task.allocated += 1
+        task.total_allocated += 1
         db.session.add(task)
         db.session.commit()
         
