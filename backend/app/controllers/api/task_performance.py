@@ -49,7 +49,7 @@ class TaskPerformanceController:
         except NoUnassignedTaskError as e:
             error = True
             msg = f'{e}'
-            status_code = 404
+            status_code = 200
             logging.exception(f"An exception occurred generating random task:", str(e))
         except AttributeError as e:
             error = True
