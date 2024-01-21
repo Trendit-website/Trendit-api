@@ -1,4 +1,3 @@
-from flask import Flask, jsonify
 from requests.exceptions import JSONDecodeError
 from flask_jwt_extended.exceptions import NoAuthorizationError, InvalidHeaderError, WrongTokenError, CSRFError
 from jwt import ExpiredSignatureError
