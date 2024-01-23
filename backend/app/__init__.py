@@ -23,13 +23,17 @@ def create_app(config_class=Config):
     mail.init_app(app) # Initialize Flask-Mail
     migrate = Migrate(app, db)
     
-    # Initialize Celery
-    celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
-    celery.conf.update(result_backend=app.config['CELERY_RESULT_BACKEND'])
-    celery.conf.broker_connection_retry_on_startup = True
+    celery.conf.update(app.config)
+    TaskBase = celery.Task
+    class ContextTask(TaskBase):
+        abstract = True
+
+        def __call__(self, *args, **kwargs):
+            with app.app_context():
+                return TaskBase.__call__(self, *args, **kwargs)
+
+    celery.Task = ContextTask
     
-    console_log('CELERY_BROKER_URL', app.config['CELERY_BROKER_URL'])
-    console_log('CELERY_RESULT_BACKEND', app.config['CELERY_RESULT_BACKEND'])
     
     # Set up CORS. Allow '*' for origins.
     cors = CORS(app, resources={r"/*": {"origins": Config.CLIENT_ORIGINS}}, supports_credentials=True)

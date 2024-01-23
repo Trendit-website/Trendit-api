@@ -1,11 +1,13 @@
 import os, secrets
 from datetime import timedelta
+from celery import Celery
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 class Config:
     # other app configurations
+    ENV = 'development'
     SECRET_KEY = os.environ.get('SECRET_KEY') or os.urandom(32)
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'postgresql://postgres:zeddy@localhost:5432/trendit3'
     #SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'postgresql://trendit3_user:WXyn8pubfYkYkG5pwuTHwCDDIZR7b3Bp@dpg-ckmg2qqv7m0s739krnvg-a.oregon-postgres.render.com/trendit3'
@@ -56,6 +58,12 @@ class Config:
     CLOUDINARY_API_SECRET = os.environ.get('CLOUDINARY_API_SECRET') or "HwXtPdaC5M1zepKZUriKCYZ9tsI"
     
     # Celery
-    CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL') or 'rediss://red-cmjaqc7qd2ns7388kg00:ZwH1Z5rmf95QMrSZh5C9mVwxFKx1A6Qd@oregon-redis.render.com:6379'
-    CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND') or 'rediss://red-cmjaqc7qd2ns7388kg00:ZwH1Z5rmf95QMrSZh5C9mVwxFKx1A6Qd@oregon-redis.render.com:6379'
+    CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL') or 'redis://localhost:6379/0'
+    CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND') or 'redis://localhost:6379/0'
 
+    @classmethod
+    def init_celery(cls):
+        app = Celery('app', broker=cls.CELERY_BROKER_URL, backend=cls.CELERY_RESULT_BACKEND)
+        return app
+    
+    

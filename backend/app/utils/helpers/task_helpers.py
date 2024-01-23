@@ -8,6 +8,7 @@ from app.models.task import Task, AdvertTask, EngagementTask, TaskPerformance
 from app.utils.helpers.basic_helpers import console_log
 from app.utils.helpers.media_helpers import save_media
 from app.exceptions import PendingTaskError, NoUnassignedTaskError
+from app.jobs.task_expiration import check_task_status
 
 
 def fetch_task(task_id_key):
@@ -245,6 +246,7 @@ def initiate_task(task, status='pending'):
         task.total_allocated += 1
         db.session.add(task)
         db.session.commit()
+        check_task_status.apply_async(args=[initiated_task.id], countdown=3600)
         
     except Exception as e:
         logging.exception("An exception occurred trying to initiate task performance: ==>", str(e))
