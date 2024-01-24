@@ -3,6 +3,7 @@ from app.jobs import update_pending_tasks
 
 app = create_app()
 
+'''
 @celery_app.schedule
 def periodic_tasks():
     # Schedule the update_pending_tasks task to run every minute
@@ -13,3 +14,4 @@ if __name__ == '__main__':
 
     # Start the Celery worker in the background
     celery_app.worker_main()
+'''
