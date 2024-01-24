@@ -11,7 +11,8 @@ from app.models.item import Item
 from app.models.task import Task, AdvertTask, EngagementTask
 
 from config import Config
-from app.extensions import db, celery, mail
+from app.extensions import db, mail
+from app.jobs import celery_app
 from app.utils.helpers.basic_helpers import console_log
 
 def create_app(config_class=Config):
@@ -19,21 +20,9 @@ def create_app(config_class=Config):
     app.config.from_object(config_class)
 
     # Initialize Flask extensions here
-    db.init_app(app) # changed from db = SQLAlchemy(app)
+    db.init_app(app)
     mail.init_app(app) # Initialize Flask-Mail
     migrate = Migrate(app, db)
-    
-    celery.conf.update(app.config)
-    TaskBase = celery.Task
-    class ContextTask(TaskBase):
-        abstract = True
-
-        def __call__(self, *args, **kwargs):
-            with app.app_context():
-                return TaskBase.__call__(self, *args, **kwargs)
-
-    celery.Task = ContextTask
-    
     
     # Set up CORS. Allow '*' for origins.
     cors = CORS(app, resources={r"/*": {"origins": Config.CLIENT_ORIGINS}}, supports_credentials=True)
@@ -88,5 +77,6 @@ def create_app(config_class=Config):
                 'message': f'Error updating {e}',
                 'status code': 401,
             }), 401
+    
     
     return app

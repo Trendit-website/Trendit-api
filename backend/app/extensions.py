@@ -14,10 +14,3 @@ def make_celery(app_name=__name__):
     return Celery(app_name, backend=backend, broker=broker)
 
 celery = make_celery()
-
-celery.conf.beat_schedule = {
-    'check-task-timeouts-every-hour': {
-        'task': 'app.jobs.check_task_timeouts',
-        'schedule': crontab(minute=0),
-    },
-}

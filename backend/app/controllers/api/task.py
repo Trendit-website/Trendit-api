@@ -416,6 +416,7 @@ class TaskController:
     
         try:
             data = request.form.to_dict()
+            console_log('Form', request.form)
             console_log('Form Data', data)
             console_log('amount', data.get('amount'))
             amount = int(data.get('amount'))
