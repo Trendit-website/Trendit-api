@@ -24,7 +24,7 @@ class Task(db.Model):
     
     @classmethod
     def create_task(cls, trendit3_user_id, type, platform, fee, payment_status, media_id=None, **kwargs):
-        the_task_ref = generate_random_string(8)
+        the_task_ref = generate_random_string(15)
         counter = 1
         max_attempts = 6  # maximum number of attempts to create a unique task_key
         
