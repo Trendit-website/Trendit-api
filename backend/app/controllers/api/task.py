@@ -415,18 +415,18 @@ class TaskController:
         error = False
     
         try:
-            console_log('Form', request.form)
-            console_log('request files', request.files)
-            
             data = request.form.to_dict()
-            console_log('Form Data', data)
-            console_log('amount', data.get('amount'))
             amount = int(data.get('amount'))
             payment_method = request.args.get('payment_method', 'trendit_wallet')
             current_user_id = get_jwt_identity()
             
             
             if payment_method == 'payment_gateway':
+                callback_url = request.headers.get('CALLBACK-URL')
+                if not callback_url:
+                    return error_response('callback URL not provided in the request headers', 400)
+                data['callback_url'] = callback_url # add callback url to data
+                
                 new_task = save_task(data)
                 if new_task is None:
                     return error_response('Error creating new task', 500)
@@ -452,7 +452,7 @@ class TaskController:
             error = True
             status_code = 500
             msg = "Error creating new task"
-            logging.exception("An exception occurred during creation of Task ==>", str(e))
+            logging.exception(f"An exception occurred during creation of Task ==> {str(e)}")
         
         if error:
             return error_response(msg, status_code)

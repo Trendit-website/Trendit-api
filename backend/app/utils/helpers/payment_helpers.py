@@ -31,6 +31,7 @@ def initialize_payment(user_id, data, payment_type=None, meta_data=None):
         # get payment info
         amount = int(data.get('amount'))
         payment_type = payment_type or data.get('payment_type')
+        callback_url = data.get('callback_url')
         meta = {
             "user_id": user_id,
             "username": Trendit3_user.username,
@@ -49,7 +50,7 @@ def initialize_payment(user_id, data, payment_type=None, meta_data=None):
         auth_data = {
             "email": Trendit3_user.email,
             "amount": amount_kobo,
-            "callback_url": "https://trendit3.vercel.app/homepage",
+            "callback_url": callback_url,
             "metadata": meta,
         }
         
@@ -72,17 +73,20 @@ def initialize_payment(user_id, data, payment_type=None, meta_data=None):
             authorization_url = response_data['data']['authorization_url'] # Get authorization URL from response
             extra_data = {
                 'authorization_url': authorization_url,
-                'payment_type': payment_type
+                'payment_type': payment_type,
+                "metadata": meta
             }
         else:
             error = True
             status_code = 400
             msg = 'Payment initialization failed'
+            response_data.update({"metadata": meta})
             authorization_url = None
     except Exception as e:
         error = True
         msg = 'An error occurred while processing the request.'
         status_code = 500
+        response_data.update({"metadata": meta})
         logging.exception("An exception occurred during registration.\n", str(e)) # Log the error details for debugging
         db.session.rollback()
     finally:

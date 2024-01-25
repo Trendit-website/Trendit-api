@@ -25,6 +25,11 @@ class PaymentController:
         """
         
         data = request.get_json()
+        callback_url = request.headers.get('CALLBACK-URL')
+        if not callback_url:
+            return error_response('callback URL not provided in the request headers', 400)
+        data['callback_url'] = callback_url # add callback url to data
+        
         user_id = int(get_jwt_identity())
 
         return initialize_payment(user_id, data, payment_type)

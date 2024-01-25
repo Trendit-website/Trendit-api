@@ -48,6 +48,11 @@ class ItemController:
         
         try:
             data = request.form.to_dict()
+            callback_url = request.headers.get('CALLBACK-URL')
+            if not callback_url:
+                return error_response('callback URL not provided in the request headers', 400)
+            data['callback_url'] = callback_url # add callback url to data
+            
             item_type = data.get('item_type', '')
             user_id = get_jwt_identity()
             
