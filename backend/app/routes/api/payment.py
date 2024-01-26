@@ -1,9 +1,9 @@
 from flask_jwt_extended import jwt_required
 
-from app.routes.api import bp
+from . import api
 from app.controllers.api.payment import PaymentController
 
-@bp.route('/payment/<payment_type>', methods=['POST'])
+@api.route('/payment/<payment_type>', methods=['POST'])
 @jwt_required()
 def make_payment(payment_type):
     """
@@ -15,7 +15,7 @@ def make_payment(payment_type):
     return PaymentController.process_payment(payment_type)
 
 
-@bp.route('/payment/verify', methods=['POST'])
+@api.route('/payment/verify', methods=['POST'])
 @jwt_required()
 def verify_payment():
     """
@@ -27,7 +27,7 @@ def verify_payment():
     return PaymentController.verify_payment()
 
 
-@bp.route('/payment/history', methods=['GET'])
+@api.route('/payment/history', methods=['GET'])
 @jwt_required()
 def payment_history():
     """
@@ -39,7 +39,7 @@ def payment_history():
     return PaymentController.get_payment_history()
 
 
-@bp.route('/payment/webhook', methods=['POST'])
+@api.route('/payment/webhook', methods=['POST'])
 def payment_hook():
     """
     Handles a webhook for a payment.

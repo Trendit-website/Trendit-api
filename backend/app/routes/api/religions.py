@@ -1,7 +1,7 @@
 import logging
 from flask import request
 
-from app.routes.api import bp
+from . import api
 from app.utils.helpers.response_helpers import error_response, success_response
 
 # list of all practiced religions
@@ -19,7 +19,7 @@ religions = [
 ]
 
 # RELIGIONS ENDPOINTS
-@bp.route("/religions", methods=['GET'])
+@api.route("/religions", methods=['GET'])
 def get_all_religion():
     """
     Get a list of all practiced religions.
@@ -36,7 +36,7 @@ def get_all_religion():
         return error_response('Error occurred retrieving practiced religions.', 500)
 
 
-@bp.route("/religions/search", methods=["GET"])
+@api.route("/religions/search", methods=["GET"])
 def search_religions():
     """
     Search for religions containing a specific keyword in their name.

@@ -1,3 +1,4 @@
+import time
 from flask import Flask, jsonify
 from flask_moment import Moment
 from flask_migrate import Migrate
@@ -44,7 +45,7 @@ def create_app(config_class=Config):
     
     
     # Register blueprints
-    from app.routes.api import bp as api_bp
+    from app.routes.api import api as api_bp
     app.register_blueprint(api_bp)
     
     from app.routes.api_admin import bp as api_admin_bp
@@ -57,26 +58,23 @@ def create_app(config_class=Config):
     with app.app_context():
         create_roles()  # Create roles for trendit3
     
-    @app.route("/test", methods=['PUT'])
-    def update_platform_to_lowercase():
+    @app.cli.command()
+    def quickUpdate():
+        """Update task in database."""
         try:
+            print('fetching tasks...')
             tasks = Task.query.all()
+            time.sleep(2)
+            print('updating each tasks...')
             for task in tasks:
+                print(f'updating task {task.id}...')
                 task.total_success = 0
                 task.total_allocated = 0
+                time.sleep(1)
             db.session.commit()
-            
-            return jsonify({
-                "status": 'done',
-                'message': 'Updated',
-                'status code': 200,
-            }), 200
+            print('update for each tasks is Done')
         except Exception as e:
-            return jsonify({
-                "status": 'failed',
-                'message': f'Error updating {e}',
-                'status code': 401,
-            }), 401
-    
+            print('Error updating each tasks')
+        
     
     return app
