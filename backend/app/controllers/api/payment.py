@@ -83,9 +83,9 @@ class PaymentController:
                     msg = f"Completed: {verification_response['data']['gateway_response']}"
                     extra_data = {}
                     
-                    if transaction.status != 'Complete':
+                    if transaction.status != 'complete':
                         # Record the payment in the database
-                        transaction.status = 'Complete'
+                        transaction.status = 'complete'
                         
                         payment = Payment(trendit3_user_id=user_id, amount=amount, payment_type=payment_type, key=generate_random_string(10), payment_method='payment_gateway')
                         with db.session.begin_nested():
@@ -103,7 +103,7 @@ class PaymentController:
                         elif payment_type == 'task_creation':
                             task_key = verification_response['data']['metadata']['task_key']
                             task = get_task_by_key(task_key)
-                            task.update(payment_status='Complete')
+                            task.update(payment_status='complete')
                             task_dict = task.to_dict()
                             
                             msg = 'Payment verified and Task has been created successfully'
@@ -122,7 +122,7 @@ class PaymentController:
                             msg = 'Wallet Credited successfully'
                             extra_data.update({'user': trendit3_user.to_dict()})
                     
-                    elif transaction.status == 'Complete':
+                    elif transaction.status == 'complete':
                         if payment_type == 'membership-fee':
                             msg = 'Payment Completed successfully and Account is already activated'
                             extra_data.update({'membership_fee_paid': trendit3_user.membership.membership_fee_paid,})
@@ -224,9 +224,9 @@ class PaymentController:
                 # Check if this is a successful payment event
                 if data['event'] == 'charge.success':
                     
-                    if transaction.status != 'Complete':
+                    if transaction.status != 'complete':
                         # Record the payment in the database
-                        transaction.status = 'Complete'
+                        transaction.status = 'complete'
                         
                         payment = Payment(trendit3_user_id=user_id, amount=amount, payment_type=payment_type, key=generate_random_string(10), payment_method='payment_gateway')
                         with db.session.begin_nested():
