@@ -95,6 +95,8 @@ class Task(db.Model):
             'payment_status': self.payment_status,
             'total_allocated': self.total_allocated,
             'total_success': self.total_success,
+            'date_created': self.date_created,
+            'updated_at': self.updated_at,
             'creator': {
                 'id': self.trendit3_user_id,
                 'username': self.trendit3_user.username,
@@ -116,6 +118,14 @@ class AdvertTask(Task):
     
     def __repr__(self):
         return f'<ID: {self.id}, User ID: {self.trendit3_user_id}, Platform: {self.platform}, Posts Count: {self.posts_count}>'
+    
+    def basic_to_dict(self):
+        return {
+            'id': self.id,
+            'type': self.type,
+            'platform': self.platform,
+            'task_key': self.task_key,
+        }
     
     def to_dict(self):
         return {
@@ -150,6 +160,14 @@ class EngagementTask(Task):
     def __repr__(self):
         return f'<ID: {self.id}, User ID: {self.trendit3_user_id}, Goal: {self.goal}, Platform: {self.platform}>'
     
+    def basic_to_dict(self):
+        return {
+            'id': self.id,
+            'type': self.type,
+            'goal': self.goal,
+            'task_key': self.task_key,
+        }
+    
     def to_dict(self):
         return {
             'id': self.id,
@@ -174,16 +192,17 @@ class EngagementTask(Task):
 class TaskPerformance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     key = db.Column(db.String(120), unique=True, nullable=False, default=generate_random_string(12))
-    task_id = db.Column(db.Integer, nullable=False)  # either an AdvertTask id or an EngagementTask id
     task_type = db.Column(db.String(80), nullable=False)  # either 'advert' or 'engagement'
     reward_money = db.Column(db.Float(), default=00.00, nullable=True)
-    proof_screenshot_id = db.Column(db.Integer, db.ForeignKey('media.id'), nullable=True)
     status = db.Column(db.String(80), default='pending') # pending, in_review, timed_out
     started_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     date_completed = db.Column(db.DateTime, nullable=True)
     
+    task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)  # either an AdvertTask id or an EngagementTask id
     user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
+    proof_screenshot_id = db.Column(db.Integer, db.ForeignKey('media.id'), nullable=True)
     trendit3_user = db.relationship('Trendit3User', backref=db.backref('performed_tasks', lazy='dynamic'))
+    task = db.relationship('Task', backref=db.backref('performances', lazy='dynamic'))
     
     def __repr__(self):
         return f'<ID: {self.id}, User ID: {self.user_id}, Task ID: {self.task_id}, Task Type: {self.task_type}, Status: {self.status}>'
@@ -218,25 +237,14 @@ class TaskPerformance(db.Model):
         else:
             return None
     
+    def get_task(self):
+        task_model = (AdvertTask if self.task_type == 'advert' else EngagementTask if self.task_type == 'engagement' else Task)
+        task = task_model.query.get(self.task_id)
+        task_dict = task.basic_to_dict()
+        
+        return task_dict
+        
     def to_dict(self):
-        taskInfo = {
-            'task_id': self.task_id,
-            'task_type': self.task_type,
-        }
-        if self.task_type == 'engagement':
-            task = EngagementTask.query.get(self.task_id)
-            taskInfo.update({
-                'goal': task.goal,
-            })
-        elif self.task_type == 'advert':
-            task = AdvertTask.query.get(self.task_id)
-            taskInfo.update({
-                'platform': task.platform,
-            })
-        else:
-            pass
-            
-            
         return {
             'id': self.id,
             'key': self.key,
@@ -249,5 +257,5 @@ class TaskPerformance(db.Model):
                 'username': self.trendit3_user.username,
                 'email': self.trendit3_user.email
             },
-            'task': taskInfo,
+            'task': self.get_task(),
         }
