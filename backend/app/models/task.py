@@ -223,18 +223,18 @@ class TaskPerformance(db.Model):
             'task_id': self.task_id,
             'task_type': self.task_type,
         }
-        task = Task.query.get(self.task_id)
-        if task:
-            if self.task_type == 'engagement':
-                taskInfo.update({
-                    'goal': task.goal,
-                })
-            elif self.task_type == 'advert':
-                taskInfo.update({
-                    'platform': task.platform,
-                })
-            else:
-                pass
+        if self.task_type == 'engagement':
+            task = EngagementTask.query.get(self.task_id)
+            taskInfo.update({
+                'goal': task.goal,
+            })
+        elif self.task_type == 'advert':
+            task = AdvertTask.query.get(self.task_id)
+            taskInfo.update({
+                'platform': task.platform,
+            })
+        else:
+            pass
             
             
         return {
