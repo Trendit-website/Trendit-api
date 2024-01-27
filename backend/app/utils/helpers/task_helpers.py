@@ -115,8 +115,10 @@ def generate_random_task(task_type, filter_value):
         current_user_id = int(get_jwt_identity())
         performed_task = TaskPerformance.query.filter_by(status='pending', user_id=current_user_id).first()
         
+        '''
         if performed_task:
             raise PendingTaskError
+        '''
         
         task_model = (AdvertTask if task_type == 'advert' else EngagementTask if task_type == 'engagement' else None)
         

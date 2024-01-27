@@ -240,7 +240,7 @@ class TaskPerformance(db.Model):
     def get_task(self):
         task_model = (AdvertTask if self.task_type == 'advert' else EngagementTask if self.task_type == 'engagement' else Task)
         task = task_model.query.get(self.task_id)
-        task_dict = task.basic_to_dict()
+        task_dict = task.to_dict()
         
         return task_dict
         
