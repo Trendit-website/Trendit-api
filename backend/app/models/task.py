@@ -219,11 +219,27 @@ class TaskPerformance(db.Model):
             return None
     
     def to_dict(self):
+        taskInfo = {
+            'task_id': self.task_id,
+            'task_type': self.task_type,
+        }
+        task = Task.query.get(self.task_id)
+        if task:
+            if self.task_type == 'engagement':
+                taskInfo.update({
+                    'goal': task.goal,
+                })
+            elif self.task_type == 'advert':
+                taskInfo.update({
+                    'platform': task.platform,
+                })
+            else:
+                pass
+            
+            
         return {
             'id': self.id,
             'key': self.key,
-            'task_id': self.task_id,
-            'task_type': self.task_type,
             'reward_money': self.reward_money,
             'proof_screenshot_path': self.get_proof_screenshot(),
             'status': self.status,
@@ -233,4 +249,5 @@ class TaskPerformance(db.Model):
                 'username': self.trendit3_user.username,
                 'email': self.trendit3_user.email
             },
+            'task': taskInfo,
         }
