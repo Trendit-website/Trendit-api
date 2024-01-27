@@ -74,7 +74,7 @@ def create_app(config_class=Config):
             db.session.commit()
             print('update for each tasks is Done')
         except Exception as e:
-            print('Error updating each tasks')
+            print(f'Error updating each tasks: ==> {e}')
         
     
     return app

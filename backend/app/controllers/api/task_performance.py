@@ -85,7 +85,7 @@ class TaskPerformanceController:
             # Create a new TaskPerformance instance
             task_performance = TaskPerformance(
                 task_id=task.id,
-                task_type=task.type,
+                task_type=task.task_type,
                 user_id=current_user_id,
                 status='pending'
             )
