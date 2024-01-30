@@ -1,5 +1,5 @@
 import time
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_moment import Moment
 from flask_migrate import Migrate
 from flask_cors import CORS
@@ -11,7 +11,7 @@ from app.models.role import create_roles
 from app.models.item import Item
 from app.models.task import Task, AdvertTask, EngagementTask
 
-from config import Config
+from config import Config, configure_logging
 from app.extensions import db, mail
 from app.jobs import celery_app
 from app.utils.helpers.basic_helpers import console_log
@@ -28,6 +28,16 @@ def create_app(config_class=Config):
     # Set up CORS. Allow '*' for origins.
     cors = CORS(app, resources={r"/*": {"origins": Config.CLIENT_ORIGINS}}, supports_credentials=True)
 
+    # Use the before_request decorator to trace incoming requests and CORS headers.
+    @app.before_request
+    def log_request_info():
+        app.logger.debug('Request Headers: %s', request.headers)
+
+    @app.after_request
+    def log_response_info(response):
+        app.logger.debug('Response Headers: %s', response.headers)
+        return response
+    
     # Use the after_request decorator to set Access-Control-Allow
     @app.after_request
     def after_request(response):
@@ -39,6 +49,8 @@ def create_app(config_class=Config):
         )
         return response
     
+    # Configure logging
+    configure_logging(app)
     
     # Setup the Flask-JWT-Extended extension
     jwt = JWTManager(app)

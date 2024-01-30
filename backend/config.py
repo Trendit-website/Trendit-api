@@ -1,4 +1,4 @@
-import os, secrets
+import os, secrets, logging
 from datetime import timedelta
 from celery import Celery
 
@@ -69,4 +69,11 @@ class Config:
         app = Celery('app', broker=cls.CELERY_BROKER_URL, backend=cls.CELERY_RESULT_BACKEND)
         return app
     
-    
+
+def configure_logging(app):
+    formatter = logging.Formatter('[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
+    handler = logging.StreamHandler()
+    handler.setFormatter(formatter)
+    app.logger.addHandler(handler)
+    app.logger.setLevel(logging.DEBUG)  # Set the desired logging level
+
