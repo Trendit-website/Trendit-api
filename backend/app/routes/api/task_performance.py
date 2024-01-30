@@ -37,10 +37,10 @@ def get_current_user_performed_tasks():
 
 
 
-@api.route('/performed-tasks/<int:pt_id>', methods=['GET'])
+@api.route('/performed-tasks/<int:pt_id_task>', methods=['GET'])
 @jwt_required()
-def get_performed_task(pt_id):
-    return TaskPerformanceController.get_performed_task(pt_id)
+def get_performed_task(pt_id_key):
+    return TaskPerformanceController.get_performed_task(pt_id_key)
 
 
 @api.route('/performed-tasks/<int:pt_id>', methods=['PUT'])

@@ -4,7 +4,7 @@ from flask_jwt_extended import get_jwt_identity
 
 from app.extensions import db
 from app.models.task import TaskPerformance
-from app.utils.helpers.task_helpers import save_performed_task, fetch_task, generate_random_task
+from app.utils.helpers.task_helpers import save_performed_task, fetch_task, generate_random_task, fetch_performed_task
 from app.utils.helpers.response_helpers import error_response, success_response
 from app.utils.helpers.basic_helpers import console_log
 from app.exceptions import PendingTaskError, NoUnassignedTaskError
@@ -223,12 +223,12 @@ class TaskPerformanceController:
     
     
     @staticmethod
-    def get_performed_task(pt_id):
+    def get_performed_task(pt_id_key):
         error = False
         
         try:
             current_user_id = int(get_jwt_identity())
-            performed_task = TaskPerformance.query.filter(TaskPerformance.id == pt_id).first()
+            performed_task = fetch_performed_task(pt_id_key)
             if performed_task is None:
                 return error_response('Performed task not found', 404)
             

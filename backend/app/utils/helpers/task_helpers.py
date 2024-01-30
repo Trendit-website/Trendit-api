@@ -332,6 +332,7 @@ def fetch_performed_task(pt_id_key):
 
 
 def fetch_performed_tasks_by_status(status):
+
     try:
         current_user_id = int(get_jwt_identity())
         page = request.args.get("page", 1, type=int)
@@ -352,3 +353,30 @@ def fetch_performed_tasks_by_status(status):
         return json_data
     except Exception as e:
         raise e
+
+
+def fetch_performed_task(pt_id_key):
+    """
+    Fetches a Performed task from the database based on either its ID or key.
+
+    Parameters:
+    - pt_id_key (int or str): The ID or task_key of the task to fetch. 
+        - If an integer, the function fetches the task by ID; 
+        - if a string, it fetches the task by task_key.
+
+    Returns:
+    - Task or None: The fetched Performed task if found, or None if no Performed task matches the provided ID or key.
+    """
+    try:
+        # Check if task_id_key is an integer
+        pt_id_key = int(pt_id_key)
+        # Fetch the task by id
+        performed_task = TaskPerformance.query.filter_by(id=pt_id_key).first()
+    except ValueError:
+        # If not an integer, treat it as a string
+        performed_task = TaskPerformance.query.filter_by(key=pt_id_key).first()
+
+    if performed_task:
+        return performed_task
+    else:
+        return None
