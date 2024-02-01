@@ -39,6 +39,9 @@ class Trendit3User(db.Model):
         '''
         return check_password_hash(self.thePassword, password)
     
+    @property
+    def wallet_balance(self):
+        return self.wallet.balance
     
     def __repr__(self):
         return f'<ID: {self.id}, username: {self.username}, email: {self.email}>'

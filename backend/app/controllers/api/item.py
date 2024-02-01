@@ -72,7 +72,7 @@ class ItemController:
             error = True
             status_code = 500
             msg = f"Error creating new {item_type}"
-            logging.exception("An exception occurred during creation of Item.\n", str(e))
+            logging.exception(f"An exception occurred during creation of Item.\n {str(e)}")
         
         if error:
             return error_response(msg, status_code)
