@@ -39,11 +39,12 @@ class StatsController():
             start_of_month = datetime(today.year, today.month, 1)
             total_earnings = Task.query.filter_by(trendit3_user_id=current_user_id, sold=True).filter(Task.date_sold >= start_of_month).sum('price') or 0
             '''
+            total_earnings = 0
             
             # create a dictionary with the stats
             stats = {
                 'wallet_balance': wallet_balance,
-                #'total_earnings': total_earnings,
+                'total_earnings': total_earnings,
                 'total_task_done': total_task_done,
                 'total_amount_spent': total_amount_spent,
             }
