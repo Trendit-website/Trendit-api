@@ -48,3 +48,15 @@ def payment_hook():
         json: A JSON object containing the status of the webhook handling.
     """
     return PaymentController.handle_webhook()
+
+
+@api.route('/payment/withdraw', methods=['POST'])
+@jwt_required()
+def withdraw():
+    """
+    Process for users to Withdraw money into their bank accounts.
+
+    Returns:
+        json: A JSON object containing the status of the withdrawal, a status code, and a message.
+    """
+    return PaymentController.withdraw()

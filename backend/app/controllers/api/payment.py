@@ -316,3 +316,35 @@ class PaymentController:
                 'message': 'Payment history fetched successfully',
                 'payment_history': payment_history
             }), 200
+
+
+    @staticmethod
+    def withdraw():
+        """
+        Process for users to Withdraw money into their bank accounts.
+
+        Returns:
+            json: A JSON object containing the status of the withdrawal, a status code, and a message.
+        """
+        error = False
+        try:
+            current_user_id = get_jwt_identity()
+            user = Trendit3User.query.get(current_user_id)
+            
+            amount = request.json['amount']
+            
+            if user.wallet_balance < amount:
+                return error_response("Insufficient balance", 400)
+            
+            # TODO: add the logic to interact with the Paystack API to initiate the withdrawal process.
+            # If the withdrawal is successful, deduct the amount from the user's balance.
+            
+        except Exception as e:
+            error = True
+            status_code = 500
+            msg = 'An error occurred while processing the withdrawal request'
+            logging.exception(f"An exception occurred processing the withdrawal request:\n {str(e)}",)
+        if error:
+            return error_response(msg, status_code)
+        else:
+            return success_response('Payment history fetched successfully', 200)

@@ -47,8 +47,6 @@ def create_app(config_class=Config):
         response.headers.add(
             "Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS"
         )
-        console_log('response__dict__', response.__dict__)
-        console_log('response dir', dir(response))
         return response
     
     # Configure logging
