@@ -31,11 +31,13 @@ def create_app(config_class=Config):
     # Use the before_request decorator to trace incoming requests and CORS headers.
     @app.before_request
     def log_request_info():
-        app.logger.debug('Request Headers: %s', request.headers)
+        app.logger.debug(f'\n\n{"Request Headers:":-^50}\n{request.headers}\n{"//":-^50}\n\n')
+
 
     @app.after_request
     def log_response_info(response):
-        app.logger.debug('Response Headers: %s', response.headers)
+        app.logger.debug(f'\n\n{"Response Headers:":-^50}\n{response.headers}\n{"//":-^50}\n\n')
+
         return response
     
     # Use the after_request decorator to set Access-Control-Allow
