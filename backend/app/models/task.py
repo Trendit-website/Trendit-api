@@ -24,7 +24,7 @@ class Task(db.Model):
     
     @classmethod
     def create_task(cls, trendit3_user_id, task_type, platform, fee, payment_status, media_id=None, **kwargs):
-        the_task_ref = generate_random_string(15)
+        the_task_ref = generate_random_string(20)
         counter = 1
         max_attempts = 6  # maximum number of attempts to create a unique task_key
         
@@ -191,7 +191,7 @@ class EngagementTask(Task):
 
 class TaskPerformance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    key = db.Column(db.String(120), unique=True, nullable=False, default=generate_random_string(12))
+    key = db.Column(db.String(120), unique=True, nullable=False, default=generate_random_string(20))
     task_type = db.Column(db.String(80), nullable=False)  # either 'advert' or 'engagement'
     reward_money = db.Column(db.Float(), default=00.00, nullable=True)
     account_name = db.Column(db.String(80), nullable=True)
