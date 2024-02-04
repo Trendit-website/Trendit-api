@@ -10,8 +10,6 @@ class Config:
     ENV = 'development'
     SECRET_KEY = os.environ.get('SECRET_KEY') or os.urandom(32)
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'postgresql://postgres:zeddy@localhost:5432/trendit3'
-    #SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'postgresql://trendit3_user:WXyn8pubfYkYkG5pwuTHwCDDIZR7b3Bp@dpg-ckmg2qqv7m0s739krnvg-a.oregon-postgres.render.com/trendit3'
-    
     
     #SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'postgresql://trendit3user:F1dIvuYINM5EJZiF7Vdlpzr0aPafLzVX@dpg-clq5ihhjvg7s73e3amig-a.oregon-postgres.render.com/trendit_db_vhh7'
     SQLALCHEMY_TRACK_MODIFICATIONS = False

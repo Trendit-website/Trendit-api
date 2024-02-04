@@ -9,8 +9,11 @@ class Payment(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     key = db.Column(db.String(80), unique=True, nullable=False)
     amount = db.Column(db.Float(), nullable=False)
-    payment_type = db.Column(db.String(50), nullable=False)  # 'task_fee', 'activation_fee' or 'monthly_fee'
-    gateway = db.Column(db.String(), nullable=False)  # 'wallet' or 'payment gateway(paystack)'
+    payment_type = db.Column(db.String(50), nullable=False)  # 'withdrawals' or 'payment'
+    payment_method = db.Column(db.String(), nullable=False)  # 'wallet' or 'payment gateway(paystack)'
+    payment_category = db.Column(db.String(50), nullable=False)  # 'task_fee', 'activation_fee' or 'monthly_fee'
+    payment_cat = db.Column(db.String(50), nullable=False)
+    
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
