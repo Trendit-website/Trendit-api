@@ -194,6 +194,7 @@ class TaskPerformance(db.Model):
     key = db.Column(db.String(120), unique=True, nullable=False, default=generate_random_string(12))
     task_type = db.Column(db.String(80), nullable=False)  # either 'advert' or 'engagement'
     reward_money = db.Column(db.Float(), default=00.00, nullable=True)
+    account_name = db.Column(db.String(80), nullable=True)
     status = db.Column(db.String(80), default='pending') # pending, in_review, timed_out
     started_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     date_completed = db.Column(db.DateTime, nullable=True)
@@ -208,8 +209,8 @@ class TaskPerformance(db.Model):
         return f'<ID: {self.id}, User ID: {self.user_id}, Task ID: {self.task_id}, Task Type: {self.task_type}, Status: {self.status}>'
     
     @classmethod
-    def create_task_performance(cls, user_id, task_id, task_type, reward_money, proof_screenshot_id, status):
-        task = cls(user_id=user_id, task_id=task_id, task_type=task_type, reward_money=reward_money, proof_screenshot_id=proof_screenshot_id, status=status)
+    def create_task_performance(cls, user_id, task_id, task_type, reward_money, proof_screenshot_id, account_name, status):
+        task = cls(user_id=user_id, task_id=task_id, task_type=task_type, reward_money=reward_money, proof_screenshot_id=proof_screenshot_id, account_name=account_name, status=status)
         
         db.session.add(task)
         db.session.commit()
@@ -250,6 +251,7 @@ class TaskPerformance(db.Model):
             'key': self.key,
             'reward_money': self.reward_money,
             'proof_screenshot_path': self.get_proof_screenshot(),
+            'account_name': self.account_name,
             'status': self.status,
             'date_completed': self.date_completed,
             'user': {

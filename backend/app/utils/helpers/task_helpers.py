@@ -268,6 +268,7 @@ def save_performed_task(data, pt_id=None, status='pending'):
         
         reward_money = float(data.get('reward_money'))
         screenshot = request.files['screenshot']
+        account_name = data.get('account_name')
         
         
         task_type = task.task_type
@@ -295,7 +296,7 @@ def save_performed_task(data, pt_id=None, status='pending'):
             
             return performed_task
         else:
-            new_performed_task = TaskPerformance.create_task_performance(user_id=user_id, task_id=task_id, task_type=task_type, reward_money=reward_money, proof_screenshot_id=screenshot_id, status=status)
+            new_performed_task = TaskPerformance.create_task_performance(user_id=user_id, task_id=task_id, task_type=task_type, reward_money=reward_money, proof_screenshot_id=screenshot_id, account_name=account_name, status=status)
             
             return new_performed_task
     except Exception as e:
