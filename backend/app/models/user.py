@@ -23,6 +23,7 @@ class Trendit3User(db.Model):
     membership = db.relationship('Membership', back_populates="trendit3_user", uselist=False, cascade="all, delete-orphan")
     wallet = db.relationship('Wallet', back_populates="trendit3_user", uselist=False, cascade="all, delete-orphan")
     otp_token = db.relationship('OneTimeToken', back_populates="trendit3_user", uselist=False, cascade="all, delete-orphan")
+    recipients = db.relationship("Recipient", back_populates="trendit3_user") # Relationship with recipients
     roles = db.relationship('Role', secondary='user_roles', backref=db.backref('users', lazy='dynamic'))
     
     @property
@@ -119,8 +120,6 @@ class Profile(db.Model):
     phone = db.Column(db.String(120), nullable=True)
     profile_picture_id = db.Column(db.Integer(), db.ForeignKey('media.id'), nullable=True)
     referral_code = db.Column(db.String(255), nullable=True)
-    bank = db.Column(db.String(100), nullable=True)
-    account_no = db.Column(db.Integer(), nullable=True)
     
     trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id', ondelete='CASCADE'), nullable=False,)
     trendit3_user = db.relationship('Trendit3User', back_populates="profile")

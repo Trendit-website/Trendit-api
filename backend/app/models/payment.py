@@ -10,8 +10,9 @@ class Payment(db.Model):
     key = db.Column(db.String(80), unique=True, nullable=False)
     amount = db.Column(db.Float(), nullable=False)
     payment_type = db.Column(db.String(50), nullable=False)  # 'task_fee', 'activation_fee' or 'monthly_fee'
-    payment_method = db.Column(db.String(), nullable=False)  # 'wallet' or 'payment gateway'
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    gateway = db.Column(db.String(), nullable=False)  # 'wallet' or 'payment gateway(paystack)'
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
     user = db.relationship('Trendit3User')
@@ -74,7 +75,7 @@ class Wallet(db.Model):
     balance = db.Column(db.Float(), default=00.00, nullable=False)
     currency_name = db.Column(db.String(), nullable=False)
     currency_code = db.Column(db.String(), nullable=False)
-
+    
     # Relationship with the user model
     trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
     trendit3_user = db.relationship('Trendit3User', back_populates="wallet")
@@ -106,3 +107,36 @@ class Wallet(db.Model):
             'currency_code': self.currency_code,
         }
 
+
+class Recipient(db.Model):
+    __tablename__ = "recipient"
+
+    id = db.Column(db.Integer, primary_key=True)
+    trendit3_user_id = db.Column(db.Integer, db.ForeignKey("trendit3_user.id"), nullable=False)
+    recipient_code = db.Column(db.String(255), nullable=False, unique=True)
+    bank_name = db.Column(db.String(100), nullable=False)
+    account_no = db.Column(db.String(20), nullable=False)
+    is_primary = db.Column(db.Boolean, default=False)
+
+    # Relationships
+    trendit3_user = db.relationship("Trendit3User", back_populates="recipients")
+    
+    
+    def update(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+        db.session.commit()
+    
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.trendit3_user_id,
+            'recipient_code': self.recipient_code,
+            'bank_name': self.bank_name,
+            'account_no': self.account_no,
+        }
