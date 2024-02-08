@@ -158,8 +158,6 @@ class Profile(db.Model):
             'phone': self.phone,
             'profile_picture': self.get_profile_img(),
             'referral_link': f'{self.referral_link}',
-            'bank': self.bank,
-            'account_no': self.account_no
         }
 
 
