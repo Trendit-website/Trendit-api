@@ -431,12 +431,12 @@ class TaskController:
                 if new_task is None:
                     return error_response('Error creating new task', 500)
                 
-                return initialize_payment(current_user_id, data, payment_type='task_creation', meta_data={'task_key': new_task.task_key})
+                return initialize_payment(current_user_id, data, payment_type='task-creation', meta_data={'task_key': new_task.task_key})
             
             if payment_method == 'trendit_wallet':
                 # Debit the user's wallet
                 try:
-                    debit_wallet(current_user_id, amount, 'task_creation')
+                    debit_wallet(current_user_id, amount, 'task-creation')
                 except ValueError as e:
                     msg = f'Error creating new Task: {e}'
                     return error_response(msg, 400)

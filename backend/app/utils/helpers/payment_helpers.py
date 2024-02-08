@@ -3,7 +3,7 @@ from flask import json
 from flask_jwt_extended import get_jwt_identity
 
 from app.extensions import db
-from app.models.payment import Payment, Transaction
+from app.models.payment import Payment, Transaction, PaystackTransaction, Withdrawal
 from app.models.user import Trendit3User
 from app.utils.helpers.basic_helpers import console_log, generate_random_string
 from app.utils.helpers.response_helpers import error_response, success_response
@@ -31,6 +31,9 @@ def initialize_payment(user_id, data, payment_type=None, meta_data=None):
         # get payment info
         amount = int(data.get('amount'))
         payment_type = payment_type or data.get('payment_type')
+        if payment_type not in Config.PAYMENT_TYPES:
+            return error_response('payment type not supported on trendit, Please reach out to the admin', 401)
+        
         callback_url = data.get('callback_url')
         meta = {
             "user_id": user_id,
@@ -62,10 +65,12 @@ def initialize_payment(user_id, data, payment_type=None, meta_data=None):
         # Initialize the transaction
         response = requests.post(Config.PAYSTACK_INITIALIZE_URL, headers=auth_headers, data=json.dumps(auth_data))
         response_data = response.json()
+        tx_ref=response_data['data']['reference'] # transaction reference
         
         if response_data['status']:
-            transaction = Transaction(tx_ref=response_data['data']['reference'], user_id=user_id, payment_type=payment_type, status='Pending')
-            db.session.add(transaction)
+            transaction = Transaction(tx_ref=generate_random_string(15), user_id=user_id, payment_type=payment_type, status='pending')
+            paystack_transaction = PaystackTransaction.create_transaction(trendit3_user=Trendit3_user, tx_ref=tx_ref, payment_type=payment_type, status='pending', amount=amount)
+            db.session.add(transaction, paystack_transaction)
             db.session.commit()
             
             status_code = 200
@@ -87,7 +92,7 @@ def initialize_payment(user_id, data, payment_type=None, meta_data=None):
         msg = 'An error occurred while processing the request.'
         status_code = 500
         response_data.update({"metadata": meta})
-        logging.exception("An exception occurred during registration.\n", str(e)) # Log the error details for debugging
+        logging.exception(f"An exception occurred during payment initialization:\n {str(e)}")
         db.session.rollback()
     finally:
         db.session.close()
@@ -175,3 +180,53 @@ def credit_wallet(user_id, amount):
 
 def payment_recorded(reference):
     return bool(Payment.query.filter_by(tx_ref=reference).first())
+
+
+
+def initiate_transfer(amount, recipient, user):
+    error = False
+    try:
+        bank_name = recipient.bank_account.bank_name
+        account_no = recipient.bank_account.account_no
+        headers = {
+            "Authorization": "Bearer {}".format(Config.PAYSTACK_SECRET_KEY),
+            "Content-Type": "application/json"
+        }
+        data = {
+            "source": "balance",
+            "amount": amount,
+            "reference": generate_random_string(16),
+            "recipient": recipient.recipient_code
+        }
+        request_response = requests.post(Config.PAYSTACK_TRANSFER_URL, headers=headers, json=data)
+        response = request_response.json()
+        
+        if response['status']:
+            withdrawal = Withdrawal.create_withdrawal(trendit3_user=user, amount=amount, bank_name=bank_name, account_no=account_no, status=response['data']['status'])
+            return response
+        else:
+            raise Exception(f"Transfer request not initiated: {response['message']}")
+    except Exception as e:
+        raise e
+
+def verify_transfer(transaction_reference):
+    url = f"https://api.paystack.co/transaction/verify/{transaction_reference}"
+    headers = {
+        "Authorization": "Bearer {}".format(Config.PAYSTACK_SECRET_KEY),
+        "Content-Type": "application/json"
+    }
+    request_response = requests.get(url, headers=headers)
+
+    # Parse the response and handle accordingly
+    if request_response.status_code == 200:
+        response = request_response.json()
+        transaction_status = response.get('data', {}).get('status')
+        if transaction_status == 'success':
+            # Transaction is successful
+            return True
+        else:
+            # Transaction is not successful
+            return False
+    else:
+        # Error handling
+        return False

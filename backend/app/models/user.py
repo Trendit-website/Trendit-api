@@ -23,7 +23,6 @@ class Trendit3User(db.Model):
     membership = db.relationship('Membership', back_populates="trendit3_user", uselist=False, cascade="all, delete-orphan")
     wallet = db.relationship('Wallet', back_populates="trendit3_user", uselist=False, cascade="all, delete-orphan")
     otp_token = db.relationship('OneTimeToken', back_populates="trendit3_user", uselist=False, cascade="all, delete-orphan")
-    recipients = db.relationship("Recipient", back_populates="trendit3_user") # Relationship with recipients
     roles = db.relationship('Role', secondary='user_roles', backref=db.backref('users', lazy='dynamic'))
     
     @property
@@ -91,9 +90,12 @@ class Trendit3User(db.Model):
                 'profile_picture': self.profile.get_profile_img(),
                 'referral_link': self.profile.referral_link,
                 'referral_code': self.profile.referral_code,
-                'bank': self.profile.bank,
-                'account_no': self.profile.account_no
             })
+        
+        bank_details = {}
+        primary_bank = BankAccount.query.filter_by(trendit3_user_id=self.id, is_primary=True).first()
+        if primary_bank:
+            bank_details.update(primary_bank.to_dict())
 
         return {
             'id': self.id,
@@ -106,6 +108,7 @@ class Trendit3User(db.Model):
                 'currency_name': self.wallet.currency_name,
                 'currency_code': self.wallet.currency_code,
             },
+            'primary_bank': bank_details,
             **address_info,  # Merge address information into the output dictionary
             **profile_data # Merge profile information into the output dictionary
         }
@@ -119,7 +122,8 @@ class Profile(db.Model):
     lastname = db.Column(db.String(200), nullable=True)
     phone = db.Column(db.String(120), nullable=True)
     profile_picture_id = db.Column(db.Integer(), db.ForeignKey('media.id'), nullable=True)
-    referral_code = db.Column(db.String(255), nullable=True)
+    bank = db.Column(db.String(100), nullable=True)
+    account_no = db.Column(db.Integer(), nullable=True)
     
     trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id', ondelete='CASCADE'), nullable=False,)
     trendit3_user = db.relationship('Trendit3User', back_populates="profile")
@@ -264,3 +268,101 @@ class ReferralHistory(db.Model):
             'referrer_id': self.trendit3_user_id,
             'date': self.date_joined,
         }
+
+
+class BankAccount(db.Model):
+    __tablename__ = 'bank_account'
+
+    id = db.Column(db.Integer, primary_key=True)
+    bank_name = db.Column(db.String(80), nullable=False)
+    bank_code = db.Column(db.Integer, nullable=False)
+    account_no = db.Column(db.String(20), nullable=False)
+    is_primary = db.Column(db.Boolean, default=False)
+    
+    # Relationships
+    trendit3_user_id = db.Column(db.Integer, db.ForeignKey("trendit3_user.id"), nullable=False)
+    trendit3_user = db.relationship('Trendit3User', backref=db.backref('bank_accounts', lazy='dynamic'))
+    recipient = db.relationship('Recipient', back_populates="bank_account", uselist=False, cascade="all, delete-orphan")
+    
+    
+    def __repr__(self):
+        return f'<ID: {self.id}, Recipient Code: {self.recipient_code}, is_primary: {self.is_primary}>'
+    
+    
+    @classmethod
+    def add_bank(cls, trendit3_user, bank_name, bank_code, account_no, is_primary=False):
+        bank = cls(trendit3_user=trendit3_user, bank_name=bank_name, bank_code=bank_code, account_no=account_no, is_primary=is_primary)
+        
+        db.session.add(bank)
+        db.session.commit()
+        return bank
+    
+    def update(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+        db.session.commit()
+    
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
+
+    def to_dict(self, user=False):
+        user_info = {'user': self.trendit3_user.to_dict(),} if user else {'user_id': self.trendit3_user_id} # optionally include user info in dict
+        return {
+            'id': self.id,
+            'bank_code': self.bank_code,
+            'bank_name': self.bank_name,
+            'account_no': self.account_no,
+            'is_primary': self.is_primary,
+            **user_info,
+        }
+
+class Recipient(db.Model):
+    __tablename__ = "recipient"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    recipient_code = db.Column(db.String(255), nullable=False, unique=True)
+    recipient_id = db.Column(db.Integer, nullable=False)
+    recipient_type = db.Column(db.String(), nullable=False, unique=True)
+
+    # Relationships
+    trendit3_user_id = db.Column(db.Integer, db.ForeignKey("trendit3_user.id"), nullable=False)
+    trendit3_user = db.relationship('Trendit3User', backref=db.backref('recipients', lazy='dynamic'))
+    
+    bank_account_id = db.Column(db.Integer, db.ForeignKey('bank_account.id', ondelete='CASCADE'), nullable=False,)
+    bank_account = db.relationship('BankAccount', back_populates="recipient")
+    
+    
+    
+    def __repr__(self):
+        return f'<ID: {self.id}, Recipient Code: {self.recipient_code}, is_primary: {self.is_primary}>'
+    
+    @classmethod
+    def create_recipient(cls, trendit3_user, name, recipient_code, recipient_id, recipient_type, bank_account):
+        recipient = cls(trendit3_user=trendit3_user, name=name, recipient_code=recipient_code, recipient_id=recipient_id, recipient_type=recipient_type, bank_account=bank_account)
+        
+        db.session.add(recipient)
+        db.session.commit()
+        return recipient
+    
+    def update(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+        db.session.commit()
+    
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
+
+    def to_dict(self, user=False):
+        user_info = {'user': self.trendit3_user.to_dict(),} if user else {'user_id': self.trendit3_user_id} # optionally include user info in dict
+        return {
+            'id': self.id,
+            'recipient_code': self.recipient_code,
+            'recipient_id': self.recipient_id,
+            **user_info,
+        }
+

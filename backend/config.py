@@ -20,6 +20,7 @@ class Config:
     ITEMS_PER_PAGE = os.environ.get('ITEMS_PER_PAGE') or 10
     CLIENT_ORIGINS = os.environ.get('CLIENT_ORIGINS') or 'http://localhost:3000,http://localhost:5173,https://trendit3.vercel.app'
     CLIENT_ORIGINS = [origin.strip() for origin in CLIENT_ORIGINS.split(',')]
+    PAYMENT_TYPES = ['task-creation', 'membership-fee', 'credit-wallet', 'item-upload']
     
     # JWT configurations
     JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY') or "super-secret" # Change This
@@ -30,8 +31,11 @@ class Config:
     PAYMENT_GATEWAY = 'Paystack'
     PAYSTACK_API_URL = os.environ.get('PAYSTACK_API_URL') or "https://api.paystack.co"
     PAYSTACK_INITIALIZE_URL = os.environ.get('PAYSTACK_INITIALIZE_URL') or "https://api.paystack.co/transaction/initialize"
+    PAYSTACK_RECIPIENT_URL = os.environ.get('PAYSTACK_RECIPIENT_URL') or "https://api.paystack.co/transferrecipient"
+    PAYSTACK_TRANSFER_URL = os.environ.get('PAYSTACK_RECIPIENT_URL') or "https://api.paystack.co/transfer"
     PAYSTACK_COUNTIES_URL = os.environ.get('PAYSTACK_COUNTIES_URL') or "https://api.paystack.co/country"
     PAYSTACK_STATES_URL = os.environ.get('PAYSTACK_STATES_URL') or "https://api.paystack.co/address_verification/states"
+    PAYSTACK_BANKS_URL = os.environ.get('PAYSTACK_BANKS_URL') or "https://api.paystack.co/bank"
     PAYSTACK_SECRET_KEY = os.environ.get('PAYSTACK_SECRET_KEY') or "sk_test_a8784e4f50809b0ee5cba711046090b0df20d413"
     PAYSTACK_PUBLIC_KEY = os.environ.get('PAYSTACK_PUBLIC_KEY') or "pk_test_b6409653e947befe40cbacc78f7338de0e0764c3"
     

@@ -3,13 +3,14 @@ from flask import request, jsonify, json
 from sqlalchemy.exc import ( DataError, DatabaseError )
 from flask_jwt_extended import get_jwt_identity
 
-from app.extensions import db
-from app.models.user import Trendit3User
-from app.models.payment import Payment, Transaction
-from app.utils.helpers.response_helpers import error_response, success_response
-from app.utils.helpers.basic_helpers import console_log, generate_random_string
-from app.utils.helpers.payment_helpers import initialize_payment, credit_wallet
-from app.utils.helpers.task_helpers import get_task_by_key
+from ...extensions import db
+from ...models.user import Trendit3User, BankAccount, Recipient
+from ...models.payment import Payment, Transaction, PaystackTransaction
+from ...utils.helpers.response_helpers import error_response, success_response
+from ...utils.helpers.basic_helpers import console_log, generate_random_string
+from ...utils.helpers.payment_helpers import initialize_payment, credit_wallet, initiate_transfer
+from ...utils.helpers.bank_helpers import get_bank_code
+from ...utils.helpers.task_helpers import get_task_by_key
 from config import Config
 
 class PaymentController:
@@ -67,10 +68,10 @@ class PaymentController:
             # Extract needed data
             amount = verification_response['data']['amount'] / 100  # Convert from kobo to naira
             
-            transaction = Transaction.query.filter_by(tx_ref=reference).first()
-            if transaction:
-                user_id = transaction.user_id
-                payment_type = transaction.payment_type
+            paystack_transaction = PaystackTransaction.query.filter_by(tx_ref=reference).first()
+            if paystack_transaction:
+                user_id = paystack_transaction.trendit3_user_id
+                payment_type = paystack_transaction.payment_type
                 
                 trendit3_user = Trendit3User.query.get(user_id)
                 if trendit3_user is None:
@@ -83,11 +84,11 @@ class PaymentController:
                     msg = f"Completed: {verification_response['data']['gateway_response']}"
                     extra_data = {}
                     
-                    if transaction.status != 'complete':
+                    if paystack_transaction.status != 'complete':
                         # Record the payment in the database
-                        transaction.status = 'complete'
+                        paystack_transaction.status = 'complete'
                         
-                        payment = Payment(trendit3_user_id=user_id, amount=amount, payment_type=payment_type, key=generate_random_string(10), payment_method='payment_gateway')
+                        payment = Payment(trendit3_user_id=user_id, amount=amount, payment_type=payment_type, key=generate_random_string(100), payment_method=Config.PAYMENT_GATEWAY.lower())
                         with db.session.begin_nested():
                             db.session.add(payment)
                     
@@ -100,7 +101,7 @@ class PaymentController:
                             extra_data.update({
                                 'membership_fee_paid': membership_fee_paid,
                             })
-                        elif payment_type == 'task_creation':
+                        elif payment_type == 'task-creation':
                             task_key = verification_response['data']['metadata']['task_key']
                             task = get_task_by_key(task_key)
                             task.update(payment_status='complete')
@@ -122,11 +123,11 @@ class PaymentController:
                             msg = 'Wallet Credited successfully'
                             extra_data.update({'user': trendit3_user.to_dict()})
                     
-                    elif transaction.status == 'complete':
+                    elif paystack_transaction.status == 'complete':
                         if payment_type == 'membership-fee':
                             msg = 'Payment Completed successfully and Account is already activated'
                             extra_data.update({'membership_fee_paid': trendit3_user.membership.membership_fee_paid,})
-                        elif payment_type == 'task_creation':
+                        elif payment_type == 'task-creation':
                             task_key = verification_response['data']['metadata']['task_key']
                             task = get_task_by_key(task_key)
                             task_dict = task.to_dict()
@@ -135,25 +136,25 @@ class PaymentController:
                         elif payment_type == 'credit-wallet':
                             msg = 'Payment Completed and Wallet already credited'
                             extra_data.update({'user': trendit3_user.to_dict()})
-                    
+                
                 elif verification_response['status'] and verification_response['data']['status'] == 'abandoned':
                     # Payment was not completed
-                    if transaction.status != 'Abandoned':
-                        transaction.status = 'Abandoned' # update the status
+                    if paystack_transaction.status != 'abandoned':
+                        paystack_transaction.update(status='abandoned') # update the status
                         db.session.commit()
                         
                     extra_data = {}
                     status_code = 200
                     msg = f"Abandoned: {verification_response['data']['gateway_response']}"
+                
                 else:
                     # Payment was not successful
-                    if transaction.status != 'Failed':
-                        transaction.status = 'Failed' # update the status
-                        db.session.commit()
+                    if paystack_transaction.status != 'Failed':
+                        paystack_transaction.update(status='failed') # update the status
                         
                     error = True
                     status_code = 400
-                    msg = 'Transaction verification failed: ' + verification_response['message']
+                    msg = 'Payment verification failed: ' + verification_response['message']
             else:
                 error = True
                 status_code = 404
@@ -215,27 +216,27 @@ class PaymentController:
             amount = data['data']['amount'] / 100  # Convert from kobo to naira
             tx_ref = f"{data['data']['reference']}"
             
-            transaction = Transaction.query.filter_by(tx_ref=tx_ref).first()
-            if transaction:
-                user_id = transaction.user_id
-                payment_type = transaction.payment_type
+            paystack_transaction = PaystackTransaction.query.filter_by(tx_ref=tx_ref).first()
+            if paystack_transaction:
+                user_id = paystack_transaction.user_id
+                payment_type = paystack_transaction.payment_type
                 trendit3_user = Trendit3User.query.with_for_update().get(user_id)
 
                 # Check if this is a successful payment event
                 if data['event'] == 'charge.success':
                     
-                    if transaction.status != 'complete':
+                    if paystack_transaction.status != 'complete':
                         # Record the payment in the database
-                        transaction.status = 'complete'
+                        paystack_transaction.status = 'complete'
                         
-                        payment = Payment(trendit3_user_id=user_id, amount=amount, payment_type=payment_type, key=generate_random_string(10), payment_method='payment_gateway')
+                        payment = Payment(trendit3_user_id=user_id, amount=amount, payment_type=payment_type, key=generate_random_string(10), payment_method=Config.PAYMENT_GATEWAY.lower())
                         with db.session.begin_nested():
                             db.session.add(payment)
                     
                         # Update user's membership status in the database
                         if payment_type == 'membership-fee':
                             trendit3_user.membership_fee(paid=True)
-                        elif payment_type == 'task_creation':
+                        elif payment_type == 'task-creation':
                             task_key = data['data']['metadata']['task_key']
                             task = get_task_by_key(task_key)
                             task.update(payment_status='Complete')
@@ -249,15 +250,15 @@ class PaymentController:
                     return jsonify({'status': 'success'}), 200
                 elif data['event'] == 'charge.abandoned':
                     # Payment was not completed
-                    if transaction.status != 'Abandoned':
-                        transaction.status = 'Abandoned' # update the status
+                    if paystack_transaction.status != 'Abandoned':
+                        paystack_transaction.status = 'Abandoned' # update the status
                         db.session.commit()
                         
                     return jsonify({'status': 'failed'}), 200
                 else:
                     # Payment was not successful
-                    if transaction.status != 'Failed':
-                        transaction.status = 'Failed' # update the status
+                    if paystack_transaction.status != 'Failed':
+                        paystack_transaction.status = 'Failed' # update the status
                         db.session.commit()
                     return jsonify({'status': 'failed'}), 200
             else:
@@ -331,20 +332,106 @@ class PaymentController:
             current_user_id = get_jwt_identity()
             user = Trendit3User.query.get(current_user_id)
             
-            amount = request.json['amount']
+            data = request.get_json()
+            amount = data.get('amount')
             
             if user.wallet_balance < amount:
                 return error_response("Insufficient balance", 400)
             
-            # TODO: add the logic to interact with the Paystack API to initiate the withdrawal process.
+            name = user.profile.firstname
+            is_primary = data.get('is_primary', True)
+            bank_name = data.get('bank_name')
+            account_no = data.get('account_no')
+            bank_code = get_bank_code(bank_name)
+            currency = user.wallet.currency_code
+            
+            if is_primary:
+                primary_bank = BankAccount.query.filter_by(trendit3_user_id=user.id, is_primary=True).first()
+                if not primary_bank:
+                    return error_response("no primary bank account. Edit you profile to add a primary bank account", 404)
+                
+                recipient = primary_bank.recipient
+                
+            else:
+                bank = BankAccount.add_bank(trendit3_user=user, bank_name=bank_name, bank_code=bank_code, account_no=account_no, is_primary=False)
+                recipient = bank.recipient
+                if not recipient:
+                    
+                    headers = {
+                        "Authorization": "Bearer {}".format(Config.PAYSTACK_SECRET_KEY),
+                        "Content-Type": "application/json"
+                    }
+                    data = {
+                        "type": "nuban",
+                        "name": name,
+                        "account_number": str(account_no),
+                        "bank_code": str(bank_code),
+                    }
+                    request_response = requests.post(Config.PAYSTACK_RECIPIENT_URL, headers=headers, data=json.dumps(data))
+                    response = request_response.json()
+                    recipient_name = response['data']['details']['account_name']
+                    recipient_code = response['data']['recipient_code']
+                    recipient_type = response['data']['type']
+                    recipient_id = response['data']['id']
+                    console_log('response', response)
+                    
+                    
+                    if response['status'] is False:
+                        return error_response(response['message'], 401)
+                    
+                    recipient = Recipient.create_recipient(trendit3_user=user, name=recipient_name, recipient_code=recipient_code, recipient_id=recipient_id, recipient_type=recipient_type, bank_account=primary_bank)
+            
+            
             # If the withdrawal is successful, deduct the amount from the user's balance.
+            initiate_transfer_response = initiate_transfer(amount, recipient, user) # with the Paystack API
+            msg = f"{amount} {currency} is on it's way to {recipient.name}"
+            status_code = 200
+            extra_data = {
+                "withdrawal_info": {
+                    "amount": amount,
+                    "currency": initiate_transfer_response['data']['currency'],
+                    "status": initiate_transfer_response['data']['status'],
+                    "created_at": initiate_transfer_response['data']['createdAt'],
+                    "updated_at": initiate_transfer_response['data']['updatedAt']
+                }
+            }
             
         except Exception as e:
             error = True
             status_code = 500
-            msg = 'An error occurred while processing the withdrawal request'
-            logging.exception(f"An exception occurred processing the withdrawal request:\n {str(e)}",)
+            msg = f'An error occurred while processing the withdrawal request: {str(e)}'
+            logging.exception(f"An exception occurred processing the withdrawal request:\n {str(e)}")
         if error:
             return error_response(msg, status_code)
         else:
-            return success_response('Payment history fetched successfully', 200)
+            return success_response(msg, 200, extra_data)
+
+
+    @staticmethod
+    def verify_withdraw():
+        error = False
+        try:
+            pass
+        except Exception as e:
+            pass
+    
+    
+    @staticmethod
+    def withdraw_approval_webhook():
+        error = False
+        try:
+            data = request.get_json()
+            recipient_code = data.get('recipient_code')
+            amount = data.get('amount')
+
+            # Check if recipient code exists in db records
+            recipient = Recipient.query.filter_by(recipient_code=recipient_code).first()
+            if recipient:
+                return jsonify(message='Transfer approved'), 200 # Respond with a 200 OK if details are authentic
+            else:
+                # Respond with a 400 Bad Request if details are invalid
+                return jsonify(error='Invalid transfer details'), 400
+        except Exception as e:
+            print(f"Error handling approval: {e}")
+            return jsonify(error='Internal Server Error'), 500
+    

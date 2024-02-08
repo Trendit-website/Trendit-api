@@ -305,32 +305,6 @@ def save_performed_task(data, pt_id=None, status='pending'):
         raise e
 
 
-def fetch_performed_task(pt_id_key):
-    """
-    Fetches a performed task from the database based on either its ID or key.
-
-    Parameters:
-    - pt_id_key (int or str): The ID or key of the task to fetch. 
-        - If an integer, the function fetches the performed task by ID; 
-        - if a string, it fetches the performed task by key.
-
-    Returns:
-    - TaskPerformance or None: The fetched performed task if found, or None if no performed task matches the provided ID or key.
-    """
-    try:
-        # Check if task_id_key is an integer
-        task_id_key = int(task_id_key)
-        # Fetch the task by id
-        performed_task = TaskPerformance.query.filter_by(id=task_id_key).first()
-    except ValueError:
-        # If not an integer, treat it as a string
-        performed_task = TaskPerformance.query.filter_by(key=task_id_key).first()
-
-    if performed_task:
-        return performed_task
-    else:
-        return None
-
 
 def fetch_performed_tasks_by_status(status):
 

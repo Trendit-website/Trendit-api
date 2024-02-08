@@ -1,4 +1,5 @@
-import time
+import time, requests
+from uuid import uuid4
 from flask import Flask, jsonify, request
 from flask_moment import Moment
 from flask_migrate import Migrate
@@ -10,6 +11,7 @@ from app.models.user import Trendit3User
 from app.models.role import create_roles
 from app.models.item import Item
 from app.models.task import Task, AdvertTask, EngagementTask
+from .models.payment import Payment, Transaction, PaystackTransaction, Wallet, Withdrawal
 
 from config import Config, configure_logging
 from app.extensions import db, mail
@@ -64,19 +66,63 @@ def create_app(config_class=Config):
     def quickUpdate():
         """Update task in database."""
         try:
-            print('fetching tasks...')
-            tasks = Task.query.all()
+            print('fetching payments...')
+            payments = Payment.query.all()
             time.sleep(2)
-            print('updating each tasks...')
-            for task in tasks:
-                print(f'updating task {task.id}...')
-                task.total_success = 0
-                task.total_allocated = 0
+            print('updating each payment record...')
+            for payment in payments:
+                print(f'updating task {payment.id}...')
+                if payment.payment_method == 'payment_gateway':
+                    payment.payment_method = Config.PAYMENT_GATEWAY.lower()
+                payment.key = uuid4()
+                print(f'UUID {payment.key}...')
                 time.sleep(1)
+            
+            print('fetching transactions...')
+            transactions = Transaction.query.all()
+            time.sleep(1)
+            print('updating each transactions...')
+            for transaction in transactions:
+                print(f'updating transaction {transaction.id}...')
+                transaction.amount = 0
+                for payment in payments:
+                    if transaction.payment_type == 'task_creation' and transaction.status.lower() == 'complete' and payment.payment_type == 'task_creation':
+                        transaction.amount = payment.amount
+                    
+                    if transaction.payment_type == 'credit-wallet' and transaction.status.lower() == 'complete' and payment.payment_type == 'credit-wallet':
+                        transaction.amount = payment.amount
+                    
+                    if transaction.payment_type == 'membership-fee' and transaction.status.lower() == 'complete' and payment.payment_type == 'membership-fee':
+                        transaction.amount = payment.amount
+                
+                user = Trendit3User.query.filter(Trendit3User.id == transaction.user_id).first()
+                transaction.trendit3_user = user
+                transaction.transaction_type = 'payment'
+                
+                reference = transaction.tx_ref
+                auth_headers = {
+                    "Authorization": "Bearer {}".format(Config.PAYSTACK_SECRET_KEY),
+                    "Content-Type": "application/json"
+                }
+                paystack_response = requests.get('https://api.paystack.co/transaction/verify/{}'.format(reference), headers=auth_headers)
+                verification_response = paystack_response.json()
+                
+                
+                if verification_response['status'] is False:
+                    print(verification_response['message'], 404)
+                    raise Exception
+                
+                print('UPDATING PAYSTACK TRANSACTION...')
+                transaction.amount = int(verification_response['data']['amount'])/100
+                paystack_transaction = PaystackTransaction(trendit3_user=user, tx_ref=reference, payment_type=transaction.payment_type, status=transaction.status, amount=int(verification_response['data']['amount'])/100, created_at=verification_response['data']['created_at'])
+        
+                db.session.add(paystack_transaction)
+            
+            
             db.session.commit()
-            print('update for each tasks is Done')
+            print('update for each payments is Done')
         except Exception as e:
-            print(f'Error updating each tasks: ==> {e}')
+            print(f'Error updating each payments: ==> {e}')
         
     
     return app

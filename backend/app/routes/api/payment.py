@@ -60,3 +60,8 @@ def withdraw():
         json: A JSON object containing the status of the withdrawal, a status code, and a message.
     """
     return PaymentController.withdraw()
+
+
+@api.route('/payment/withdraw-approval', methods=['POST'])
+def withdraw_approval_webhook():
+    return PaymentController.withdraw_approval_webhook()
