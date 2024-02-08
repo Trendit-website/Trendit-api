@@ -270,43 +270,49 @@ class AuthController:
             msg = f"The Verification code has expired. Please request a new one."
             status_code = 401
             db.session.rollback()
-            logging.exception(f"Expired Signature Error: {e}")
+            logging.exception(f"Expired Signature Error: \n {e}")
         except JWTDecodeError as e:
             error = True
             msg = f"Verification code has expired or corrupted. Please request a new one."
             status_code = 401
             db.session.rollback()
-            logging.exception(f"JWT Decode Error: {e}")
+            logging.exception(f"JWT Decode Error: \n {e}")
         except InvalidRequestError as e:
             error = True
             msg = f"Invalid request"
             status_code = 400
             db.session.rollback()
-            logging.exception(f"Invalid Request Error: {e}")
+            logging.exception(f"Invalid Request Error: \n {e}")
         except IntegrityError as e:
             error = True
             msg = f"User already exists."
             status_code = 409
             db.session.rollback()
-            logging.exception(f"Integrity Error: {e}")
+            logging.exception(f"Integrity Error: \n {e}")
         except DataError as e:
             error = True
             msg = f"Invalid Entry"
             status_code = 400
             db.session.rollback()
-            logging.exception(f"Data Error: {e}")
+            logging.exception(f"Data Error: \n {e}")
         except DatabaseError as e:
             error = True
             msg = f"Error connecting to the database"
             status_code = 500
             db.session.rollback()
-            logging.exception(f"Database Error: {e}")
+            logging.exception(f"Database Error: \n {e}")
+        except AttributeError as e:
+            error = True
+            msg = f"Apologies. Our developers are already looking into the issue."
+            status_code = 500
+            db.session.rollback()
+            logging.exception(f"AttributeError Error: \n {e}")
         except Exception as e:
             error = True
             status_code = 500
             msg = 'An error occurred while processing the request.'
-            logging.exception(f"An exception occurred during registration. {e}") # Log the error details for debugging
             db.session.rollback()
+            logging.exception(f"An exception occurred during registration: \n {e}") # Log the error details for debugging
         finally:
             db.session.close()
         if error:
