@@ -145,7 +145,7 @@ def debit_wallet(user_id, amount, payment_type=None):
     try:
         # Debit the wallet
         wallet.balance -= amount
-        payment = Payment(trendit3_user_id=user_id, amount=amount, payment_type=payment_type, key=generate_random_string(10), payment_method='trendit_wallet')
+        payment = Payment(trendit3_user=user, amount=amount, payment_type=payment_type, payment_method='trendit_wallet')
         
         db.session.commit()
         return 'Wallet debited successful'
@@ -188,6 +188,7 @@ def initiate_transfer(amount, recipient, user):
     try:
         bank_name = recipient.bank_account.bank_name
         account_no = recipient.bank_account.account_no
+        reference = generate_random_string(16)
         headers = {
             "Authorization": "Bearer {}".format(Config.PAYSTACK_SECRET_KEY),
             "Content-Type": "application/json"
@@ -195,38 +196,20 @@ def initiate_transfer(amount, recipient, user):
         data = {
             "source": "balance",
             "amount": amount,
-            "reference": generate_random_string(16),
+            "reference": reference,
             "recipient": recipient.recipient_code
         }
         request_response = requests.post(Config.PAYSTACK_TRANSFER_URL, headers=headers, json=data)
         response = request_response.json()
+        reference = response['data']['reference']
+        status = response['data']['status']
         
         if response['status']:
-            withdrawal = Withdrawal.create_withdrawal(trendit3_user=user, amount=amount, bank_name=bank_name, account_no=account_no, status=response['data']['status'])
+            transaction = Transaction.create_transaction(trendit3_user=user, tx_ref=reference, amount=amount, status='pending', transaction_type='withdrawal')
+            withdrawal = Withdrawal.create_withdrawal(trendit3_user=user, reference=reference, amount=amount, bank_name=bank_name, account_no=account_no, status=status)
             return response
         else:
             raise Exception(f"Transfer request not initiated: {response['message']}")
     except Exception as e:
         raise e
 
-def verify_transfer(transaction_reference):
-    url = f"https://api.paystack.co/transaction/verify/{transaction_reference}"
-    headers = {
-        "Authorization": "Bearer {}".format(Config.PAYSTACK_SECRET_KEY),
-        "Content-Type": "application/json"
-    }
-    request_response = requests.get(url, headers=headers)
-
-    # Parse the response and handle accordingly
-    if request_response.status_code == 200:
-        response = request_response.json()
-        transaction_status = response.get('data', {}).get('status')
-        if transaction_status == 'success':
-            # Transaction is successful
-            return True
-        else:
-            # Transaction is not successful
-            return False
-    else:
-        # Error handling
-        return False

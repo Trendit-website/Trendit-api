@@ -5,7 +5,7 @@ from flask_jwt_extended import get_jwt_identity
 
 from ...extensions import db
 from ...models.user import Trendit3User, BankAccount, Recipient
-from ...models.payment import Payment, Transaction, PaystackTransaction
+from ...models.payment import Payment, Transaction, PaystackTransaction, Withdrawal
 from ...utils.helpers.response_helpers import error_response, success_response
 from ...utils.helpers.basic_helpers import console_log, generate_random_string
 from ...utils.helpers.payment_helpers import initialize_payment, credit_wallet, initiate_transfer
@@ -61,7 +61,6 @@ class PaymentController:
             paystack_response = requests.get('https://api.paystack.co/transaction/verify/{}'.format(reference), headers=auth_headers)
             verification_response = paystack_response.json()
             
-            
             if verification_response['status'] is False:
                 return error_response(verification_response['message'], 404)
             
@@ -88,7 +87,7 @@ class PaymentController:
                         # Record the payment in the database
                         paystack_transaction.status = 'complete'
                         
-                        payment = Payment(trendit3_user_id=user_id, amount=amount, payment_type=payment_type, key=generate_random_string(100), payment_method=Config.PAYMENT_GATEWAY.lower())
+                        payment = Payment(trendit3_user=trendit3_user, amount=amount, payment_type=payment_type, payment_method=Config.PAYMENT_GATEWAY.lower())
                         with db.session.begin_nested():
                             db.session.add(payment)
                     
@@ -229,7 +228,7 @@ class PaymentController:
                         # Record the payment in the database
                         paystack_transaction.status = 'complete'
                         
-                        payment = Payment(trendit3_user_id=user_id, amount=amount, payment_type=payment_type, key=generate_random_string(10), payment_method=Config.PAYMENT_GATEWAY.lower())
+                        payment = Payment(trendit3_user=trendit3_user, amount=amount, payment_type=payment_type, payment_method=Config.PAYMENT_GATEWAY.lower())
                         with db.session.begin_nested():
                             db.session.add(payment)
                     
@@ -373,7 +372,6 @@ class PaymentController:
                     recipient_code = response['data']['recipient_code']
                     recipient_type = response['data']['type']
                     recipient_id = response['data']['id']
-                    console_log('response', response)
                     
                     
                     if response['status'] is False:
@@ -389,6 +387,7 @@ class PaymentController:
             extra_data = {
                 "withdrawal_info": {
                     "amount": amount,
+                    "reference": initiate_transfer_response['data']['reference'],
                     "currency": initiate_transfer_response['data']['currency'],
                     "status": initiate_transfer_response['data']['status'],
                     "created_at": initiate_transfer_response['data']['createdAt'],
@@ -411,10 +410,93 @@ class PaymentController:
     def verify_withdraw():
         error = False
         try:
-            pass
+            current_user_id = get_jwt_identity()
+            user = Trendit3User.query.get(current_user_id)
+            user_wallet = user.wallet
+            
+            data = request.get_json()
+            reference = data.get('reference', '')
+            if not reference:
+                return error_response("reference key is required in request's body", 401)
+            
+            url = f"https://api.paystack.co/transfer/verify/{reference}"
+            headers = {
+                "Authorization": "Bearer {}".format(Config.PAYSTACK_SECRET_KEY),
+                "Content-Type": "application/json"
+            }
+            paystack_response = requests.get(url, headers=headers)
+            verification_response = paystack_response.json()
+            if verification_response['status'] is False:
+                return error_response(verification_response['message'], 401)
+            
+            # Extract needed data
+            amount = verification_response['data']['amount']
+            transfer_status = verification_response['data']['status']
+            
+            transaction = Transaction.query.filter_by(tx_ref=reference).first()
+            withdrawal = Withdrawal.query.filter_by(reference=reference).first()
+            
+            if not transaction:
+                return error_response('transaction not found', 404)
+            
+            if not withdrawal:
+                return error_response('withdrawal not found', 404)
+            
+            # if verification was successful
+            if verification_response['status'] and transfer_status == 'success':
+                status_code = 200
+                msg = f"Withdrawal was successful and {amount} has been sent to provided account"
+                extra_data = {}
+                
+                if transaction.status != 'complete':
+                    transaction.status = 'complete' # Record the transaction in the database
+                    withdrawal.status = transfer_status
+                    user_wallet.balance -= amount # Debit the wallet
+                    
+                    extra_data.update({
+                        'withdrawal_info': withdrawal.to_dict(),
+                    })
+                elif transaction.status == 'complete':
+                    extra_data.update({
+                        'withdrawal_info': withdrawal.to_dict(),
+                    })
+            else:
+                # withdrawal was not successful
+                if transaction.status != 'failed':
+                    transaction.status = 'failed' # update the status
+                    withdrawal.status = transfer_status
+                
+                error = True
+                status_code = 400
+                msg = f"Withdrawal was not successful please try again, or contact the admin"
+                extra_data = {}
+                
+        except DataError as e:
+            error = True
+            msg = f"Invalid Entry: {str(e)}"
+            status_code = 400
+            db.session.rollback()
+            logging.exception(f"A DataError exception occurred during withdrawal verification ==> \n {str(e)}")
+        except DatabaseError as e:
+            error = True
+            msg = f"Error connecting to the database: {str(e)} "
+            status_code = 500
+            db.session.rollback()
+            logging.exception(f"A DatabaseError exception occurred during withdrawal verification ==> \n {str(e)}")
         except Exception as e:
-            pass
-    
+            error = True
+            msg = f"An error occurred while processing the request: {str(e)}"
+            status_code = 500
+            db.session.rollback()
+            logging.exception(f"An exception occurred during withdrawal verification ==> \n {str(e)}")
+        finally:
+            db.session.close()
+        if error:
+            return error_response(msg, status_code)
+        else:
+            return success_response(msg, status_code, extra_data)
+
+
     
     @staticmethod
     def withdraw_approval_webhook():

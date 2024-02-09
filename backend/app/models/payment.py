@@ -20,15 +20,15 @@ class Payment(db.Model):
 
     # relationships
     trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
-    user = db.relationship('Trendit3User')
+    trendit3_user = db.relationship('Trendit3User')
     
     def __repr__(self):
         return f'<ID: {self.id}, Amount: {self.amount}, Payment Method: {self.payment_method}, Payment Type: {self.payment_type}>'
     
     
     @classmethod
-    def create_payment_record(cls, key, amount, payment_type, payment_method, trendit3_user_id):
-        payment_record = cls(key=generate_random_string(100), amount=amount, payment_type=payment_type, payment_method=payment_method, trendit3_user_id=trendit3_user_id)
+    def create_payment_record(cls, amount, payment_type, payment_method, trendit3_user):
+        payment_record = cls(amount=amount, payment_type=payment_type, payment_method=payment_method, trendit3_user=trendit3_user)
         
         db.session.add(payment_record)
         db.session.commit()
@@ -54,8 +54,6 @@ class Transaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     tx_ref = db.Column(db.String(80), unique=True, nullable=False)
     amount = db.Column(db.Float(), nullable=False)
-    user_id = db.Column(db.String(120), unique=False, nullable=False)
-    payment_type = db.Column(db.String(120), nullable=False)
     status = db.Column(db.String(80), nullable=False)
     transaction_type = db.Column(db.String(50), nullable=False)  # 'withdrawals' or 'payment'
     
@@ -65,12 +63,12 @@ class Transaction(db.Model):
     trendit3_user = db.relationship('Trendit3User', backref=db.backref('transactions', lazy='dynamic'))
     
     def __repr__(self):
-        return f'<ID: {self.id}, Transaction Reference: {self.tx_ref}, Payment Type: {self.payment_type}, Status: {self.status}>'
+        return f'<ID: {self.id}, Transaction Reference: {self.tx_ref}, Transaction Type: {self.transaction_type}, Status: {self.status}>'
     
     
     @classmethod
-    def create_transaction(cls, trendit3_user, tx_ref, payment_type, status, transaction_type):
-        transaction = cls(trendit3_user=trendit3_user, tx_ref=tx_ref, payment_type=payment_type, status=status, transaction_type=transaction_type)
+    def create_transaction(cls, trendit3_user, tx_ref, amount, status, transaction_type):
+        transaction = cls(trendit3_user=trendit3_user, tx_ref=tx_ref, amount=amount, status=status, transaction_type=transaction_type)
         
         db.session.add(transaction)
         db.session.commit()
@@ -199,6 +197,7 @@ class Withdrawal(db.Model):
     __tablename__ = 'withdrawal'
 
     id = db.Column(db.Integer, primary_key=True)
+    reference = db.Column(db.String(50), nullable=False)
     amount = db.Column(db.Float, nullable=False)
     bank_name = db.Column(db.String(100), nullable=False)
     account_no = db.Column(db.String(20), nullable=False)
@@ -216,8 +215,8 @@ class Withdrawal(db.Model):
         return f'<ID: {self.id}, amount: {self.amount}, account_no: {self.account_no}, Status: {self.status}>'
     
     @classmethod
-    def create_withdrawal(cls, trendit3_user, amount, bank_name, account_no, status):
-        withdrawal = cls(trendit3_user=trendit3_user, amount=amount, bank_name=bank_name, account_no=account_no, status=status)
+    def create_withdrawal(cls, trendit3_user, reference, amount, bank_name, account_no, status):
+        withdrawal = cls(trendit3_user=trendit3_user, reference=reference, amount=amount, bank_name=bank_name, account_no=account_no, status=status)
         
         db.session.add(withdrawal)
         db.session.commit()
@@ -237,6 +236,7 @@ class Withdrawal(db.Model):
         user_info = {'user': self.trendit3_user.to_dict(),} if user else {'user_id': self.trendit3_user_id} # optionally include user info in dict
         return {
             'id': self.id,
+            'reference': self.reference,
             'amount': self.amount,
             'bank_name': self.bank_name,
             'account_no': self.account_no,

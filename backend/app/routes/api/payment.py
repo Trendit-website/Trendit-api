@@ -65,3 +65,9 @@ def withdraw():
 @api.route('/payment/withdraw-approval', methods=['POST'])
 def withdraw_approval_webhook():
     return PaymentController.withdraw_approval_webhook()
+
+
+@api.route('/payment/withdraw/verify', methods=['POST'])
+@jwt_required()
+def verify_withdraw():
+    return PaymentController.verify_withdraw()
