@@ -1,3 +1,14 @@
+'''
+This module defines the User model for the database.
+
+It includes fields for the user's email, password, and other necessary information,
+as well as methods for password hashing and verification.
+
+@author Emmanuel Olowu
+@link: https://github.com/zeddyemy
+@package Trendit³
+'''
+
 from app.extensions import db
 from sqlalchemy.orm import backref
 from datetime import datetime

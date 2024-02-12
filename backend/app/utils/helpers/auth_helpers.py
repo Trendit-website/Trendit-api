@@ -1,3 +1,14 @@
+'''
+This module defines helper functions for handling \ 
+authorization and authentication in the Trendit³ Flask application.
+
+These functions assist with tasks such as code generation, \ 
+saving password reset token, and saving 2FA token
+
+@author: Emmanuel Olowu
+@link: https://github.com/zeddyemy
+@package: Trendit³
+'''
 import random
 from threading import Thread
 from flask import render_template, current_app

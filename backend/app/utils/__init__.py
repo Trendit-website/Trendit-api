@@ -1,3 +1,11 @@
+'''
+This package contains utilities for the Trendit³ Flask application.
+
+
+@author: Emmanuel Olowu
+@link: https://github.com/zeddyemy
+@package: Trendit³
+'''
 import requests
 from flask import jsonify
 

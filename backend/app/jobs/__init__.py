@@ -1,3 +1,12 @@
+'''
+This package contains the Celery tasks for the Trendit³ Flask application.
+
+It includes tasks for updating pending social tasks, sending notifications, and others
+
+@author: Emmanuel Olowu
+@link: https://github.com/zeddyemy
+@package: Trendit³
+'''
 from celery import Celery
 from datetime import datetime, timedelta
 

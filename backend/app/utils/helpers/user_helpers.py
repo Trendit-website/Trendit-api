@@ -1,3 +1,15 @@
+'''
+This module defines helper functions for managing users in the Trendit³ Flask application.
+
+These functions assist with tasks such as:
+    * fetching user info
+    * checking if username or email exist
+    * generating referral code. e.t.c...
+
+@author: Emmanuel Olowu
+@link: https://github.com/zeddyemy
+@package: Trendit³
+'''
 from app.extensions import db
 from app.models.user import Trendit3User, Address, Profile
 from app.utils.helpers.basic_helpers import generate_random_string

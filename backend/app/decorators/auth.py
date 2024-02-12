@@ -1,3 +1,14 @@
+'''
+This module defines the `roles_required` decorator for the Trendit³ Flask application.
+
+Used for handling role-based access control.
+The `roles_required` decorator is used to ensure that the current user has all of the specified roles.
+If the user does not have the required roles, it returns a 403 error.
+
+@author: Emmanuel Olowu
+@link: https://github.com/zeddyemy
+@package: Trendit³
+'''
 from functools import wraps
 from flask_jwt_extended import jwt_required, get_jwt_identity
 

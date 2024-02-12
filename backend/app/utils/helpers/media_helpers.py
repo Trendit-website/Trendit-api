@@ -1,3 +1,12 @@
+'''
+This module defines helper functions for handling media operations in the Trendit³ Flask application.
+
+These functions assist with tasks such as saving media files to Cloudinary and adding media properties to the database.
+
+@author: Emmanuel Olowu
+@link: https://github.com/zeddyemy
+@package: Trendit³
+'''
 import os, random, string
 from datetime import date
 from werkzeug.utils import secure_filename
@@ -15,11 +24,19 @@ cloudinary.config(
 )
 
 def save_media(media_file):
-    '''
-    This takes a media file (image or video),
-    uploads the media file to Cloudinary,
+    """
+    Saves a media file (image or video) to Cloudinary and the database.
     and then return the media id after adding the media to Media Table
-    '''
+
+    Args:
+        media_file: The media file object to be uploaded.
+
+    Returns:
+        int: The ID of the saved media in the database.
+
+    Raises:
+        ValueError: If the file type is not supported.
+    """
     
     # Generate a random string and append it to the original file name
     rand_string = ''.join(random.choices(string.ascii_lowercase + string.digits, k=4))

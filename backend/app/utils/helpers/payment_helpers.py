@@ -1,3 +1,17 @@
+'''
+This module defines helper functions for handling payments in the Trendit³ Flask application.
+
+These functions assist with tasks such:
+    * checking payment.
+    * payment initialization
+    * transaction processing
+    * payment verification
+    * crediting and debiting user wallet
+
+@author: Emmanuel Olowu
+@link: https://github.com/zeddyemy
+@package: Trendit³
+'''
 import requests, logging
 from flask import json
 from flask_jwt_extended import get_jwt_identity

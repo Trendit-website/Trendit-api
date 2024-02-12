@@ -1,3 +1,15 @@
+'''
+This module defines helper functions for handling country-specific operations in the Trendit³ Flask application.
+
+These functions assist with tasks such as: 
+    * retrieving currency information for a given country
+    * getting the currency code for a given country
+    * getting Nigerian states and local government areas.
+
+@author: Emmanuel Olowu
+@link: https://github.com/zeddyemy
+@package: Trendit³
+'''
 import requests, logging
 from flask import jsonify, json
 

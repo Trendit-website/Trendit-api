@@ -38,10 +38,6 @@ Project:
 |   |   +---error_handlers
 |   |   |   |   handlers.py
 |   |   |   |   __init__.py
-|   |   |   |   
-|   |   |   \---__pycache__
-|   |   |           handlers.cpython-311.pyc
-|   |   |           __init__.cpython-311.pyc
 |   |   |           
 |   |   +---payment
 |   |   |   |   payment.py

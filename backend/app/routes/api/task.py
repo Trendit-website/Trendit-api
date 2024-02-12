@@ -1,8 +1,15 @@
 from flask_jwt_extended import jwt_required
+from flask import current_app
 
 from . import api
-from app.controllers.api import TaskController
+from ...controllers.api import TaskController
+from ...utils.helpers.response_helpers import success_response
 
+# CREATE NEW TASK
+@api.route('/tasks/new', methods=['POST'])
+@jwt_required()
+def create_task():
+    return TaskController.create_task()
 
 # ALL TASKS
 @api.route('/current-user/tasks', methods=['GET'])
@@ -40,8 +47,6 @@ def get_advert_tasks_grouped_by_field(field):
 def get_advert_aggregated_task_counts(field):
     return TaskController.get_advert_aggregated_task_counts(field)
 
-
-
 # ENGAGEMENT TASKS
 @api.route('/tasks/engagement', methods=['GET'])
 def get_all_engagement_tasks():
@@ -55,10 +60,12 @@ def get_engagement_tasks_grouped_by_field(field):
 def get_engagement_aggregated_task_counts(field):
     return TaskController.get_engagement_aggregated_task_counts(field)
 
+@api.route('/task/emerge/disable', methods=['POST'])
+def disable_emerge():
+    current_app.config['EMERGENCY_MODE'] = False
+    return success_response('Emergency mode has been deactivated.', 200)
 
-# CREATE NEW TASK
-@api.route('/tasks/new', methods=['POST'])
-@jwt_required()
-def create_task():
-    return TaskController.create_task()
-
+@api.route('/task/emerge/enable', methods=['POST'])
+def enable_emerge():
+    current_app.config['EMERGENCY_MODE'] = True
+    return success_response('Emergency mode has been activated.', 200)

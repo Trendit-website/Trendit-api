@@ -1,3 +1,16 @@
+'''
+This module defines custom exceptions for the Trendit³ Flask application.
+
+It includes exceptions for handling situations such as when a user still has a pending task, 
+when no unassigned task is found, and when a unique slug cannot be created.
+
+Each exception is a class that inherits from the base `Exception` class and includes a message 
+that describes the error condition.
+
+@author: Emmanuel Olowu
+@link: https://github.com/zeddyemy
+@package: Trendit³
+'''
 
 class PendingTaskError(Exception):
     """Exception raised when user still has a pending task."""

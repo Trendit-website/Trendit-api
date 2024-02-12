@@ -1,10 +1,20 @@
+'''
+This module defines the controller methods for authentication operations in the Trendit³ Flask application.
+
+It includes methods for checking username, checking email, signing up, resending email verification code, and logging in.
+
+@author: Emmanuel Olowu
+@link: https://github.com/zeddyemy
+@package: Trendit³
+'''
+
 import logging
 from datetime import timedelta
 from flask import request, jsonify, make_response
 from sqlalchemy.exc import ( IntegrityError, DataError, DatabaseError, InvalidRequestError, )
 from werkzeug.security import generate_password_hash
 from werkzeug.exceptions import UnsupportedMediaType
-from flask_jwt_extended import create_access_token, decode_token, set_access_cookies, unset_jwt_cookies
+from flask_jwt_extended import create_access_token, decode_token
 from flask_jwt_extended.exceptions import JWTDecodeError
 from jwt import ExpiredSignatureError
 

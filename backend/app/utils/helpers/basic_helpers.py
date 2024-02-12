@@ -1,5 +1,14 @@
+'''
+This module defines basic helper functions for the Trendit³ Flask application.
+
+These functions perform common tasks that are used throughout the application.
+
+@author: Emmanuel Olowu
+@link: https://github.com/zeddyemy
+@package: Trendit³
+'''
 import random, string, secrets, logging, time
-from flask import abort
+from flask import current_app, abort, request, url_for
 from app.extensions import db
 from slugify import slugify
 
@@ -68,8 +77,27 @@ def int_or_none(s):
     except:
         return None
 
+class EmergencyAccessRestricted(Exception):
+    def __init__(self, message, status_code=400):
+        super().__init__(message)
+        self.status_code = status_code
 
-def generate_random_string(length):
+def check_emerge():
+    emergency_mode = current_app.config.get('EMERGENCY_MODE', True)
+    if request.endpoint not in ['api.enable_emerge', 'api.disable_emerge']:
+        if emergency_mode:
+            raise EmergencyAccessRestricted("Emergency access restrictions are in effect.")
+
+def generate_random_string(length=8):
+    """
+    Generates a random string of specified length, consisting of lowercase letters and digits.
+
+    Args:
+        length (int): The desired length of the random string.
+
+    Returns:
+        str: A random string of the specified length.
+    """
     characters = string.ascii_lowercase + string.digits
     return ''.join(random.choice(characters) for _ in range(length))
 
@@ -147,9 +175,24 @@ def generate_slug(name: str, type: str, existing_obj=None) -> str:
 
 
 def console_log(label='Label', data=None):
-    
+    """
+    Print a formatted message to the console for visual clarity.
+
+    Args:
+        label (str, optional): A label for the message, centered and surrounded by dashes. Defaults to 'Label'.
+        data: The data to be printed. Can be of any type. Defaults to None.
+    """
+
     print(f'\n\n{label:-^50}\n', data, f'\n{"//":-^50}\n\n')
 
 
 def log_exception(label='EXCEPTION', data='Nothing'):
-    logging.exception(f'\n\n{label:-^50}\n {str(data)} \n {"//":-^50}\n\n') # Log the error details for debugging
+    """
+    Log an exception with details to a logging handler for debugging.
+
+    Args:
+        label (str, optional): A label for the exception, centered and surrounded by dashes. Defaults to 'EXCEPTION'.
+        data: Additional data to be logged along with the exception. Defaults to 'Nothing'.
+    """
+
+    logging.exception(f'\n\n{label:-^50}\n {str(data)} \n {"//":-^50}\n\n')  # Log the error details for debugging
