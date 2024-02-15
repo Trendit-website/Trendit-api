@@ -1,7 +1,7 @@
 '''
 This package contains the controllers for the API of the Trendit³ Flask application.
 
-It includes controller handlers for authentication, payments, profile management, \ 
+It includes controller handlers for authentication, payments, profile management, 
 stats, items, tasks, location, and referral system.
 
 @author: Emmanuel Olowu

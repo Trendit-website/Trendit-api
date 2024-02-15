@@ -228,7 +228,7 @@ class AuthController:
         except (DataError, DatabaseError) as e:
             db.session.rollback()
             log_exception('Database error occurred during registration', e)
-            return error_response('Error connecting to the database.', 500)
+            return error_response('Error interacting to the database.', 500)
         except Exception as e:
             log_exception('An error occurred during registration', e)
             return error_response('An error occurred while processing the request', 500)
@@ -293,7 +293,6 @@ class AuthController:
             two_FA_token = data.get('two_FA_token')
             entered_code = data.get('entered_code')
             
-            
             try:
                 # Decode the JWT and extract the user's info and the 2FA code
                 decoded_token = decode_token(two_FA_token)
@@ -319,14 +318,11 @@ class AuthController:
             extra_data = {'access_token':access_token}
             
             
-            
             return success_response('User logged in successfully', 200, extra_data)
         except UnsupportedMediaType as e:
-            error = True
             logging.exception(f"An UnsupportedMediaType exception occurred: {e}")
             return error_response(f"{str(e)}", 415)
         except Exception as e:
-            error = True
             logging.exception(f"An exception occurred trying to login: {e}") # Log the error details for debugging
             return error_response('An error occurred while processing the request.', 500)
 
@@ -342,47 +338,42 @@ class AuthController:
             # get user from db with the email/username.
             user = get_trendit3_user(email_username)
             
-            if user:
-                # Generate a random six-digit number
-                reset_code = generate_six_digit_code()
-                
-                try:
-                    send_code_to_email(user.email, reset_code, code_type='pwd_reset') # send reset code to user's email
-                except Exception as e:
-                    return error_response(f'An error occurred while sending the reset code to the email address', 500)
-                
-                # Create a JWT that includes the user's info and the reset code
-                expires = timedelta(minutes=15)
-                reset_token = create_access_token(identity={
-                    'username': user.username,
-                    'email': user.email,
-                    'reset_code': reset_code
-                }, expires_delta=expires)
-                
-                pwd_reset_token = save_pwd_reset_token(reset_token, user)
-                
-                if pwd_reset_token is None:
-                    return error_response('Error saving the reset token in the database', 500)
-                
-                
-                status_code = 200
-                msg = 'Password reset code sent successfully'
-                extra_data = { 'reset_token': reset_token, 'email': user.email, }
-            else:
-                error = True
-                status_code = 404
-                msg = 'email or username isn\'t registered with us'
+            if not user:
+                return error_response('email or username isn\'t registered with us', 404)
+            
+            # Generate a random six-digit number
+            reset_code = generate_six_digit_code()
+            
+            try:
+                send_code_to_email(user.email, reset_code, code_type='pwd_reset') # send reset code to user's email
+            except Exception as e:
+                return error_response(f'An error occurred while sending the reset code to the email address', 500)
+            
+            # Create a JWT that includes the user's info and the reset code
+            expires = timedelta(minutes=15)
+            reset_token = create_access_token(identity={
+                'username': user.username,
+                'email': user.email,
+                'reset_code': reset_code
+            }, expires_delta=expires)
+            
+            pwd_reset_token = save_pwd_reset_token(reset_token, user)
+            
+            if pwd_reset_token is None:
+                return error_response('Error saving the reset token in the database', 500)
+            
+            status_code = 200
+            msg = 'Password reset code sent successfully'
+            extra_data = { 'reset_token': reset_token, 'email': user.email, }
+            return success_response(msg, status_code, extra_data)
+
         except Exception as e:
-            error = True
             status_code = 500
             msg = 'An error occurred while processing the request.'
-            logging.exception(f"An exception occurred processing the request. {e}") # Log the error details for debugging
+            log_exception(f"An exception occurred processing the request", e)
+            return error_response(msg, status_code)
         finally:
             db.session.close()
-        if error:
-            return error_response(msg, status_code)
-        else:
-            return success_response(msg, status_code, extra_data)
 
 
     @staticmethod
@@ -411,7 +402,6 @@ class AuthController:
             # Check if the reset token exists in the database
             pwd_reset_token = OneTimeToken.query.filter_by(token=reset_token).first()
             if not pwd_reset_token:
-                console_log('DB reset token', pwd_reset_token)
                 return error_response('The Reset token not found.', 404)
             
             if pwd_reset_token.used:
@@ -430,29 +420,20 @@ class AuthController:
             pwd_reset_token.update(used=True)
             status_code = 200
             msg = 'Password changed successfully'
+            return success_response(msg, status_code)
         except UnsupportedMediaType as e:
-            error = True
-            status_code = 415
-            msg = f"{str(e)}"
             db.session.rollback()
             logging.exception(f"An UnsupportedMediaType exception occurred: {e}")
+            return error_response(f"{str(e)}", 415)
         except JWTDecodeError:
-            error = True
-            msg = f"Invalid or expired reset code"
-            status_code = 401
             db.session.rollback()
+            return error_response(f"Invalid or expired reset code", 401)
         except Exception as e:
-            error = True
-            status_code = 500
-            msg = 'An error occurred while processing the request.'
             db.session.rollback()
             logging.exception(f"An exception occurred processing the request: {e}")
+            return error_response('An error occurred while processing the request.', 500)
         finally:
             db.session.close()
-        if error:
-            return error_response(msg, status_code)
-        else:
-            return success_response(msg, status_code)
 
 
     @staticmethod
@@ -493,6 +474,7 @@ class AuthController:
             logging.exception(f"An exception occurred checking username. {e}")
         
         return error_response(msg, status_code) if error else success_response(msg, status_code)
+    
     
     @staticmethod
     def email_check():
