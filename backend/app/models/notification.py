@@ -56,7 +56,7 @@ class Notification(db.Model):
             'title': self.title,
             'description': self.description,
             'type': self.type,
-            'created_at': self.created_at,
-            'updated_at': self.updated_at,
+            'created_at': self.createdAt,
+            'updated_at': self.updatedAt,
             'content': self.content
         }
