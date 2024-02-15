@@ -17,15 +17,30 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from app.models import Media
 from config import Config
 
-# Define the User data model. added flask_login UserMixin!!
+# temporary user
+class TempUser(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    email = db.Column(db.String(255), nullable=False, unique=True)
+    date_joined = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<ID: {self.id}, email: {self.email}>'
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'email': self.email,
+            'date_joined': self.date_joined,
+        }
+
+# Define the User data model.
 class Trendit3User(db.Model):
     __tablename__ = "trendit3_user"
     
     id = db.Column(db.Integer(), primary_key=True)
-    username = db.Column(db.String(50), nullable=False, unique=True)
     email = db.Column(db.String(255), nullable=False, unique=True)
-    gender = db.Column(db.String(50), nullable=False)
-    thePassword = db.Column(db.String(255), nullable=False)
+    username = db.Column(db.String(50), nullable=True, unique=True)
+    thePassword = db.Column(db.String(255), nullable=True)
     date_joined = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     # Relationships
@@ -131,9 +146,9 @@ class Profile(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     firstname = db.Column(db.String(200), nullable=True)
     lastname = db.Column(db.String(200), nullable=True)
+    gender = db.Column(db.String(50), nullable=True)
     phone = db.Column(db.String(120), nullable=True)
     profile_picture_id = db.Column(db.Integer(), db.ForeignKey('media.id'), nullable=True)
-    referral_code = db.Column(db.String(255), nullable=True)
     
     trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id', ondelete='CASCADE'), nullable=False,)
     trendit3_user = db.relationship('Trendit3User', back_populates="profile")
@@ -143,16 +158,15 @@ class Profile(db.Model):
     
     @property
     def referral_link(self):
-        if self.referral_code is None:
-            return ''
-        return f'{Config.DOMAIN_NAME}/signup/{self.referral_code}'
+        return f'{Config.DOMAIN_NAME}/signup/{self.trendit3_user.username}'
     
     def update(self, **kwargs):
         for key, value in kwargs.items():
             setattr(self, key, value)
         db.session.commit()
     
-    def get_profile_img(self):
+    @property
+    def profile_pic(self):
         if self.profile_picture_id:
             theImage = Media.query.get(self.profile_picture_id)
             if theImage:
@@ -167,8 +181,9 @@ class Profile(db.Model):
             'id': self.id,
             'firstname': self.firstname,
             'lastname': self.lastname,
+            'gender': self.gender,
             'phone': self.phone,
-            'profile_picture': self.get_profile_img(),
+            'profile_picture': self.profile_pic,
             'referral_link': f'{self.referral_link}',
         }
 
@@ -177,10 +192,10 @@ class Address(db.Model):
     __tablename__ = "address"
     
     id = db.Column(db.Integer(), primary_key=True)
-    country = db.Column(db.String(50), nullable=False)
-    state = db.Column(db.String(50), nullable=False)
-    local_government = db.Column(db.String(100), nullable=False)
-    currency_code = db.Column(db.String(50), nullable=False)
+    country = db.Column(db.String(50), nullable=True)
+    state = db.Column(db.String(50), nullable=True)
+    local_government = db.Column(db.String(100), nullable=True)
+    currency_code = db.Column(db.String(50), nullable=True)
     
     trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id', ondelete='CASCADE'), nullable=False,)
     trendit3_user = db.relationship('Trendit3User', back_populates="address")
@@ -245,7 +260,8 @@ class ReferralHistory(db.Model):
     __tablename__ = "referral_history"
     
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(900), nullable=False, unique=True)
+    email = db.Column(db.String(255), nullable=False, unique=True)
+    username = db.Column(db.String(900), nullable=True, unique=True)
     status = db.Column(db.String(900), nullable=False, unique=True)
     date_joined = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 

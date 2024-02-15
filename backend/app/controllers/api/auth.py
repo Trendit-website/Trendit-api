@@ -18,102 +18,33 @@ from flask_jwt_extended import create_access_token, decode_token
 from flask_jwt_extended.exceptions import JWTDecodeError
 from jwt import ExpiredSignatureError
 
-from app.extensions import db
-from app.models.role import Role
-from app.models.user import Trendit3User, Address, Profile, OneTimeToken, ReferralHistory
-from app.models.membership import Membership
-from app.models.payment import Wallet
-from app.utils.helpers.basic_helpers import console_log
-from app.utils.helpers.response_helpers import error_response, success_response
-from app.utils.helpers.location_helpers import get_currency_info
-from app.utils.helpers.auth_helpers import generate_six_digit_code, send_code_to_email, save_pwd_reset_token
-from app.utils.helpers.user_helpers import is_user_exist, get_trendit3_user, referral_code_exists
+from ...extensions import db
+from ...models.role import Role
+from ...models.user import TempUser, Trendit3User, Address, Profile, OneTimeToken, ReferralHistory
+from ...models.membership import Membership
+from ...models.payment import Wallet
+from ...utils.helpers.basic_helpers import console_log, log_exception
+from ...utils.helpers.response_helpers import error_response, success_response
+from ...utils.helpers.location_helpers import get_currency_info
+from ...utils.helpers.auth_helpers import generate_six_digit_code, send_code_to_email, save_pwd_reset_token
+from ...utils.helpers.user_helpers import is_user_exist, get_trendit3_user, referral_code_exists
 
 class AuthController:
     @staticmethod
-    def username_check():
-        error = False
-        try:
-            data = request.get_json()
-            username = data.get('username', '')
-            if not username:
-                return error_response("username parameter is required in request's body.", 400)
-            
-            if is_user_exist(username, 'username'):
-                return error_response(f'{username} is already Taken', 409)
-            
-            msg = f'{username} is available'
-            status_code = 200
-            
-        except UnsupportedMediaType as e:
-            error = True
-            msg = "username parameter is required in request's body."
-            status_code = 415
-            logging.exception(f"An exception occurred checking username. {e}")
-        except Exception as e:
-            error = True
-            msg = "An error occurred while processing the request."
-            status_code = 500
-            logging.exception(f"An exception occurred checking username. {e}")
-        
-        return error_response(msg, status_code) if error else success_response(msg, status_code)
-        
-    @staticmethod
-    def email_check():
-        error = False
-        try:
-            data = request.get_json()
-            email = data.get('email', '')
-            if not email:
-                return error_response("email parameter is required in request's body.", 415)
-            
-            if is_user_exist(email, 'email'):
-                return error_response(f'{email} is already taken', 409)
-            
-            msg = f'{email} is available'
-            status_code = 200
-            
-        except UnsupportedMediaType as e:
-            error = True
-            msg = "email parameter is required in request's body."
-            status_code = 415
-            logging.exception(f"An exception occurred checking email. {e}")
-        except Exception as e:
-            error = True
-            msg = "An error occurred while processing the request."
-            status_code = 500
-            logging.exception(f"An exception occurred checking email. {e}")
-
-        return error_response(msg, status_code) if error else success_response(msg, status_code)
-    
-    
-    @staticmethod
     def signUp():
-        error = False
-        
         try:
             data = request.get_json()
-            firstname = data.get('firstname')
-            lastname = data.get('lastname')
-            username = data.get('username')
             email = data.get('email')
-            gender = data.get('gender')
-            country = data.get('country')
-            state = data.get('state')
-            local_government = data.get('local_government')
-            password = data.get('password')
             referral_code = data.get('referral_code') # get code of referrer
             
-            if is_user_exist(email, 'email'):
+            if not email:
+                return error_response('Email is required', 400)
+
+            if Trendit3User.query.filter_by(email=email).first():
                 return error_response('Email already taken', 409)
-            
-            if is_user_exist(username, 'username'):
-                return error_response('Username already taken', 409)
-            
-            if referral_code and not referral_code_exists(referral_code):
-                return error_response('Referrer code is invalid', 404)
-            
-            hashed_pwd = generate_password_hash(password, "pbkdf2:sha256")
+
+            if referral_code and not Trendit3User.query.filter_by(username=referral_code).first():
+                return error_response('Referral code is invalid', 404)
             
             # Generate a random six-digit number
             verification_code = generate_six_digit_code()
@@ -124,50 +55,75 @@ class AuthController:
                 logging.exception(f"Error sending Email: {str(e)}")
                 return error_response(f'An error occurred while sending the verification email: {str(e)}', 500)
             
-            # Create a JWT that includes the user's info and the verification code
+            # Create a JWT that includes the user's email and the verification code
             expires = timedelta(minutes=30)
             identity = {
-                'firstname': firstname,
-                'lastname': lastname,
-                'username': username,
                 'email': email,
-                'gender': gender,
-                'country': country,
-                'state': state,
-                'local_government': local_government,
-                'hashed_pwd': hashed_pwd,
                 'verification_code': verification_code
             }
             if referral_code:
-                identity.update({'referral_code': referral_code})
+                identity['referral_code'] = referral_code
             
             signup_token = create_access_token(identity=identity, expires_delta=expires, additional_claims={'type': 'signup'})
             extra_data = {'signup_token': signup_token}
-        except InvalidRequestError as e:
-            error = True
-            msg = f"Invalid request"
-            status_code = 400
-            logging.exception(f"Invalid Request Error occurred: {str(e)}")
-        except DataError as e:
-            error = True
-            msg = f"Invalid Entry"
-            status_code = 400
-            logging.exception(f"Data Error occurred: {str(e)}")
-        except DatabaseError as e:
-            error = True
-            msg = f"Error connecting to the database"
-            status_code = 500
-            logging.exception(f"Database Error occurred: {str(e)}")
-        except Exception as e:
-            error = True
-            status_code = 500
-            msg = 'An error occurred while processing the request.'
-            logging.exception(f"An exception occurred during registration. {e}") # Log the error details for debugging
-        
-        if error:
-            return error_response(msg, status_code)
-        else:
             return success_response('Verification code sent successfully', 200, extra_data)
+        except Exception as e:
+            logging.exception(f"An exception occurred during registration. {e}") # Log the error details for debugging
+            return error_response('Error occurred processing the request.', 500)
+
+
+
+    @staticmethod
+    def verify_email():
+        error = False
+        try:
+            data = request.get_json()
+            signup_token = data.get('signup_token')
+            entered_code = data.get('entered_code')
+            
+            # Decode the JWT and extract the user's info and the verification code
+            decoded_token = decode_token(signup_token)
+            user_info = decoded_token['sub']
+            email = user_info['email']
+            
+            if entered_code != user_info['verification_code']:
+                return error_response('Verification code is incorrect', 400)
+            
+            # The entered code matches the one in the JWT, so create temporary user (TempUser)
+            new_user = TempUser(email=email)
+            db.session.add(new_user)
+            db.session.commit()
+            
+            user_data = new_user.to_dict()
+            
+            # TODO: Make asynchronous
+            if 'referral_code' in user_info:
+                referral_code = user_info['referral_code']
+                referrer = get_trendit3_user(referral_code)
+                referral_history = ReferralHistory.create_referral_history(email=email, status='pending', trendit3_user=referrer, date_joined=new_user.date_joined)
+            
+            extra_data = {'user_data': user_data}
+            return success_response('User registered successfully', 201, extra_data)
+        except ExpiredSignatureError as e:
+            log_exception('Expired Signature Error', e)
+            return error_response('The verification code has expired. Please request a new one.', 401)
+        except JWTDecodeError as e:
+            log_exception('JWT Decode Error', e)
+            return error_response('Verification code has expired or corrupted. Please request a new one.', 401)
+        except IntegrityError as e:
+            db.session.rollback()
+            logging.exception(f"Integrity Error: \n {e}")
+            return error_response('User already exists.', 409)
+        except (DataError, DatabaseError) as e:
+            db.session.rollback()
+            log_exception('Database error occurred during registration', e)
+            return error_response('Error connecting to the database.', 500)
+        except Exception as e:
+            db.session.rollback()
+            log_exception('Exception occurred during registration', e)
+            return error_response('An error occurred while processing the request.', 500)
+        finally:
+            db.session.close()
 
 
     @staticmethod
@@ -220,118 +176,66 @@ class AuthController:
 
 
     @staticmethod
-    def verify_email():
-        error = False
+    def complete_registration():
         try:
             data = request.get_json()
-            signup_token = data.get('signup_token')
-            entered_code = data.get('entered_code')
+            user_id = data.get('user_id')
+            firstname = data.get('firstname', '')
+            lastname = data.get('lastname', '')
+            username = data.get('username', '')
+            password = data.get('password', '')
             
-            # Decode the JWT and extract the user's info and the verification code
-            decoded_token = decode_token(signup_token)
-            user_info = decoded_token['sub']
-            firstname = user_info['firstname']
-            lastname = user_info['lastname']
-            username = user_info['username']
-            email = user_info['email']
-            gender = user_info['gender']
-            hashed_pwd = user_info['hashed_pwd']
-            country = user_info['country']
-            state = user_info['state']
-            local_government = user_info['local_government']
+            if not user_id:
+                return error_response('User ID is required', 400)
             
-            currency_info = get_currency_info(country)
+            user = TempUser.query.get(user_id)
             
-            if currency_info is None:
-                return jsonify({
-                    'status': 'failed',
-                    'status_code': 500,
-                    'message': 'Error getting the currency of user\'s country',
-                }), 500
+            if not user:
+                return error_response('User does not exist', 404)
             
-            if entered_code == user_info['verification_code']:
-                # The entered code matches the one in the JWT, so create the user
-                newUser = Trendit3User(username=username, email=email, gender=gender, thePassword=hashed_pwd)
-                newUserAddress = Address(country=country, state=state, local_government=local_government, currency_code=currency_info['code'], trendit3_user=newUser)
-                newMembership = Membership(trendit3_user=newUser)
-                newUserProfile = Profile(trendit3_user=newUser, firstname=firstname, lastname=lastname)
-                newUserWallet = Wallet(trendit3_user=newUser, currency_name=currency_info['name'], currency_code=currency_info['code'])
-                role = Role.query.filter_by(name='Advertiser').first()
-                if role:
-                    newUser.roles.append(role)
-                
-                db.session.add_all([newUser, newUserAddress, newUserProfile, newMembership, newUserWallet])
-                db.session.commit()
-                
-                user_data = newUser.to_dict()
-                
-                # TODO: Make asynchronous
-                if 'referral_code' in user_info:
-                    referral_code = user_info['referral_code']
-                    profile = Profile.query.filter(Profile.referral_code == referral_code).first()
-                    referrer = profile.trendit3_user
-                    referral_history = ReferralHistory.create_referral_history(username=username, status='Registered', trendit3_user=referrer, date_joined=newUser.date_joined)
-            else:
-                error = True
-                msg = 'Verification code is incorrect'
-                status_code = 400
-        except ExpiredSignatureError as e:
-            error = True
-            msg = f"The Verification code has expired. Please request a new one."
-            status_code = 401
+            
+            # Check if any field is empty
+            if not all([firstname, lastname, username, password]):
+                return {"error": "A required field is not provided."}, 400
+            
+            email = user.email
+            hashed_pwd = generate_password_hash(password, "pbkdf2:sha256")
+            
+            new_user = Trendit3User(email=email, username=username, thePassword=hashed_pwd)
+            new_user_profile = Profile(trendit3_user=new_user, firstname=firstname, lastname=lastname)
+            new_user_address = Address(trendit3_user=new_user)
+            new_membership = Membership(trendit3_user=new_user)
+            
+            db.session.add_all([new_user, new_user_profile, new_user_address, new_membership])
+            db.session.commit()
+            
+            user_data = new_user.to_dict()
+            
+            referral = ReferralHistory.query.filter_by(email=email).first()
+            if referral:
+                referral.update(username=username, status='registered', date_joined=new_user.date_joined)
+            
+            # create access token.
+            access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=1440), additional_claims={'type': 'access'})
+            
+            extra_data = {
+                'user_data': user_data,
+                'access_token':access_token
+            }
+            
+            return success_response('User registration completed successfully', 200, extra_data)
+            
+        except (DataError, DatabaseError) as e:
             db.session.rollback()
-            logging.exception(f"Expired Signature Error: \n {e}")
-        except JWTDecodeError as e:
-            error = True
-            msg = f"Verification code has expired or corrupted. Please request a new one."
-            status_code = 401
-            db.session.rollback()
-            logging.exception(f"JWT Decode Error: \n {e}")
-        except InvalidRequestError as e:
-            error = True
-            msg = f"Invalid request"
-            status_code = 400
-            db.session.rollback()
-            logging.exception(f"Invalid Request Error: \n {e}")
-        except IntegrityError as e:
-            error = True
-            msg = f"User already exists."
-            status_code = 409
-            db.session.rollback()
-            logging.exception(f"Integrity Error: \n {e}")
-        except DataError as e:
-            error = True
-            msg = f"Invalid Entry"
-            status_code = 400
-            db.session.rollback()
-            logging.exception(f"Data Error: \n {e}")
-        except DatabaseError as e:
-            error = True
-            msg = f"Error connecting to the database"
-            status_code = 500
-            db.session.rollback()
-            logging.exception(f"Database Error: \n {e}")
-        except AttributeError as e:
-            error = True
-            msg = f"Apologies. Our developers are already looking into the issue."
-            status_code = 500
-            db.session.rollback()
-            logging.exception(f"AttributeError Error: \n {e}")
+            log_exception('Database error occurred during registration', e)
+            return error_response('Error connecting to the database.', 500)
         except Exception as e:
-            error = True
-            status_code = 500
-            msg = 'An error occurred while processing the request.'
-            db.session.rollback()
-            logging.exception(f"An exception occurred during registration: \n {e}") # Log the error details for debugging
+            log_exception('An error occurred during registration', e)
+            return error_response('An error occurred while processing the request', 500)
         finally:
             db.session.close()
-        if error:
-            return error_response(msg, status_code)
-        else:
-            extra_data = {'user_data': user_data}
-            return success_response('User registered successfully', 201, extra_data)
-
-
+    
+    
     @staticmethod
     def login():
         error = False
@@ -350,6 +254,8 @@ class AuthController:
             if not user.verify_password(pwd):
                 return error_response('Password is incorrect', 401)
             
+            # TODO: implement logic to check if user enabled 2fa
+            '''
             # Generate a random six-digit number
             two_FA_code = generate_six_digit_code()
             
@@ -365,26 +271,18 @@ class AuthController:
                 'email': user.email,
                 'two_FA_code': two_FA_code
             }, expires_delta=expires)
-            
-            status_code = 200
-            msg = '2 Factor Authentication code sent successfully'
-            extra_data = { 'two_FA_token': two_FA_token }
+            '''
+            access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=1440), additional_claims={'type': 'access'})
+            extra_data = {'access_token':access_token}
+            return success_response('User logged in successfully', 200, extra_data)
         except UnsupportedMediaType as e:
-            error = True
-            status_code = 415
-            msg = f"{str(e)}"
             logging.exception(f"An UnsupportedMediaType exception occurred: {e}")
+            return success_response(f"{str(e)}", 415)
         except Exception as e:
-            error = True
-            status_code = 500
-            msg = f'An error occurred while processing the request.'
             logging.exception(f"An exception occurred trying to login: {e}")
+            return success_response(f'An error occurred while processing the request.', 415)
         finally:
             db.session.close()
-        if error:
-            return error_response(msg, status_code)
-        else:
-            return success_response(msg, status_code, extra_data)
 
 
     @staticmethod
@@ -565,3 +463,62 @@ class AuthController:
         except Exception as e:
             resp = make_response(error_response(f'Log out failed: {e}', 500))
             return resp
+    
+    
+    
+    @staticmethod
+    def username_check():
+        error = False
+        try:
+            data = request.get_json()
+            username = data.get('username', '')
+            if not username:
+                return error_response("username parameter is required in request's body.", 400)
+            
+            if is_user_exist(username, 'username'):
+                return error_response(f'{username} is already Taken', 409)
+            
+            msg = f'{username} is available'
+            status_code = 200
+            
+        except UnsupportedMediaType as e:
+            error = True
+            msg = "username parameter is required in request's body."
+            status_code = 415
+            logging.exception(f"An exception occurred checking username. {e}")
+        except Exception as e:
+            error = True
+            msg = "An error occurred while processing the request."
+            status_code = 500
+            logging.exception(f"An exception occurred checking username. {e}")
+        
+        return error_response(msg, status_code) if error else success_response(msg, status_code)
+    
+    @staticmethod
+    def email_check():
+        error = False
+        try:
+            data = request.get_json()
+            email = data.get('email', '')
+            if not email:
+                return error_response("email parameter is required in request's body.", 415)
+            
+            if is_user_exist(email, 'email'):
+                return error_response(f'{email} is already taken', 409)
+            
+            msg = f'{email} is available'
+            status_code = 200
+            
+        except UnsupportedMediaType as e:
+            error = True
+            msg = "email parameter is required in request's body."
+            status_code = 415
+            logging.exception(f"An exception occurred checking email. {e}")
+        except Exception as e:
+            error = True
+            msg = "An error occurred while processing the request."
+            status_code = 500
+            logging.exception(f"An exception occurred checking email. {e}")
+
+        return error_response(msg, status_code) if error else success_response(msg, status_code)
+    
