@@ -122,7 +122,7 @@ def referral_code_exists(code):
 
 # @al-chris
 
-def get_notifications(user_id, message_type=MessageType.NOTIFICATION, status=MessageStatus.UNREAD):
+def get_notifications(user_id:int, message_type=MessageType.NOTIFICATION):
     """
     Retrieve notifications for a user.
 
@@ -134,8 +134,24 @@ def get_notifications(user_id, message_type=MessageType.NOTIFICATION, status=Mes
     Returns:
         list of Message: List of notifications matching the criteria.
     """
-    user = Trendit3User.query.filter(Trendit3User.id == user_id)
-    return user.received_messages.filter_by(type=message_type).join(UserMessageStatus).filter_by(user_id=user_id, status=status).all()
+
+    if user_id is None:
+        userNotifications = []
+    else:
+        trendit3_user = Trendit3User.query.filter(Trendit3User.id == user_id).first()
+        notifications = trendit3_user.received_messages.filter_by(type=message_type).all()
+        userNotifications = []
+
+        for notification in notifications:
+            notification_dict = notification.to_dict()
+            noti_status = UserMessageStatus.query.filter_by(user_id=user_id, message_id=notification_dict['id']).first().status.value
+            notification_dict['status'] = noti_status
+            userNotifications.append(notification_dict)
+    
+    return userNotifications
+    # user = Trendit3User.query.filter(Trendit3User.id == user_id)
+    # return user.received_messages.filter_by(type=message_type).join(UserMessageStatus).filter_by(user_id=user_id, status=status).all()
+    # return user.received_messages.filter_by(type=message_type).all()
 
 
 def mark_as_read(user_id, message_id):

@@ -19,3 +19,4 @@ from .profile import ProfileController
 from .referral import ReferralController
 from .location import LocationController
 from .stats import StatsController
+from .notification import NotificationController
