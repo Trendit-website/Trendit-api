@@ -23,6 +23,10 @@ def signUp():
 def verify_email():
     return AuthController.verify_email()
 
+@api.route("/complete-registration", methods=['POST'])
+def complete_registration():
+    return AuthController.complete_registration()
+
 # AUTHENTICATION ENDPOINTS
 @api.route("/login", methods=['POST'])
 def login():

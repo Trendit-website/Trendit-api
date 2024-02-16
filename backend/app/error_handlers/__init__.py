@@ -1,5 +1,5 @@
 '''
-This module contains the Error Handlers that return \ 
+This module contains the Error Handlers that return 
 proper Error responses on the Trendit³ Flask application.
 
 It includes error handling for:
