@@ -12,6 +12,7 @@ These functions assist with tasks such as:
 '''
 from app.extensions import db
 from app.models.user import Trendit3User, Address, Profile
+from app.models.notification import MessageStatus, MessageType, UserMessageStatus
 from app.utils.helpers.basic_helpers import generate_random_string
 
 
@@ -117,3 +118,35 @@ def referral_code_exists(code):
     if profile:
         return True
     return False
+
+
+# @al-chris
+
+def get_notifications(user_id, message_type=MessageType.NOTIFICATION, status=MessageStatus.UNREAD):
+    """
+    Retrieve notifications for a user.
+
+    Args:
+        user_id (int): ID of the user for whom to retrieve notifications.
+        message_type (MessageType): Type of the notifications to retrieve.
+        status (MessageStatus): Status of the notifications to retrieve.
+
+    Returns:
+        list of Message: List of notifications matching the criteria.
+    """
+    user = Trendit3User.query.filter(Trendit3User.id == user_id)
+    return user.received_messages.filter_by(type=message_type).join(UserMessageStatus).filter_by(user_id=user_id, status=status).all()
+
+
+def mark_as_read(user_id, message_id):
+    """
+    Mark a message as read for a user.
+
+    Args:
+        user_id (int): Id of the user who is marking the message as read.
+        message_id (int): ID of the message to mark as read.
+    """
+    user_message_status = UserMessageStatus.query.filter_by(user_id=user_id, message_id=message_id).first()
+    if user_message_status:
+        user_message_status.status = MessageStatus.READ
+        db.session.commit()

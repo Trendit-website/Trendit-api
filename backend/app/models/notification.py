@@ -1,44 +1,83 @@
+"""
+Author: @al-chris
+
+Description: This module contains models and functions for notifications.
+"""
 from datetime import datetime
 from sqlalchemy.orm import backref
+from enum import Enum
+from flask import request
 
 from app.extensions import db
 from app.utils.helpers.basic_helpers import generate_random_string
 
 from app.decorators.auth import roles_required
+from app.models.user import Trendit3User
 
+
+
+class MessageStatus(Enum):
+    READ = 'read'
+    UNREAD = 'unread'
+
+class MessageType(Enum):
+    MESSAGE = 'message'
+    NOTIFICATION = 'notification'
+    ACTIVITY = 'activity'
 
 user_notification = db.Table(
     'user_notification',
-    db.Column('user_id', db.Integer, db.ForeignKey('trendit3_user.id')), # change user.id to trendituser.id
-    db.Column('notification_id', db.Integer, db.ForeignKey('notification.id'))
+    db.Column('user_id', db.Integer, db.ForeignKey('trendit3_user.id')),
+    db.Column('notification_id', db.Integer, db.ForeignKey('notification.id')),
+    db.Column('status', db.Enum(MessageStatus), nullable=False, default=MessageStatus.UNREAD)
 )
+
+class UserMessageStatus(db.Model):
+    """UserMessageStatus model representing the status of messages for each user."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
+    message_id = db.Column(db.Integer, db.ForeignKey('notification.id'), nullable=False)
+    status = db.Column(db.Enum(MessageStatus), nullable=False, default=MessageStatus.UNREAD)
+
+
 
 # Notification model
 class Notification(db.Model):
     __tablename__ = 'notification'
 
     id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
-    sourceId = db.Column(db.BigInteger, nullable=False)
-    sourceType = db.Column(db.String(50), nullable=False)
-    type = db.Column(db.SmallInteger, nullable=False, default=0)
-    read = db.Column(db.Boolean, nullable=False, default=False)
-    trash = db.Column(db.Boolean, nullable=False, default=False)
+    sender_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
+    # sourceType = db.Column(db.String(50), nullable=False)
+    type = db.Column(db.Enum(MessageType), nullable=False, default=MessageType.MESSAGE)
     createdAt = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updatedAt = db.Column(db.DateTime, nullable=True, default=None)
-    content = db.Column(db.Text, nullable=True, default=None)
+    body = db.Column(db.Text, nullable=True, default=None)
 
-    user = db.relationship('User', backref=db.backref('notification', lazy=True))
-    # targets = db.relationship('Trendit3User', secondary=user_notification, backref='notifications')
-    targets = db.relationship('Trendit3User', secondary='user_notification', backref=db.backref('notifications', lazy='dynamic'))
+    recipients = db.relationship('Trendit3User', secondary=user_notification, backref='received_messages', lazy='dynamic')
 
     def __repr__(self):
         return f'<Notification {self.id}>'
-    
+
     @classmethod
-    @roles_required('admin')
-    def create_notification(cls):
-        # notification = cls()
-        pass
+    def send_notification(cls, sender_id, recipients, body, message_type=MessageType.NOTIFICATION):
+        """
+        Send a notification from an admin to multiple recipients.
+
+        Args:
+            admin (User): The admin user sending the notification.
+            recipients (list of User): List of recipient users.
+            body (str): Body of the notification message.
+            message_type (MessageType): Type of the notification message.
+        """
+        message = cls(sender_id=sender_id, body=body, type=message_type)
+        db.session.add(message)
+        db.session.flush()  # Ensure the message is added to the session before creating user message statuses
+        user_message_statuses = [UserMessageStatus(user_id=recipient.id, message_id=message.id, status=MessageStatus.UNREAD) for recipient in recipients]
+        db.session.bulk_save_objects(user_message_statuses)
+        db.session.commit()
+
+        return message
         
 
     def update(self, **kwargs):
