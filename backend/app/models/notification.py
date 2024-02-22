@@ -54,7 +54,7 @@ class Notification(db.Model):
     updatedAt = db.Column(db.DateTime, nullable=True, default=None)
     body = db.Column(db.Text, nullable=True, default=None)
 
-    recipients = db.relationship('Trendit3User', secondary=user_notification, backref='received_messages', lazy='dynamic')
+    recipients = db.relationship('Trendit3User', secondary=user_notification, backref='received_messages', lazy='dynamic', back_populates='received_messages')
 
     def __repr__(self):
         return f'<Notification {self.id}>'
