@@ -16,8 +16,8 @@ It includes error handling for the following JWT errors:
 '''
 
 from requests.exceptions import JSONDecodeError
-from flask_jwt_extended.exceptions import NoAuthorizationError, InvalidHeaderError, WrongTokenError, CSRFError
-from jwt import ExpiredSignatureError
+from flask_jwt_extended.exceptions import NoAuthorizationError, InvalidHeaderError, WrongTokenError, CSRFError, JWTDecodeError
+from jwt import ExpiredSignatureError, InvalidSignatureError, DecodeError
 
 from ..error_handlers import bp
 from ..utils.helpers.basic_helpers import console_log
@@ -44,6 +44,14 @@ def wrong_jwt_token(error):
 @bp.app_errorhandler(CSRFError)
 def jwt_csrf_error(error):
     return error_response("CSRF token is missing or invalid.", 401)
+
+@bp.app_errorhandler(DecodeError)
+def jwt_decode_error(error):
+    return error_response(f"token is missing or invalid: {str(error)}", 401)
+
+@bp.app_errorhandler(InvalidSignatureError)
+def jwt_decode_error(error):
+    return error_response(f"token error: {str(error)}", 401)
 
 @bp.app_errorhandler(EmergencyAccessRestricted)
 def handle_emergency_access_restricted_error(error):
