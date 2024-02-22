@@ -5,6 +5,7 @@ from flask_jwt_extended import create_access_token, decode_token, get_jwt_identi
 from flask_jwt_extended.exceptions import JWTDecodeError
 
 from app.models.notification import MessageStatus, MessageType, UserMessageStatus, Notification
+from app.models.user import Trendit3User
 from app.utils.helpers.basic_helpers import console_log, log_exception
 from app.utils.helpers.user_helpers import get_notifications, mark_as_read
 from app.utils.helpers.response_helpers import *
@@ -87,4 +88,27 @@ class NotificationController:
         
         finally:
             return result
-    
+        
+
+    @staticmethod
+    def send_notification(body):
+        """
+        By default, this function sends the message to all users.
+
+        Returns:
+        Notification: The sent notification object.
+        """
+        try:
+            sender_id = int(get_jwt_identity())
+            recipients = Trendit3User.query.all()
+            result = Notification.send_notification(sender_id=sender_id, recipients=recipients, body=body, message_type=MessageType.MESSAGE)
+            
+        except Exception as e:
+            msg = f'Error sending broadcast message'
+            status_code = 500
+            logging.exception(f"An exception occurred trying to send broadcast message: ==>", str(e))
+
+            result = error_response(msg, status_code)
+        
+        finally:
+            return result
