@@ -16,7 +16,7 @@ from werkzeug.security import generate_password_hash
 from werkzeug.exceptions import UnsupportedMediaType
 from flask_jwt_extended import create_access_token, decode_token
 from flask_jwt_extended.exceptions import JWTDecodeError
-from jwt import ExpiredSignatureError
+from jwt import ExpiredSignatureError, DecodeError
 
 from ...extensions import db
 from ...models.role import Role
@@ -116,6 +116,9 @@ class AuthController:
         except JWTDecodeError as e:
             log_exception('JWT Decode Error', e)
             return error_response('Verification code has expired or corrupted. Please request a new one.', 401)
+        except DecodeError as e:
+            log_exception('JWT Decode Error', e)
+            return error_response('Signup token invalid or corrupted. Make sure you are sending it correctly.', 401)
         except IntegrityError as e:
             db.session.rollback()
             logging.exception(f"Integrity Error: \n {e}")
