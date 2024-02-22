@@ -86,7 +86,7 @@ class AuthController:
             user_info = decoded_token['sub']
             email = user_info['email']
             
-            if entered_code != user_info['verification_code']:
+            if int(entered_code) != int(user_info['verification_code']):
                 return error_response('Verification code is incorrect', 400)
             
             # The entered code matches the one in the JWT, so create temporary user (TempUser)
