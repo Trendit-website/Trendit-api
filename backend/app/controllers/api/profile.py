@@ -56,6 +56,7 @@ class ProfileController:
             country = data.get('country', user_address.country if user_address else '')
             state = data.get('country', user_address.state if user_address else '')
             local_government = data.get('local_government', user_address.local_government if user_address else '')
+            birthday = data.get('birthday', user_profile.birthday if user_profile else None)
             profile_picture = request.files.get('profile_picture', '')
             
             
@@ -80,7 +81,7 @@ class ProfileController:
             
             # update user details
             current_user.update(username=username)
-            user_profile.update(firstname=firstname, lastname=lastname, gender=gender, profile_picture_id=profile_picture_id)
+            user_profile.update(firstname=firstname, lastname=lastname, gender=gender, profile_picture_id=profile_picture_id, birthday=birthday)
             user_address.update(country=country, state=state, local_government=local_government)
             user_info = current_user.to_dict()
             extra_data={'user_profile': user_info}

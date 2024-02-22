@@ -14,7 +14,7 @@ from flask import request, jsonify, make_response
 from sqlalchemy.exc import ( IntegrityError, DataError, DatabaseError, InvalidRequestError, )
 from werkzeug.security import generate_password_hash
 from werkzeug.exceptions import UnsupportedMediaType
-from flask_jwt_extended import create_access_token, decode_token
+from flask_jwt_extended import create_access_token, decode_token, get_jwt_identity
 from flask_jwt_extended.exceptions import JWTDecodeError
 from jwt import ExpiredSignatureError, DecodeError
 
@@ -68,6 +68,7 @@ class AuthController:
             extra_data = {'signup_token': signup_token}
             return success_response('Verification code sent successfully', 200, extra_data)
         except Exception as e:
+            db.session.rollback()
             logging.exception(f"An exception occurred during registration. {e}") # Log the error details for debugging
             return error_response('Error occurred processing the request.', 500)
 
@@ -239,6 +240,7 @@ class AuthController:
             log_exception('Database error occurred during registration', e)
             return error_response('Error interacting to the database.', 500)
         except Exception as e:
+            db.session.rollback()
             log_exception('An error occurred during registration', e)
             return error_response('An error occurred while processing the request', 500)
         finally:
@@ -513,3 +515,42 @@ class AuthController:
 
         return error_response(msg, status_code) if error else success_response(msg, status_code)
     
+    
+    @staticmethod
+    def update_user_role():
+        try:
+            current_user_id = get_jwt_identity()
+            current_user = Trendit3User.query.get(current_user_id)
+            data = request.get_json()
+            
+            if not data or "user_type" not in data:
+                return error_response("Missing required field 'user_type'", 400)
+
+            user_types = data["type"].strip().split(",")
+            
+            # Validate user types
+            valid_types = ["advertiser", "earner"]
+            if any(user_type not in valid_types for user_type in user_types):
+                return error_response("Invalid user type", 400)
+            
+            # Handle empty string or extra commas
+            if not user_types or any(not user_type for user_type in user_types):
+                return error_response("Invalid user type format", 400)
+            
+            # Remove existing roles
+            current_user.roles = []
+            
+            # Add roles based on comma-separated types
+            for user_type in user_types:
+                role = Role.query.filter_by(name=user_type).first()
+                if role:
+                    current_user.roles.append(role)
+            
+            db.session.commit()
+            return success_response("User type updated successfully", 200)
+        except Exception as e:
+            db.session.rollback()
+            log_exception('An error occurred assigning user roles', e)
+            return error_response(f'An error occurred while processing the request: {str(e)}', 500)
+        finally:
+            db.session.close()
