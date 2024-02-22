@@ -90,11 +90,18 @@ class AuthController:
                 return error_response('Verification code is incorrect', 400)
             
             # The entered code matches the one in the JWT, so create temporary user (TempUser)
+            
+            # first check if user is already a temporary user.
+            user = TempUser.query.filter_by(email=email).first()
+            if user:
+                return success_response('User registered successfully', 201, {'user_data': user.to_dict()})
+            
             new_user = TempUser(email=email)
             db.session.add(new_user)
             db.session.commit()
             
             user_data = new_user.to_dict()
+            extra_data = {'user_data': user_data}
             
             # TODO: Make asynchronous
             if 'referral_code' in user_info:
@@ -102,7 +109,6 @@ class AuthController:
                 referrer = get_trendit3_user(referral_code)
                 referral_history = ReferralHistory.create_referral_history(email=email, status='pending', trendit3_user=referrer, date_joined=new_user.date_joined)
             
-            extra_data = {'user_data': user_data}
             return success_response('User registered successfully', 201, extra_data)
         except ExpiredSignatureError as e:
             log_exception('Expired Signature Error', e)
