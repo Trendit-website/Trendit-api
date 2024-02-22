@@ -127,7 +127,7 @@ class AuthController:
         except Exception as e:
             db.session.rollback()
             log_exception('Exception occurred during registration', e)
-            return error_response('An error occurred while processing the request.', 500)
+            return error_response(f'An error occurred while processing the request: {str(e)}', 500)
         finally:
             db.session.close()
 
