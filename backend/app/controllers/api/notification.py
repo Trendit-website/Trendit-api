@@ -101,8 +101,12 @@ class NotificationController:
         try:
             sender_id = int(get_jwt_identity())
             recipients = Trendit3User.query.all()
-            result = Notification.send_notification(sender_id=sender_id, recipients=recipients, body=body, message_type=MessageType.MESSAGE)
+            Notification.send_notification(sender_id=sender_id, recipients=recipients, body=body, message_type=MessageType.MESSAGE)
             
+            msg = f'Notification sent successfully'
+            status_code = 200
+            result = success_response(msg, status_code)
+
         except Exception as e:
             msg = f'Error sending broadcast message'
             status_code = 500
