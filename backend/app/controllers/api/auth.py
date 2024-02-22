@@ -16,7 +16,7 @@ from werkzeug.security import generate_password_hash
 from werkzeug.exceptions import UnsupportedMediaType
 from flask_jwt_extended import create_access_token, decode_token
 from flask_jwt_extended.exceptions import JWTDecodeError
-from jwt import ExpiredSignatureError
+from jwt import ExpiredSignatureError, DecodeError
 
 from ...extensions import db
 from ...models.role import Role
@@ -86,15 +86,22 @@ class AuthController:
             user_info = decoded_token['sub']
             email = user_info['email']
             
-            if entered_code != user_info['verification_code']:
+            if int(entered_code) != int(user_info['verification_code']):
                 return error_response('Verification code is incorrect', 400)
             
             # The entered code matches the one in the JWT, so create temporary user (TempUser)
+            
+            # first check if user is already a temporary user.
+            user = TempUser.query.filter_by(email=email).first()
+            if user:
+                return success_response('User registered successfully', 201, {'user_data': user.to_dict()})
+            
             new_user = TempUser(email=email)
             db.session.add(new_user)
             db.session.commit()
             
             user_data = new_user.to_dict()
+            extra_data = {'user_data': user_data}
             
             # TODO: Make asynchronous
             if 'referral_code' in user_info:
@@ -102,7 +109,6 @@ class AuthController:
                 referrer = get_trendit3_user(referral_code)
                 referral_history = ReferralHistory.create_referral_history(email=email, status='pending', trendit3_user=referrer, date_joined=new_user.date_joined)
             
-            extra_data = {'user_data': user_data}
             return success_response('User registered successfully', 201, extra_data)
         except ExpiredSignatureError as e:
             log_exception('Expired Signature Error', e)
@@ -110,6 +116,9 @@ class AuthController:
         except JWTDecodeError as e:
             log_exception('JWT Decode Error', e)
             return error_response('Verification code has expired or corrupted. Please request a new one.', 401)
+        except DecodeError as e:
+            log_exception('JWT Decode Error', e)
+            return error_response('Signup token invalid or corrupted. Make sure you are sending it correctly.', 401)
         except IntegrityError as e:
             db.session.rollback()
             logging.exception(f"Integrity Error: \n {e}")
@@ -121,7 +130,7 @@ class AuthController:
         except Exception as e:
             db.session.rollback()
             log_exception('Exception occurred during registration', e)
-            return error_response('An error occurred while processing the request.', 500)
+            return error_response(f'An error occurred while processing the request: {str(e)}', 500)
         finally:
             db.session.close()
 
