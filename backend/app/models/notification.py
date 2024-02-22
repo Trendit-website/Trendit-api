@@ -26,7 +26,7 @@ class MessageType(Enum):
     ACTIVITY = 'activity'
 
 user_notification = db.Table(
-    'user_notification',
+    'user_notification', db.Model.metadata,
     db.Column('user_id', db.Integer, db.ForeignKey('trendit3_user.id')),
     db.Column('notification_id', db.Integer, db.ForeignKey('notification.id')),
     db.Column('status', db.Enum(MessageStatus), nullable=False, default=MessageStatus.UNREAD)
@@ -48,13 +48,14 @@ class Notification(db.Model):
 
     id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
     sender_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
-    # sourceType = db.Column(db.String(50), nullable=False)
     type = db.Column(db.Enum(MessageType), nullable=False, default=MessageType.MESSAGE)
     createdAt = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updatedAt = db.Column(db.DateTime, nullable=True, default=None)
     body = db.Column(db.Text, nullable=True, default=None)
 
-    recipients = db.relationship('Trendit3User', secondary=user_notification, backref='received_messages', lazy='dynamic')
+    # Relationships
+    # recipients = db.relationship('Trendit3User', secondary=user_notification, backref='received_messages', lazy='dynamic')
+    recipients = db.relationship('Trendit3User', secondary=user_notification, back_populates='notifications')
 
     def __repr__(self):
         return f'<Notification {self.id}>'
