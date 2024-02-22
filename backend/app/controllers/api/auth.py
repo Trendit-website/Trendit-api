@@ -217,6 +217,7 @@ class AuthController:
             new_membership = Membership(trendit3_user=new_user)
             
             db.session.add_all([new_user, new_user_profile, new_user_address, new_membership])
+            db.session.delete(user)
             db.session.commit()
             
             user_data = new_user.to_dict()
