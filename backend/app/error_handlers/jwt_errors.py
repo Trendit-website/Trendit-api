@@ -50,7 +50,7 @@ def jwt_decode_error(error):
     return error_response(f"token is missing or invalid: {str(error)}", 401)
 
 @bp.app_errorhandler(InvalidSignatureError)
-def jwt_decode_error(error):
+def jwt_invalid_signature_error(error):
     return error_response(f"token error: {str(error)}", 401)
 
 @bp.app_errorhandler(EmergencyAccessRestricted)
