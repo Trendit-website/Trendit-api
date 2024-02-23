@@ -236,6 +236,10 @@ class AuthController:
             
             return success_response('User registration completed successfully', 200, extra_data)
             
+        except IntegrityError as e:
+            db.session.rollback()
+            log_exception('Integrity Error:', e)
+            return error_response(f'User already exists: {str(e)}', 409)
         except (DataError, DatabaseError) as e:
             db.session.rollback()
             log_exception('Database error occurred during registration', e)
