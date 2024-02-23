@@ -117,7 +117,6 @@ class Trendit3User(db.Model):
                 'lastname': self.profile.lastname,
                 'profile_picture': self.profile.profile_pic,
                 'referral_link': self.profile.referral_link,
-                'referral_code': self.profile.referral_code,
             })
         
         bank_details = {}
