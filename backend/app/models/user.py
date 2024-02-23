@@ -126,16 +126,18 @@ class Trendit3User(db.Model):
         primary_bank = BankAccount.query.filter_by(trendit3_user_id=self.id, is_primary=True).first()
         if primary_bank:
             bank_details.update(primary_bank.to_dict())
-
+        
+        
+        user_wallet = self.wallet
         return {
             'id': self.id,
             'username': self.username,
             'email': self.email,
             'date_joined': self.date_joined,
             'wallet': {
-                'balance': self.wallet.balance,
-                'currency_name': self.wallet.currency_name,
-                'currency_code': self.wallet.currency_code,
+                'balance': user_wallet.balance if user_wallet else None,
+                'currency_name': user_wallet.currency_name if user_wallet else None,
+                'currency_code': user_wallet.currency_code if user_wallet else None,
             },
             'primary_bank': bank_details,
             **address_info,  # Merge address information into the output dictionary
