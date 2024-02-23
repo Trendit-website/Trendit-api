@@ -215,7 +215,6 @@ class AuthController:
             new_user_profile = Profile(trendit3_user=new_user, firstname=firstname, lastname=lastname)
             new_user_address = Address(trendit3_user=new_user)
             new_membership = Membership(trendit3_user=new_user)
-            new_wallet = Wallet(trendit3_user=new_user)
             
             db.session.add_all([new_user, new_user_profile, new_user_address, new_membership])
             db.session.delete(user)
