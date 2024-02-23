@@ -115,6 +115,9 @@ class Trendit3User(db.Model):
             profile_data.update({
                 'firstname': self.profile.firstname,
                 'lastname': self.profile.lastname,
+                'gender': self.profile.gender,
+                'phone': self.profile.phone,
+                'birthday': self.profile.birthday,
                 'profile_picture': self.profile.profile_pic,
                 'referral_link': self.profile.referral_link,
             })
@@ -128,7 +131,6 @@ class Trendit3User(db.Model):
             'id': self.id,
             'username': self.username,
             'email': self.email,
-            'gender': self.gender,
             'date_joined': self.date_joined,
             'wallet': {
                 'balance': self.wallet.balance,
