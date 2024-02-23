@@ -70,3 +70,7 @@ def username_check():
 @api.route('/check-email', methods=['GET'])
 def email_check():
     return AuthController.email_check()
+
+@api.route('/user/type', methods=['GET'])
+def update_user_role():
+    return AuthController.update_user_role()

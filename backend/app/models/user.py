@@ -115,26 +115,29 @@ class Trendit3User(db.Model):
             profile_data.update({
                 'firstname': self.profile.firstname,
                 'lastname': self.profile.lastname,
-                'profile_picture': self.profile.get_profile_img(),
+                'gender': self.profile.gender,
+                'phone': self.profile.phone,
+                'birthday': self.profile.birthday,
+                'profile_picture': self.profile.profile_pic,
                 'referral_link': self.profile.referral_link,
-                'referral_code': self.profile.referral_code,
             })
         
         bank_details = {}
         primary_bank = BankAccount.query.filter_by(trendit3_user_id=self.id, is_primary=True).first()
         if primary_bank:
             bank_details.update(primary_bank.to_dict())
-
+        
+        
+        user_wallet = self.wallet
         return {
             'id': self.id,
             'username': self.username,
             'email': self.email,
-            'gender': self.gender,
             'date_joined': self.date_joined,
             'wallet': {
-                'balance': self.wallet.balance,
-                'currency_name': self.wallet.currency_name,
-                'currency_code': self.wallet.currency_code,
+                'balance': user_wallet.balance if user_wallet else None,
+                'currency_name': user_wallet.currency_name if user_wallet else None,
+                'currency_code': user_wallet.currency_code if user_wallet else None,
             },
             'primary_bank': bank_details,
             **address_info,  # Merge address information into the output dictionary
@@ -150,6 +153,7 @@ class Profile(db.Model):
     lastname = db.Column(db.String(200), nullable=True)
     gender = db.Column(db.String(50), nullable=True)
     phone = db.Column(db.String(120), nullable=True)
+    birthday = db.Column(db.Date, nullable=True)
     profile_picture_id = db.Column(db.Integer(), db.ForeignKey('media.id'), nullable=True)
     
     trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id', ondelete='CASCADE'), nullable=False,)
@@ -185,6 +189,7 @@ class Profile(db.Model):
             'lastname': self.lastname,
             'gender': self.gender,
             'phone': self.phone,
+            'birthday': self.birthday,
             'profile_picture': self.profile_pic,
             'referral_link': f'{self.referral_link}',
         }
