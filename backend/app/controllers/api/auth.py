@@ -263,6 +263,7 @@ class AuthController:
             
             # get user from db with the email/username.
             user = get_trendit3_user(email_username)
+            console_log('user', user)
             
             if not user:
                 return error_response('Email/username is incorrect or doesn\'t exist', 401)
@@ -296,7 +297,7 @@ class AuthController:
             return success_response(f"{str(e)}", 415)
         except Exception as e:
             logging.exception(f"An exception occurred trying to login: {e}")
-            return success_response(f'An error occurred while processing the request.', 415)
+            return success_response(f'An error occurred while processing the request.', 500)
         finally:
             db.session.close()
 
