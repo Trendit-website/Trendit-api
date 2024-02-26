@@ -262,6 +262,7 @@ class AuthController:
             pwd = data.get('password')
             
             console_log('email_username', email_username)
+            console_log('password', pwd)
             
             # get user from db with the email/username.
             user = get_trendit3_user(email_username)
