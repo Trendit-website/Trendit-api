@@ -46,34 +46,41 @@ Some endpoints will be recieving form data instead of the tranditional JSON data
 Here is an example of how to send Form data to the update & create item endpoints:
 
 ``` javascript
+const accessToken = "<access_token>"; // Retrieve stored access token
 const formData = new FormData();
 formData.append('item_type', 'item_type');
 formData.append('name', 'item_name');
 // append other fields...
+
 formData.append('item_img', selectedFile); // where selectedFile is a File object representing the uploaded image
+
 fetch('/api/items/new', {
   method: 'POST',
   body: formData,
   headers: {
-      'X-CSRF-TOKEN': Cookies.get('csrf_access_token')
-  },
-  credentials: 'include', // This is required to include the cookie in the request.
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json'
+  }
 })
 .then(response => response.json())
 .then(data => console.log(data))
 .catch((error) => {
   console.error('Error:', error);
 });
-
  ```
 
 ## Authentication Endpoints
+This collection provides a general overview of the authentication process for the Trendit³ API V2. It outlines the steps involved in user registration, verification, login, and two-factor authentication (2FA).
+
+Important Note: Separate documentation exists for each endpoint, providing specific details on request parameters, response formats, and error handling.
+
 _**Usage:**_
 
-- To register a new user, make a POST request to `/api/signup` with the required user data in the JSON format.
-- To verify a new user, make a POST request to `/api/verify-email` with the required user data in the JSON format.
+- To register a new user, make a POST request to `/api/signup` with the user's email in the JSON format. A verification code will be sent to the provided Email.
+- To verify a new user, make a POST request to `/api/verify-email` with the `entered_code` and `signup_token` in the JSON format.
+- To complete registration, make a POST request to `/api/complete-registration` with the required user data in JSON format. This endpoint will completely add the user to the Trendit³ Database and automatically log the user in.
 - To log in, make a POST request to `/api/login` with the user's email and password in the JSON format.
-- To verify 2 Factor Authentication Code, make a POST request to `/api/verify-2fa` with the entered code and 2FA token.
+- To verify 2 Factor Authentication Code, make a POST request to `/api/verify-2fa` with the entered code and 2FA token. This endpoint is only needed if user enables 2FA in their settings.
 - Upon successful registration or login, the server will respond with 200 status code. See below for details on how to access protected routes.
     
 
@@ -81,30 +88,31 @@ Please ensure that errors and exceptions are handled gracefully in the frontend 
 
 #### Accessing Protected Endpoints
 
-- To access a protected endpoints, you need to include the CSRF token in the X-CSRF-TOKEN header of your request. The CSRF token can be retrieved from a non-HTTP-only cookie (csrf_access_token) that is set when user logs in or refresh token.
+Upon successful login, the `/api/login` endpoint returns an access token(JWT) in the response. This token serves as a credential that identifies the authenticated user and grants them access to protected resources.
+
+- To access a protected endpoints, you need to include the access token in the header of your request.
 - Here’s an example using JavaScript:
     
 
 ``` javascript
-import Cookies from 'js-cookie';
+const accessToken = "<access_token>"; // Retrieve stored access token
 fetch('/api/protected', {
     method: 'GET',
-      headers: {
-        'X-CSRF-TOKEN': Cookies.get('csrf_access_token'),
-      },
-      credentials: 'include', // This is required to include the cookie in the request.
+    headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+    }
 })
 .then(response => response.json())
 .then(data => console.log(data))
 .catch((error) => {
       console.error('Error:', error);
 });
-
  ```
 
-A JWT token (access token) is already stored in an HTTP-only cookie, which is automatically sent with every request. So all you need to do is include the CSRF token in the X-CSRF-TOKEN header of your request. If the JWT token and CSRF token are valid, you will be able to access the protected route. If either token is missing, expired, or invalid, you will receive an error response.
+If the JWT access token is valid, you will be able to access the protected route. If the token is missing, expired, or invalid, you will receive an error response.
 
-Please note that these tokens are sensitive information and should be handled securely. Do not expose these tokens in publicly accessible areas.
+Please note that the token is sensitive information and should be handled securely. Do not expose this tokens in publicly accessible areas.
 
 
 
@@ -116,21 +124,25 @@ Please note that these tokens are sensitive information and should be handled se
 **Description:** Register a new user on the Trendit³ platform.  
 **Query Parameters:** `referrer_code` (optional)  
 
+
 Include the following JSON data in the request body:
 ```json
 {
-  "username": "username",
-  "email": "user_email@example.com",
-  "gender": "user_gender",
-  "country": "user_country",
-  "state": "user_state",
-  "local_government": "user_local_government",
-  "password": "user_password"
+    "email": "user_email@example.com"
 }
 ```
 
 A verification code will be sent to user's Email. After which you'll get a response with a `signup_token` and 200 status code.
 The `signup_token` will be used to verify the user's Email in the `/api/verify-email` endpoint.
+
+**Key Response Details:**
+
+- `status`: "success" (string)
+- `message`: "Verification code sent successfully" (string)
+- `status_code`: 200 (integer)
+- `signup_token`: A unique token used for email verification (string)
+
+**A Successful Response Example:**
 ```json
 {
   "status": "success",
@@ -139,6 +151,7 @@ The `signup_token` will be used to verify the user's Email in the `/api/verify-e
   "signup_token": "oikjasdkjsd;asmfdklksjdsaudjsamdsdsodsssd..."
 }
 ```
+
 **Error Handling**  
 If registration fails, you will receive a JSON response with details about the error, including the status code.
 - **HTTP 400 Bad Request:** Invalid request payload.  
@@ -146,9 +159,9 @@ If registration fails, you will receive a JSON response with details about the e
 - **HTTP 500 Internal Server Error:** An error occurred while processing the request.  
 
 **_NOTE:_**  
-The Trendit³ platform includes a referrer system, allowing users to refer others to the platform. Each referrer has a unique code associated with their account, which is appended to the signup URL. The client side is responsible for extracting this code and including it as a query parameter when making the signup API request.
+The Trendit³ platform includes a referrer system, allowing users to refer others to the platform. Each referrer has a unique code *(username)* associated with their account, which is appended to the signup URL. The client side is responsible for extracting this code and including it as a query parameter when making the signup API request.
 
-When a user visits the signup URL, such as `www.trendit.com/signup/w7f8y3pl`, the referrer code (w7f8y3pl in this case) should be extracted from the URL path.
+When a user visits the signup URL, such as `www.trendit.com/signup/dave2D`, the referrer code (dave2D in this case) should be extracted from the URL path.
 
 #### Example JavaScript code to extract referrer code:
 
@@ -157,7 +170,7 @@ When a user visits the signup URL, such as `www.trendit.com/signup/w7f8y3pl`, th
 const referrerCode = window.location.pathname.split('/').pop();
  ```
 
-The extracted referrer code should be included as a query parameter (referrer_code) when making the signup API request. For instance, `/api/signup?referrer_code=w7f8y3pl`.
+The extracted referrer code should be included as a query parameter (referrer_code) when making the signup API request. For instance, `/api/signup?referrer_code=dave2D`.
 
 
 
@@ -193,6 +206,7 @@ A new code will be sent to user's email and a new `signup_token` will be returne
 **Method:** `POST`  
 **Description:** Verify user's email and register the user.  
 
+
 Include the following JSON data in the request body:
 ```javascript
 {
@@ -200,6 +214,9 @@ Include the following JSON data in the request body:
   "signup_token": "signup_token", // string (received from the sign up endpoint)
 }
 ```
+**Key Response Details:**
+
+- `user_data`: A JSON object containing user information (e.g., user_id, email, potentially other details)
 
 A successful response will look like this:
 ```json
@@ -207,9 +224,13 @@ A successful response will look like this:
     "status": "success",
     "message": "User registered successfully",
     "status_code": 201,
+    "user_data": {
+        "user_id": 129,
+        "email": "user@mail.com"
+    }
 }
 ```
-You can then go ahead to redirect user to login page.
+You can then proceed to redirect the user to the complete registration page. The `user_id` will be required in that endpoint.
 
 **Error Handling**  
 If Email verification fails, you will receive a JSON response with details about the error, including the status code.
@@ -219,13 +240,77 @@ If Email verification fails, you will receive a JSON response with details about
 
 
 
+### User Complete Regitration
+**Endpoint:** `/api/complete-registration`  
+**HTTP Method:** `POST`  
+**Description:** Complete the registration process by providing additional user information.
+
+This endpoint expects the following fields in the request body:
+
+- **user_id:** The user ID obtained from the response of the `/api/verify-email` endpoint.
+- **firstname:** User's provied first name
+- **lastname:** User's provided last name
+- **username:** User's provided username
+- **password:** The user's chosen password.
+
+**Example:**
+```json
+{
+    "user_id": 1,
+    "firstname": "trendit",
+    "lastname": "user",
+    "username": "trendit_user",
+    "password": "mypassword"
+}
+```
+
+**Key Response Details:**
+
+- **access_token:** A token for accessing protected endpoints (string)
+- **user_data:** A JSON object containing user information:
+
+A successful response will look like this:
+
+``` json
+{
+    "status": "success",
+    "message": "User registration completed successfully",
+    "status_code": 201,
+    "access_token": "<access_token>",
+    "user_data": {
+        "user_id": 129,
+        "email": "user@mail.com",
+        "firstname": "trendit",
+        "lastname": "webmaster",
+        "date_joined": "2024-02-21T12:00:00Z",
+        "wallet": {
+            "balance": 0.0,
+            "currency_name": "Naira",
+            "currency_code": "NGN"
+        }
+    }
+}
+```
+
+Upon successful completion of registration, the server will respond with an appropriate success message and status code.
+
+If there are any errors during the registration process, you will receive a JSON response with details about the error, including the status code.
+
+- **HTTP 400 Bad Request:** Invalid request payload.
+- **HTTP 404 Not Found:** User ID not found or invalid
+- **HTTP 409 Conflict:** User with the same username or email already exists.
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request.
+
 
 ### User Login
 **Endpoint:** `/api/login`  
 **HTTP Method:** `POST`  
-**Description:** Authenticate a user and send a 2 Factor Authentication code to user's email.  
+**Description:** Authenticate a user and send a 2 Factor Authentication code to user's email if 2FA is enabled.
 
-Include the following JSON data in the request body:
+
+In this endpoint, user's email/username and password should be included in the request body. By default, 2FA isn't enabled.  
+
+**Include the following JSON data in the request body:**
 ```json
 {
   "email_username": "user_email@example.com",
@@ -233,25 +318,49 @@ Include the following JSON data in the request body:
 }
 ```
 
+Upon successful login, the server will respond with one of the following:
+
+- If 2FA is not enabled:
+    - `status`: "success" (string)
+    - `message`: "User logged in successfully" (string)
+    - `status_code`: 200 (integer)
+    - `access_token`: A token for accessing protected endpoints (string)
+
+**Example Response:**
+``` json
+{  
+    "status": "success",  
+    "message": "User logged in successfully",  
+    "status_code": 200,  
+    "access_token": "ayhsjS3FsASSDyhjahdJsbvsJS909adaHJHJK..."
+}
+```
+
+- If 2FA is enabled:
+    - `status`: "success" (string)
+    - `message`: "2 Factor Authentication code sent successfully" (string)
+    - `status_code`: 200 (integer)
+    - `two_FA_token`: A token for two-factor authentication (string)
+**Example Response:**
+``` json
+{  
+    "status": "success",  
+    "message": "2 Factor Authentication code sent successfully",
+    "status_code": 200,  
+    "two_FA_token": "ayhsjS3FsASSDyhjahdJsbvsJS909adaHJHJK..."
+}
+```
+
 If the email and password is correct, a 2 Factor Authentication Code will be sent to user's email. And `two_FA_token` will be included in the received JSON response with a 200 OK status code. 
 
 The `two_FA_token` will be used to verify the 2 Factor Authentication Code in the `/api/verify-2fa` endpoint.
 
-```json
-{
-    "status": "success",
-    "message": "2 Factor Authentication code sent successfully",
-    "status_code": 200,
-    "two_FA_token": "ayhsjS3FsASSDyhjahdJsbvsJS909adaHJHJK..."
-}
-```
 
 **Error Handling**  
 If Login fails, you will receive a JSON response with details about the error, including the status code.
 
 - **HTTP 401 Unauthorized:** Invalid email or password.  
 - **HTTP 500 Internal Server Error:** An error occurred while processing the request.  
-
 
 
 
@@ -275,10 +384,10 @@ if the entered code is correct, user will be logged in successfully and a the fo
     "status": "success",
     "message": "User logged in successfully",
     "status_code": 200,
+    "access_token": "ayhsjS3FsASSDyhjahdJsbvsJS909adaHJHJK..."
 }
 ```
-A successful login means an `access_token` and `csrf_access_token` has been included in the cookies.
-The `access_token` is automatically sent with every request, but the `csrf_access_token` will needed to be manualy fetched from the cookies and placed in the X-CSRF-TOKEN header of request to protected endpoints.
+A successful login means an `access_token` will be  included in the response.
 
 _For more info, see Documentation above on accessing protected endpoints._
 
@@ -410,49 +519,11 @@ If logout is successful, you will receive a JSON response with a 200 OK status c
 The Payment endpoints are use to Initialize payments & process payments, verify payments and get payment history.
 (payments are handled using the Paystack Payment Gateway.) 
 
-It includes endpoints to pay `"Activation fee"` and `"Membership fee"`. It also to includes endpoints to credit user's wallet.
+It includes endpoints to pay `"Membership fee"` and also to `credit user's wallet`.
 
 _**NOTE:**_ Currently, payments are made only in Naira, and support for other currencies will be added later on. Documentation will updated when the support is added.
 
 
-
-
-### Account Activation Fee
-**Endpoint:** `/api/payment/account-activation-fee`  
-**HTTP Method:** POST  
-**Description:** Initialize a payment for account activation.  
-**Login Required:** True
-
-This endpoint will set up the payment process for `account-activation-fee`. A Paystack authorization URL will be returned in the response for user to complet their payment. Once payment is complete use will automatically be redirected back to the homepage with a Transaction reference in as the query parameter.
-For instance, after a successful payment the user could be redirected to this URL.
-
-`https://trendit3.vercel.app/homepage?trxref=bsvxk9cpxx`
-
-As you can see there is `trxref` query parameter in the URL. This query parameter will be needed in the endpoint to verify payments. 
-
-So to initialize payment, the amount is needed in the request's body:
-```json
-{
-  "amount": 1000,
-}
-```
-
-On successful, request, this will return an authorization URL where users need to be redirected too in other to complete their payment.
-```json
-{
-  "status": "success",
-  "status_code": 200,
-  "message": "Payment initialized",
-  "authorization_url": "user_authorization_url",
-  "payment_type": "account-activation-fee"
-}
-```
-**Error Handling**  
-If payment Initialization fails, you will receive a JSON response with details about the error, including the status code.
-
-- **HTTP 401 Unauthorized:** User is not logged in.
-- **HTTP 409 Conflict:** Payment has already been made by the user.  
-- **HTTP 500 Internal Server Error:** An error occurred while processing the request.  
 
 
 ### Membership Fee
@@ -461,8 +532,7 @@ If payment Initialization fails, you will receive a JSON response with details a
 **Description:** Initialize a payment for Monthly Membership fee.  
 **Login Required:** True
 
-This endpoint will set up the payment process for `membership-fee`. A Paystack authorization URL will be returned in the response for user to complet their payment. Once payment is complete use will automatically be redirected back to the homepage with a Transaction reference in as the query parameter.
-For instance, after a successful payment the user could be redirected to this URL.
+This endpoint will set up the payment process for `membership-fee`. A Paystack authorization URL will be returned in the response for the user to complete their payment. Once the payment is complete, the user will automatically be redirected back to the provided callback URL with a Transaction reference as the query parameter. For instance, after a successful payment, the user could be redirected to the provided callback URL:
 
 `https://trendit3.vercel.app/homepage?trxref=bsvxk9cpxx`
 
@@ -475,7 +545,7 @@ So to initialize payment, the amount is needed in the request's body:
 }
 ```
 
-On successful, request, this will return an authorization URL where users need to be redirected too in other to complete their payment.
+If payment processing is successful, you will receive a JSON response with a 200 OK status code. The response will include an authorization URL. This is where you redirect user's to make their payments for membership. A successful response should look like this.
 ```json
 {
   "status": "success",
@@ -486,6 +556,36 @@ On successful, request, this will return an authorization URL where users need t
 }
 ```
 
+**Note:** It's crucial to include the `CALLBACK-URL` in the request headers. The backend code expects this header to be present to process the payment correctly. The CALLBACK-URL is where users will be redirected back to after completing their payment via the payment gateway.
+
+**Example of including CALLBACK-URL using JavaScript:**
+```javascript
+fetch('/api/payment/membership-fee', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'CALLBACK-URL': 'https://example.com/payment/callback' // Replace with your actual callback URL
+  },
+  body: JSON.stringify({
+    "amount": 300
+  })
+})
+.then(response => response.json())
+.then(data => {
+  console.log(data);
+  // Redirect the user to data.authorization_url
+})
+.catch(error => console.error('Error:', error));
+```
+**Ensure to replace 'https://example.com/payment/callback' with your actual callback URL in the JavaScript example.**
+
+**Error Handling**  
+If an error occurs in the process, you will receive a JSON response with details about the error, including the status code.
+
+- **HTTP 406 Not Acceptable:** Payment type not supported.
+- **HTTP 409 Conflict:** Payment already made.
+- **HTTP 500 Internal Server Error:** An error occurred while processing the request.  
+
 
 
 ### Credit Wallet
@@ -494,8 +594,7 @@ On successful, request, this will return an authorization URL where users need t
 **Description:** Initialize a payment for a user to credit their Trendit wallet.  
 **Login Required:** True
 
-This endpoint will set up the payment process to credit user's wallet. A Paystack authorization URL will be returned in the response for user to complete their payment. Once payment is complete use will automatically be redirected back to the homepage with a Transaction reference in as the query parameter.
-For instance, after a successful payment the user could be redirected to this URL.
+This endpoint sets up the payment process to credit the user's wallet. Upon successful payment processing, a Paystack authorization URL will be returned in the response for the user to complete their payment. Once the payment is complete, the user will automatically be redirected back to the provided callback URL with a Transaction reference as the query parameter.
 
 `https://trendit3.vercel.app/homepage?trxref=bsvxk9cpxx`
 
@@ -507,7 +606,7 @@ So to initialize payment, the amount is needed in the request's body:
   "amount": 300,
 }
 ```
-If payment processing is successful, you will receive a JSON response with a 200 OK status code. The response will include an authorization URL. This is where you redirect user's to make their payments to credit their Trendit wallet. A successful response should look like this.
+If payment processing is successful, you will receive a JSON response with a 200 OK status code. The response will include an authorization URL. This is where you redirect users to make their payments to credit their Trendit wallet. A successful response should look like this:
 ``` json
 {  
     "status": "success",

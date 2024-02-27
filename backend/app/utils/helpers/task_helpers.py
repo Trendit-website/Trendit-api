@@ -115,10 +115,8 @@ def generate_random_task(task_type, filter_value):
         current_user_id = int(get_jwt_identity())
         performed_task = TaskPerformance.query.filter_by(status='pending', user_id=current_user_id).first()
         
-        '''
         if performed_task:
             raise PendingTaskError
-        '''
         
         task_model = (AdvertTask if task_type == 'advert' else EngagementTask if task_type == 'engagement' else None)
         
@@ -135,7 +133,7 @@ def generate_random_task(task_type, filter_value):
         
         
         if not unassigned_task:
-            raise NoUnassignedTaskError(f"There are no unassigned {task_type} tasks for the {filter_field} {filter_value}.")
+            raise NoUnassignedTaskError(f"There are no unassigned {task_type} tasks for the {filter_field} '{filter_value}'.")
         
         # Initiate task performance
         initiate_task(unassigned_task)
@@ -250,8 +248,8 @@ def initiate_task(task, status='pending'):
         
         
     except Exception as e:
-        logging.exception("An exception occurred trying to initiate task performance: ==>", str(e))
         db.session.rollback()
+        logging.exception("An exception occurred trying to initiate task performance: ==>", str(e))
         raise e
 
 

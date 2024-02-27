@@ -15,17 +15,19 @@ that describes the error condition.
 class PendingTaskError(Exception):
     """Exception raised when user still has a pending task."""
 
-    def __init__(self, message="There is still a pending task yet to be done."):
+    def __init__(self, message="There is still a pending task yet to be done.", status_code=409):
+        super().__init__(message)
+        self.status_code = status_code
         self.message = message
-        super().__init__(self.message)
 
 
 class NoUnassignedTaskError(Exception):
     """Exception raised when no unassigned task is found."""
 
-    def __init__(self, message="No unassigned task found"):
+    def __init__(self, message="No unassigned task found", status_code=200):
+        super().__init__(message)
+        self.status_code = status_code
         self.message = message
-        super().__init__(self.message)
 
 
 class UniqueSlugError(Exception):

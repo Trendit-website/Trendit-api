@@ -36,34 +36,22 @@ class TaskPerformanceController:
             
             msg = f'An unassigned {task_type.capitalize()} task for {filter_value} retrieved successfully.'
             status_code = 200
-            extra_data = {
-                'generated_task': random_task,
-            }
+            extra_data = {'generated_task': random_task}
+            
+            api_response = success_response(msg, status_code, extra_data)
         except PendingTaskError as e:
-            error = True
-            msg = f'{e}'
-            status_code = 409
-            logging.exception(f"An exception occurred generating random task:", str(e))
+            return error_response(f'{e}', 409)
         except NoUnassignedTaskError as e:
-            error = True
-            msg = f'{e}'
-            status_code = 200
-            logging.exception(f"An exception occurred generating random task:", str(e))
+            return error_response(f'{e}', 200)
         except AttributeError as e:
-            error = True
-            msg = f'{e}'
-            status_code = 500
             logging.exception(f"An exception occurred generating random task:", str(e))
+            return error_response(f'{e}', 500)
         except Exception as e:
-            error = True
-            msg = f'An error occurred generating random task: {e}'
-            status_code = 500
             logging.exception(f"An exception occurred generating random task for the user:", str(e))
+            return error_response(f'An error occurred generating random task: {e}', 500)
         
-        if error:
-            return error_response(msg, status_code)
-        else:
-            return success_response(msg, status_code, extra_data)
+        return api_response
+        
     
     
     @staticmethod
