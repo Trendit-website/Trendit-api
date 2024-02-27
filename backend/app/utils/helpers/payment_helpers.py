@@ -17,7 +17,7 @@ from flask import json
 from flask_jwt_extended import get_jwt_identity
 
 from app.extensions import db
-from app.models.payment import Payment, Transaction, PaystackTransaction, Withdrawal
+from app.models.payment import Payment, Transaction, Withdrawal
 from app.models.user import Trendit3User
 from app.utils.helpers.basic_helpers import console_log, generate_random_string
 from app.utils.helpers.response_helpers import error_response, success_response
@@ -46,7 +46,7 @@ def initialize_payment(user_id, data, payment_type=None, meta_data=None):
         amount = int(data.get('amount'))
         payment_type = payment_type or data.get('payment_type')
         if payment_type not in Config.PAYMENT_TYPES:
-            return error_response('payment type not supported on trendit, Please reach out to the admin', 401)
+            return error_response('payment type not supported on trendit, Please reach out to the admin', 406)
         
         callback_url = data.get('callback_url')
         meta = {
@@ -82,9 +82,9 @@ def initialize_payment(user_id, data, payment_type=None, meta_data=None):
         tx_ref=response_data['data']['reference'] # transaction reference
         
         if response_data['status']:
-            transaction = Transaction(tx_ref=generate_random_string(15), user_id=user_id, payment_type=payment_type, status='pending')
-            paystack_transaction = PaystackTransaction.create_transaction(trendit3_user=Trendit3_user, tx_ref=tx_ref, payment_type=payment_type, status='pending', amount=amount)
-            db.session.add(transaction, paystack_transaction)
+            transaction = Transaction(key=tx_ref, amount=amount, transaction_type='payment', status='pending', trendit3_user=Trendit3_user)
+            payment = Payment(key=tx_ref, amount=amount, payment_type=payment_type, payment_method=Config.PAYMENT_GATEWAY.lower(), status='pending', trendit3_user=Trendit3_user)
+            db.session.add(transaction, payment)
             db.session.commit()
             
             status_code = 200
@@ -141,7 +141,6 @@ def is_paid(user_id, payment_type):
 
 def debit_wallet(user_id, amount, payment_type=None):
     user = Trendit3User.query.get(user_id)
-    console_log('USER', user)
     
     if user is None:
         raise ValueError("User not found.")
@@ -159,8 +158,11 @@ def debit_wallet(user_id, amount, payment_type=None):
     try:
         # Debit the wallet
         wallet.balance -= amount
-        payment = Payment(trendit3_user=user, amount=amount, payment_type=payment_type, payment_method='trendit_wallet')
         
+        payment = Payment(amount=amount, payment_type=payment_type, payment_method='wallet', status='complete', trendit3_user=user)
+        transaction = Transaction(key=generate_random_string(16), amount=amount, transaction_type='payment', status='complete', trendit3_user=user)
+        
+        db.session.add(payment, transaction)
         db.session.commit()
         return 'Wallet debited successful'
     except Exception as e:
@@ -219,8 +221,8 @@ def initiate_transfer(amount, recipient, user):
         status = response['data']['status']
         
         if response['status']:
-            transaction = Transaction.create_transaction(trendit3_user=user, tx_ref=reference, amount=amount, status='pending', transaction_type='withdrawal')
-            withdrawal = Withdrawal.create_withdrawal(trendit3_user=user, reference=reference, amount=amount, bank_name=bank_name, account_no=account_no, status=status)
+            transaction = Transaction.create_transaction(key=reference, amount=amount, transaction_type='withdrawal', status='pending', trendit3_user=user)
+            withdrawal = Withdrawal.create_withdrawal(reference=reference, amount=amount, bank_name=bank_name, account_no=account_no, status=status, trendit3_user=user)
             return response
         else:
             raise Exception(f"Transfer request not initiated: {response['message']}")

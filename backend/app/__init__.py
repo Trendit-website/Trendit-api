@@ -21,7 +21,7 @@ from app.models.user import Trendit3User
 from app.models.role import create_roles
 from app.models.item import Item
 from app.models.task import Task, AdvertTask, EngagementTask
-from .models.payment import Payment, Transaction, PaystackTransaction, Wallet, Withdrawal
+from .models.payment import Payment, Transaction, Wallet, Withdrawal
 
 from .jobs import celery_app
 from .extensions import db, mail, limiter

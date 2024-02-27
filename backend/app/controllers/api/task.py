@@ -66,7 +66,7 @@ class TaskController:
             }
             
             if not tasks:
-                return success_response(f'User hasn\'t created any task yet', 200, extra_data)
+                return success_response(f'No task has been created yet', 200, extra_data)
             
             msg = 'All Tasks created by current user fetched successfully'
             status_code = 200
