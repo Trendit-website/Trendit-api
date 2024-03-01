@@ -68,7 +68,6 @@ fetch('/api/items/new', {
   console.error('Error:', error);
 });
  ```
-
 ## Authentication Endpoints
 This collection provides a general overview of the authentication process for the Trendit³ API V2. It outlines the steps involved in user registration, verification, login, and two-factor authentication (2FA).
 
@@ -542,8 +541,7 @@ If registration fails, you will receive a JSON response with details about the e
 **Notes**
 - Ensure that the user is authenticated and authorized to delete their account by including a valid JWT token in the request headers.
 - Deleting an account is an irreversible action. Once deleted, the account and associated data cannot be recovered.
-------
-
+-----
 ## Payment Endpoints
 The Payment endpoints are use to Initialize payments & process payments, verify payments and get payment history.
 (payments are handled using the Paystack Payment Gateway.) 
@@ -733,12 +731,7 @@ It is used for receiving and processing payment-related webhooks from Paystack. 
 
 - Usage: You should configure this endpoint as a webhook endpoint in your Paystack account settings.
 
-
-
-
-
-
-
+---
 
 ## Items Endpoints (products & services)
 Items is the name used to represent both products and services uploaded to the Marketplace. The items endpoints consist of endpoints to fetch all items, fetch a single item, upload items, update items, and delete item.
@@ -1094,9 +1087,7 @@ If deleting the item fails (e.g., if the item with the provided ID or slug does 
 
 Please remember to handle errors and exceptions gracefully in your frontend application by checking the response status codes and displaying appropriate messages to the user.
 
-
 ---
-
 ## Item Interactions
 The endpoint in this category are used to Interact with an Item (product or service).  
 Item interactions includes likes, views and comments.
@@ -1294,10 +1285,9 @@ If the request fails, you will receive a JSON response with details about the er
 
 
 ### Fetch States
-**Endpoint:** `/api/states?country=Nigeria`  
+**Endpoint:** `/api/states`  
 **HTTP Method:** GET  
 **Description:** Fetch the states for a specified country.  
-**Query Parameters:** `country` (required)   
 
 
 This endpoint returns a list of states within the specified country. The list is particularly useful for users to select their specific region when providing location information.
@@ -1311,8 +1301,14 @@ This endpoint returns a list of states within the specified country. The list is
     - `state_code` (string): A unique code representing the state.
 
 **Example Request:**
+`GET /api/states`
+Include the following JSON data in the request body:
 
-`GET /api/states?country=Nigeria`
+``` json
+{
+    "country": "Nigeria"
+}
+```
 
 **A successful response will look like this:**
 
@@ -1337,26 +1333,39 @@ If the request fails, you will receive a JSON response with details about the er
 
 - HTTP 500 Internal Server Error: An error occurred while processing the request.
 
+**Notes**
+- Provide the country parameter in the request body to specify the country for which to retrieve states/provinces.
+- The response includes the list of states/provinces (states) within the specified country and the total number of states/provinces (total).
+- Ensure that the country name is valid.
+- Handle any unexpected errors gracefully by displaying an appropriate error message.
+
 
 
 
 
 ### Fetch State's Local Governments
-**Endpoint:** `/api/states/lga/<state_name>`  
+**Endpoint:** `/api/states/lga`  
 **HTTP Method:** GET  
-**Description:** Fetch the local governments of a specified state. 
+**Description:** Fetch the local governments of a specified state.
 
-
-This endpoint returns a list of local government areas in a given state. The list is particularly useful for users to select their specific region when providing location information.
-
+This endpoint retrieves the list of Local Government Areas (LGAs) in a given state. The list is particularly useful for users to select their specific region when providing location information.
 
 **Key response details:**
+
 - `total` (integer): The total number of local governments in the specified state.
 - `state_lga` (list): A list containing the local governments.
+    
 
+**Example Request:**  
+`GET /api/states/lga`
 
-**Example Request:**
-`GET /api/states/lga/lagos`
+Include the following JSON data in the request body:
+
+``` json
+{
+    "state": "Lagos state"
+}
+```
 
 **A successful response will look like this:**
 
@@ -1389,11 +1398,20 @@ This endpoint returns a list of local government areas in a given state. The lis
         "Surulere"
     ],
 }
- ```
-**Error Handling**  
+```
+
 If the request fails, you will receive a JSON response with details about the error, including the status code.
 
 - HTTP 500 Internal Server Error: An error occurred while processing the request.
+    
+
+**Notes**
+
+- Provide the state parameter in the request body to specify the state for which to retrieve LGAs. The state name can be provided with or without the "state" suffix.
+- The response includes the total number of LGAs (total) and a list of LGAs (state_lga) within the specified state.
+- Ensure that the state name is valid and matches the naming convention used in the system.
+- If the state doesn't have any LGAs, a suitable error message will be returned.
+- Handle any unexpected errors gracefully by displaying an appropriate error message.
 ---
 ## Tasks Endpoints
 

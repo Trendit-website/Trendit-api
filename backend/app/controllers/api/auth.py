@@ -10,7 +10,7 @@ It includes methods for checking username, checking email, signing up, resending
 
 import logging
 from datetime import timedelta
-from flask import request, jsonify, make_response
+from flask import request, make_response
 from sqlalchemy.exc import ( IntegrityError, DataError, DatabaseError, InvalidRequestError, )
 from werkzeug.security import generate_password_hash
 from werkzeug.exceptions import UnsupportedMediaType

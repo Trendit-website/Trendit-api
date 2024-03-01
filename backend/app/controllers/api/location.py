@@ -1,5 +1,5 @@
 import requests, logging
-from flask import jsonify, json
+from flask import json, request
 
 from config import Config
 from app.utils import AppJSON
@@ -55,9 +55,14 @@ class LocationController:
 
 
     @staticmethod
-    def get_supported_country_states(country):
+    def get_supported_country_states():
         error = False
         
+        data = request.get_json()
+        country = data.get('country', '')
+        if not country:
+            return error_response('country name is required', 400)
+            
         # Replace 'Côte d'Ivoire' with 'Ivory Coast'
         if country.lower() == "côte d'ivoire":
             country = "Ivory Coast"
@@ -125,32 +130,32 @@ class LocationController:
     
     
     @staticmethod
-    def get_naija_state_lga(state):
-        error = False
-        
+    def get_naija_state_lga():
         try:
+            data = request.get_json()
+            state = data.get('state', '')
+            if not state:
+                return error_response('state is required', 400)
+            
+            # Add logic to include 'state' if request was sent without 'state' suffix
+            if state and not state.endswith(" state"):
+                state += " state"
+            
             # send request
             lga = AppJSON.get_local_governments(state)
             
-            if len(lga) > 1:
-                status_code = 200
-                msg = f"Local governments for {state} fetched successfully"
-                
-                extra_data = {
-                    'total': len(lga),
-                    'state_lga': lga
-                }
-            else:
-                error = True
-                status_code = 400
-                msg = f"{state} doesn't have any local government"
+            if len(lga) <= 1:
+                api_response = error_response(f"{state} doesn't have any local government", 400)
+                return api_response
+            
+            extra_data = {
+                'total': len(lga),
+                'state_lga': lga
+            }
+            api_response = success_response(f"Local governments for {state} fetched successfully", 200, extra_data)
+            
         except Exception as e:
-            error = True
-            msg = 'An error occurred while processing the request.'
-            status_code = 500
-            logging.exception("An exception occurred getting PAYSTACK supported countries.", str(e)) # Log the error details for debugging
+            logging.exception(f"An exception occurred getting Local governments: {str(e)}")
+            return error_response('An error occurred while processing the request.', 500)
         
-        if error:
-            return error_response(msg, status_code)
-        else:
-            return success_response(msg, status_code, extra_data)
+        return api_response

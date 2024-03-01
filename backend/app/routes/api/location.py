@@ -11,9 +11,8 @@ def get_countries():
 
 @api.route('/states', methods=['GET'])
 def get_states():
-    country = request.args.get('country', 'nigeria')
-    return LocationController.get_supported_country_states(country)
+    return LocationController.get_supported_country_states()
 
-@api.route('/states/lga/<state>', methods=['GET'])
-def naija_states_lga(state):
-    return LocationController.get_naija_state_lga(state)
+@api.route('/states/lga', methods=['GET'])
+def naija_states_lga():
+    return LocationController.get_naija_state_lga()
