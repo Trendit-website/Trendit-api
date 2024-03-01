@@ -470,6 +470,7 @@ class AuthController:
             if not current_user:
                 return error_response(f"user not found", 404)
             
+            '''
             data = request.get_json()
             pwd = data.get('password', '')
             if not pwd:
@@ -477,6 +478,7 @@ class AuthController:
             
             if not current_user.verify_password(pwd):
                 return error_response('Password is incorrect', 401)
+            '''
             
             # Proceed with account deletion
             current_user.delete()
