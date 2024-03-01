@@ -62,6 +62,11 @@ def resend_code():
 def logout():
     return AuthController.logout()
 
+@api.route('/delete-account', methods=['DELETE'])
+@jwt_required()
+def delete_account():
+    return AuthController.delete_account()
+
 
 @api.route('/check-username', methods=['GET'])
 def username_check():

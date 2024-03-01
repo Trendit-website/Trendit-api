@@ -1,8 +1,8 @@
-"""empty message
+"""Initial migration.
 
-Revision ID: 9b04607f6822
+Revision ID: 002a12b122f7
 Revises: 
-Create Date: 2024-02-22 16:38:17.632824
+Create Date: 2024-02-29 18:57:46.762076
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '9b04607f6822'
+revision = '002a12b122f7'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -125,10 +125,11 @@ def upgrade():
     )
     op.create_table('payment',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('key', sa.UUID(), nullable=False),
+    sa.Column('key', sa.String(length=80), nullable=False),
     sa.Column('amount', sa.Float(), nullable=False),
     sa.Column('payment_type', sa.String(length=50), nullable=False),
     sa.Column('payment_method', sa.String(), nullable=False),
+    sa.Column('status', sa.String(length=20), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.Column('trendit3_user_id', sa.Integer(), nullable=False),
@@ -136,24 +137,13 @@ def upgrade():
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('key')
     )
-    op.create_table('paystack_transactions',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('tx_ref', sa.String(length=120), nullable=False),
-    sa.Column('payment_type', sa.String(length=50), nullable=False),
-    sa.Column('status', sa.String(length=20), nullable=False),
-    sa.Column('amount', sa.Float(), nullable=False),
-    sa.Column('created_at', sa.DateTime(), nullable=True),
-    sa.Column('updated_at', sa.DateTime(), nullable=True),
-    sa.Column('trendit3_user_id', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['trendit3_user_id'], ['trendit3_user.id'], ),
-    sa.PrimaryKeyConstraint('id')
-    )
     op.create_table('profile',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('firstname', sa.String(length=200), nullable=True),
     sa.Column('lastname', sa.String(length=200), nullable=True),
     sa.Column('gender', sa.String(length=50), nullable=True),
     sa.Column('phone', sa.String(length=120), nullable=True),
+    sa.Column('birthday', sa.Date(), nullable=True),
     sa.Column('profile_picture_id', sa.Integer(), nullable=True),
     sa.Column('trendit3_user_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['profile_picture_id'], ['media.id'], ),
@@ -193,14 +183,14 @@ def upgrade():
     )
     op.create_table('transaction',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('tx_ref', sa.String(length=80), nullable=False),
+    sa.Column('key', sa.String(length=80), nullable=False),
     sa.Column('amount', sa.Float(), nullable=False),
-    sa.Column('status', sa.String(length=80), nullable=False),
     sa.Column('transaction_type', sa.String(length=50), nullable=False),
+    sa.Column('status', sa.String(length=80), nullable=False),
     sa.Column('trendit3_user_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['trendit3_user_id'], ['trendit3_user.id'], ),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('tx_ref')
+    sa.UniqueConstraint('key')
     )
     op.create_table('user_roles',
     sa.Column('user_id', sa.Integer(), nullable=True),
@@ -345,7 +335,6 @@ def downgrade():
     op.drop_table('task')
     op.drop_table('referral_history')
     op.drop_table('profile')
-    op.drop_table('paystack_transactions')
     op.drop_table('payment')
     op.drop_table('one_time_token')
     op.drop_table('notification')

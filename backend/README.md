@@ -497,7 +497,7 @@ If an error occurs in the process, you will receive a JSON response with details
 
 ### User Logout
 **Endpoint:** `/api/logout`  
-**HTTP Method:** `POST`  
+**HTTP Method:** `DELETE`  
 **Description:** Log out a user and delete access tokens from cookies.  
 **Login Required:** True
 
@@ -513,7 +513,36 @@ If logout is successful, you will receive a JSON response with a 200 OK status c
     "status_code": 200,
 }
 ```
- 
+
+### Delete Account
+**Endpoint:** `/api/delete-account`  
+**HTTP Method:** `DELETE`  
+**Description:** Delete the current logged-in user's account and associated data.  
+**Login Required:** True
+
+The `delete-account` endpoint allows authenticated users to delete their accounts. This endpoint requires JWT authentication to ensure secure account deletion.
+
+
+A successful response will look like this:
+``` json
+{
+    "message": "account deleted successfully"
+    "status": "success",
+    "status_code": 200,
+}
+ ```
+
+**Error Handling**
+If registration fails, you will receive a JSON response with details about the error, including the status code.
+
+- **HTTP 400 Bad Request:** Missing or invalid access token.
+- **404 Not Found:** User not found.
+- **HTTP 500 Internal** Server Error: An unexpected error occurred while processing the request.
+
+**Notes**
+- Ensure that the user is authenticated and authorized to delete their account by including a valid JWT token in the request headers.
+- Deleting an account is an irreversible action. Once deleted, the account and associated data cannot be recovered.
+------
 
 ## Payment Endpoints
 The Payment endpoints are use to Initialize payments & process payments, verify payments and get payment history.

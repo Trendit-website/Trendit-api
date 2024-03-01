@@ -462,6 +462,37 @@ class AuthController:
             return resp
     
     
+    @staticmethod
+    def delete_account():
+        try:
+            current_user_id = get_jwt_identity()
+            current_user = Trendit3User.query.get(current_user_id)
+            if not current_user:
+                return error_response(f"user not found", 404)
+            
+            data = request.get_json()
+            pwd = data.get('password', '')
+            if not pwd:
+                return error_response('Password is required', 400)
+            
+            if not current_user.verify_password(pwd):
+                return error_response('Password is incorrect', 401)
+            
+            # Proceed with account deletion
+            current_user.delete()
+            
+            api_response = success_response('account deleted successfully', 200)
+            
+        except Exception as e:
+            db.session.rollback()
+            logging.exception(f"An exception occurred processing request: {e}")
+            api_response = error_response('An unexpected error occurred while processing the request.', 500)
+        finally:
+            db.session.close()
+        
+        return api_response
+    
+    
     
     @staticmethod
     def username_check():

@@ -12,7 +12,6 @@ import os, secrets, logging
 from datetime import timedelta
 from celery import Celery
 
-basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 class Config:
@@ -79,11 +78,13 @@ class Config:
 
 
 class DevelopmentConfig(Config):
+    FLASK_DEBUG = True
     DEBUG_TOOLBAR = True  # Enable debug toolbar
     EXPOSE_DEBUG_SERVER = False  # Do not expose debugger publicly
 
 class ProductionConfig(Config):
     DEBUG = False
+    FLASK_DEBUG = False
     DEBUG_TOOLBAR = False
     EXPOSE_DEBUG_SERVER = False
 

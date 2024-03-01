@@ -51,13 +51,11 @@ class TaskPerformanceController:
             return error_response(f'An error occurred generating random task: {e}', 500)
         
         return api_response
-        
+    
     
     
     @staticmethod
     def initiate_task(task_id_key):
-        error = False
-        
         try:
             current_user_id = int(get_jwt_identity())
             
@@ -67,7 +65,7 @@ class TaskPerformanceController:
                 return error_response('Task not found', 404)
             
             # Validate task readiness (adjust criteria as needed)
-            if task.assigned_user_id or task.payment_status != 'Complete':
+            if task.payment_status != 'Complete':
                 raise ValueError("This task is not available for performance")
             
             # Create a new TaskPerformance instance
@@ -79,28 +77,17 @@ class TaskPerformanceController:
             )
             db.session.add(task_performance)
             db.session.commit()
-            
-            # Mark the original task as assigned
-            task.assigned_user_id = current_user_id
-            db.session.add(task)
-            db.session.commit()
 
-            return success_response(
-                f"Task initiation successful. Task performance ID: {task_performance.key}",
-                200,
-                extra_data={'task_performance': task_performance.to_dict()}
-            )
+            msg = f"Task initiated successfully. Task performance KEY: {task_performance.key}"
+            extra_data = {'task_performance': task_performance.to_dict()}
+            api_response = success_response(msg, 200, extra_data)
+            
         except Exception as e:
-            error = True
-            msg = f'task could not be initiated: {e}'
-            status_code = 500
             db.session.rollback()
             logging.exception(f"An exception occurred initiating task:", str(e))
+            return error_response(f'task could not be initiated: {e}', 500)
         
-        if error:
-            return error_response(msg, status_code)
-        else:
-            return success_response('Task initiated successfully', 200)
+        return api_response
     
     
     @staticmethod
@@ -108,7 +95,7 @@ class TaskPerformanceController:
         error = False
         
         try:
-            user_id = int(get_jwt_identity())
+            current_user_id = int(get_jwt_identity())
             data = request.form.to_dict()
             
             task_id_key = data.get('task_id_key', '')
@@ -118,7 +105,7 @@ class TaskPerformanceController:
             
             task_id = task.id
             
-            performedTask = TaskPerformance.query.filter_by(user_id=user_id, task_id=task_id).first()
+            performedTask = TaskPerformance.query.filter_by(user_id=current_user_id, task_id=task_id).first()
             if performedTask:
                 return error_response(f"Task already performed and cannot be repeated", 409)
             
@@ -127,23 +114,18 @@ class TaskPerformanceController:
             if new_performed_task is None:
                 return error_response('Error performing task', 500)
             
-            status_code = 201
             msg = 'Task Performed successfully'
             extra_data = {'performed_task': new_performed_task.to_dict()}
+            
+            api_response = success_response(msg, 201, extra_data)
         except ValueError as e:
-            error =  True
-            msg = str(e)
-            status_code = 404
             logging.exception("An exception occurred trying to create performed tasks:\n", str(e))
+            return success_response(str(e), 404, extra_data)
         except Exception as e:
-            error = True
-            msg = f'Error performing task: {e}'
-            status_code = 500
             logging.exception("An exception occurred trying to create performed tasks:\n", str(e))
-        if error:
-            return error_response(msg, status_code)
-        else:
-            return success_response(msg, status_code, extra_data)
+            return success_response(f'Error performing task: {e}', 500, extra_data)
+        
+        return api_response
     
     
     @staticmethod
