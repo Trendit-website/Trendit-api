@@ -43,16 +43,16 @@ def get_performed_task(pt_id_key):
     return TaskPerformanceController.get_performed_task(pt_id_key)
 
 
-@api.route('/performed-tasks/<int:pt_id>', methods=['PUT'])
+@api.route('/performed-tasks/<pt_id_key>', methods=['PUT'])
 @jwt_required()
-def update_performed_task(pt_id):
-    return TaskPerformanceController.update_performed_task(pt_id)
+def update_performed_task(pt_id_key):
+    return TaskPerformanceController.update_performed_task(pt_id_key)
 
 
-@api.route('/performed-tasks/<int:pt_id>', methods=['DELETE'])
+@api.route('/performed-tasks/<pt_id_key>', methods=['DELETE'])
 @jwt_required()
-def delete_performed_task(pt_id):
-    return TaskPerformanceController.delete_performed_task(pt_id)
+def delete_performed_task(pt_id_key):
+    return TaskPerformanceController.delete_performed_task(pt_id_key)
 
 
 
