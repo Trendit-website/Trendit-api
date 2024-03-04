@@ -1,6 +1,7 @@
 import logging
 from datetime import timedelta
 from flask import request, jsonify, current_app
+from werkzeug.datastructures import FileStorage
 from sqlalchemy.exc import ( IntegrityError, DataError, DatabaseError, InvalidRequestError, )
 from flask_jwt_extended import create_access_token, decode_token, get_jwt_identity, jwt_required
 from flask_jwt_extended.exceptions import JWTDecodeError
@@ -64,13 +65,13 @@ class ProfileController:
                 return error_response('Username already Taken', 409)
             
             
-            if profile_picture.filename != '':
+            if isinstance(profile_picture, FileStorage) and profile_picture.filename != '':
                 try:
                     profile_picture_id = save_media(profile_picture) # This saves image file, saves the path in db and return the id of the image
                 except Exception as e:
                     current_app.logger.error(f"An error occurred while profile image: {str(e)}")
                     return error_response(f"An error occurred saving profile image: {str(e)}", 400)
-            elif profile_picture.filename == '' and current_user:
+            elif profile_picture == '' and current_user:
                 if user_profile.profile_picture_id:
                     profile_picture_id = user_profile.profile_picture_id
                 else:
