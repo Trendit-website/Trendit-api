@@ -138,8 +138,9 @@ class LocationController:
                 return error_response('state is required', 400)
             
             # Add logic to include 'state' if request was sent without 'state' suffix
-            if state and not state.endswith(" state"):
-                state += " state"
+            state = state.capitalize()
+            if state and not state.endswith(" State"):
+                state += " State"
             
             # send request
             lga = AppJSON.get_local_governments(state)
