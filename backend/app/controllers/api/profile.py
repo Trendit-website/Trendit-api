@@ -52,7 +52,7 @@ class ProfileController:
             firstname = data.get('firstname', user_profile.firstname if user_profile else '')
             lastname = data.get('lastname', user_profile.lastname if user_profile else '')
             username = data.get('username', current_user.username if current_user else '')
-            gender = data.get('gender', current_user.gender if current_user else '')
+            gender = data.get('gender', user_profile.gender if current_user else '')
             country = data.get('country', user_address.country if user_address else '')
             state = data.get('country', user_address.state if user_address else '')
             local_government = data.get('local_government', user_address.local_government if user_address else '')
