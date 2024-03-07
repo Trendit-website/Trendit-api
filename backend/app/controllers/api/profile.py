@@ -40,13 +40,17 @@ class ProfileController:
     @staticmethod
     def edit_profile():
         try:
-            current_user_id = get_jwt_identity()
+            current_user_id = int(get_jwt_identity())
             current_user = Trendit3User.query.get(current_user_id)
             if not current_user:
                 return error_response(f"user not found", 404)
             
             user_address = current_user.address
             user_profile = current_user.profile
+            
+            # Check if request contains form data
+            if request.content_type not in ('application/x-www-form-urlencoded', 'multipart/form-data'):
+                return error_response("Request must contain form data", 400)
             
             # Get the request data
             data = request.form.to_dict()

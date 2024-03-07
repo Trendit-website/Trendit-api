@@ -9,12 +9,12 @@ as well as methods for password hashing and verification.
 @package Trendit³
 '''
 
-from app.extensions import db
 from sqlalchemy.orm import backref
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from app.models import Media
+from ..extensions import db
+from ..models import Media
 from config import Config
 
 # temporary user
@@ -50,6 +50,8 @@ class Trendit3User(db.Model):
     wallet = db.relationship('Wallet', back_populates="trendit3_user", uselist=False, cascade="all, delete-orphan")
     otp_token = db.relationship('OneTimeToken', back_populates="trendit3_user", uselist=False, cascade="all, delete-orphan")
     roles = db.relationship('Role', secondary='user_roles', backref=db.backref('users', lazy='dynamic'))
+    user_settings = db.relationship('UserSettings', back_populates='trendit3_user', uselist=False, cascade='all, delete-orphan')
+    
     # notifications = db.relationship('Notification', secondary='user_notification', backref=db.backref('users', lazy='dynamic'))
     notifications = db.relationship('Notification', secondary='user_notification', back_populates="recipients")
 
@@ -317,7 +319,7 @@ class BankAccount(db.Model):
     
     
     def __repr__(self):
-        return f'<ID: {self.id}, Recipient Code: {self.recipient_code}, is_primary: {self.is_primary}>'
+        return f'<ID: {self.id}, bank_name: {self.bank_name}, account_no: {self.account_no}, is_primary: {self.is_primary}>'
     
     
     @classmethod
@@ -349,6 +351,7 @@ class BankAccount(db.Model):
             **user_info,
         }
 
+
 class Recipient(db.Model):
     __tablename__ = "recipient"
 
@@ -368,7 +371,7 @@ class Recipient(db.Model):
     
     
     def __repr__(self):
-        return f'<ID: {self.id}, Recipient Code: {self.recipient_code}, is_primary: {self.is_primary}>'
+        return f'< ID: {self.id}, name: {self.name}, recipient_code: {self.recipient_code} >'
     
     @classmethod
     def create_recipient(cls, trendit3_user, name, recipient_code, recipient_id, recipient_type, bank_account):

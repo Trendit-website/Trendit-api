@@ -54,3 +54,10 @@ class UniqueSlugError(Exception):
         else:
             return f"\n\n Unable to create a unique slug for name: {self.name}, type: {self.type} \n\n"
 
+class InvalidTwoFactorMethod(Exception):
+    """Exception raised when invalid 2FA method is provided."""
+
+    def __init__(self, message="Invalid 2FA method.", status_code=400):
+        super().__init__(message)
+        self.status_code = status_code
+        self.message = message

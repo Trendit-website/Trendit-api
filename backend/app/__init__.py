@@ -10,7 +10,7 @@ sets up CORS, configures logging, registers blueprints and defines additional ap
 @Copyright © 2024 Emmanuel Olowu
 '''
 
-from flask import Flask
+from flask import Flask, request
 from flask_moment import Moment
 from flask_migrate import Migrate
 from flask_cors import CORS
@@ -25,7 +25,8 @@ from .models.payment import Payment, Transaction, Wallet, Withdrawal
 
 from .jobs import celery_app
 from .extensions import db, mail, limiter
-from .utils.helpers import check_emerge
+from .utils.helpers.response_helpers import error_response
+from .utils.before_request_functions import json_check, check_emerge
 from config import Config, configure_logging, config_by_name
 
 def create_app(config_name=Config.ENV):
@@ -69,6 +70,8 @@ def create_app(config_name=Config.ENV):
     jwt = JWTManager(app)
     
     app.before_request(check_emerge)
+    # app.before_request(json_check)
+    
     
     # Register blueprints
     from app.routes.api import api as api_bp

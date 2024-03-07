@@ -19,10 +19,10 @@ from requests.exceptions import JSONDecodeError
 from flask_jwt_extended.exceptions import NoAuthorizationError, InvalidHeaderError, WrongTokenError, CSRFError, JWTDecodeError
 from jwt import ExpiredSignatureError, InvalidSignatureError, DecodeError
 
-from ..error_handlers import bp
+from . import bp
 from ..utils.helpers.basic_helpers import console_log
-from ..utils.helpers.response_helpers import error_response
 from ..utils.helpers.basic_helpers import EmergencyAccessRestricted
+from ..utils.helpers.response_helpers import error_response
 
 @bp.app_errorhandler(NoAuthorizationError)
 def jwt_auth_error(error):

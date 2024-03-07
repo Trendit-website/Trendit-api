@@ -7,9 +7,12 @@ It includes models for User, Product, Category, Transaction, Role, etc. Each mod
 @link: https://github.com/zeddyemy
 @package Trendit³
 '''
-from app.models.media import Media
-from app.models.membership import Membership
-from app.models.item import Item, LikeLog, Share, Comment
-from app.models.payment import Payment, Transaction, Wallet
-from app.models.user import Trendit3User, Address, Profile, ReferralHistory
-from app.models.task import Task, AdvertTask, EngagementTask, TaskPerformance
+from ..models.media import Media
+from ..models.membership import Membership
+from ..models.item import Item, LikeLog, Share, Comment
+from ..models.payment import Payment, Transaction, Wallet
+from ..models.user import Trendit3User, Address, Profile, ReferralHistory
+from ..models.task import Task, AdvertTask, EngagementTask, TaskPerformance
+from ..models.notification import UserMessageStatus, Notification, user_notification
+from ..models.settings import UserSettings, NotificationPreference, SecuritySetting, UserPreference
+from ..models.role import Role, user_roles, create_roles
