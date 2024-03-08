@@ -48,17 +48,12 @@ class ProfileController:
             user_address = current_user.address
             user_profile = current_user.profile
             
-            '''
-            # Check if request contains form data
-            if request.content_type not in ('application/x-www-form-urlencoded', 'multipart/form-data'):
-                return error_response("Request body must be in form data", 400)
-            '''
+            
+            console_log('content_type', request.content_type)
+            
             
             # Get the request data
-            formData = request.form
-            console_log('formData', formData)
             data = request.form.to_dict()
-            console_log('formData dict', data)
             firstname = data.get('firstname', user_profile.firstname if user_profile else '')
             lastname = data.get('lastname', user_profile.lastname if user_profile else '')
             username = data.get('username', current_user.username if current_user else '')
@@ -68,6 +63,8 @@ class ProfileController:
             local_government = data.get('local_government', user_address.local_government if user_address else '')
             birthday = data.get('birthday', user_profile.birthday if user_profile else None)
             profile_picture = request.files.get('profile_picture', '')
+            
+            console_log('profile_picture', profile_picture)
             
             
             if is_username_exist(username, current_user):

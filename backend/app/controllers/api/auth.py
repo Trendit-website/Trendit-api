@@ -19,10 +19,7 @@ from flask_jwt_extended.exceptions import JWTDecodeError
 from jwt import ExpiredSignatureError, DecodeError
 
 from ...extensions import db
-from ...models.role import Role
-from ...models.user import TempUser, Trendit3User, Address, Profile, OneTimeToken, ReferralHistory
-from ...models.membership import Membership
-from ...models.payment import Wallet
+from ...models import Role, TempUser, Trendit3User, Address, Profile, OneTimeToken, ReferralHistory, Membership, Wallet
 from ...utils.helpers.basic_helpers import console_log, log_exception
 from ...utils.helpers.response_helpers import error_response, success_response
 from ...utils.helpers.location_helpers import get_currency_info

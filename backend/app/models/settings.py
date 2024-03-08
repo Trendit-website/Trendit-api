@@ -185,7 +185,7 @@ class SecuritySetting(db.Model):
         """
         Validate the 2FA method against allowed values.
         """
-        allowed_values = ['email', 'phone', 'google', None]
+        allowed_values = ['email', 'phone', 'google_auth_app', None]
         return method in allowed_values
     
     def to_dict(self):
