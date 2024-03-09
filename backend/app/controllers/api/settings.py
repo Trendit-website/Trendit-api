@@ -6,7 +6,7 @@ This module defines the controller methods for user setting on the Trendit³ Fla
 @package: Trendit³
 '''
 
-import logging
+import logging, hashlib
 from flask import request
 from sqlalchemy.exc import ( DataError, DatabaseError )
 from flask_jwt_extended import get_jwt_identity
@@ -15,6 +15,7 @@ from ...extensions import db
 from ...models import Trendit3User, UserSettings, NotificationPreference, UserPreference, SecuritySetting
 from ...exceptions import InvalidTwoFactorMethod
 from ...utils.helpers.basic_helpers import console_log, log_exception
+from ...utils.helpers.settings_helpers import set_2fa_method, generate_google_authenticator_secret_key, generate_google_authenticator_qr_code
 from ...utils.helpers.response_helpers import error_response, success_response
 from ...utils.helpers.settings_helpers import update_notification_preferences, update_user_preferences, update_security_settings
 
@@ -250,7 +251,6 @@ class ManageSettingsController:
             
             extra_data = {"security_settings": security_settings.to_dict()}
             
-            db.session.commit()
             api_response = success_response('Security settings updated successfully', 200, extra_data)
         except InvalidTwoFactorMethod as e:
             db.session.rollback()
@@ -269,3 +269,52 @@ class ManageSettingsController:
         
         return api_response
 
+
+    @staticmethod
+    def activate_google_2fa():
+        try:
+            current_user_id = get_jwt_identity()
+            user = Trendit3User.query.get(current_user_id)
+            
+            # Generate a secret key
+            secret_key = user.two_factor_secret
+            if not secret_key:
+                secret_key = generate_google_authenticator_secret_key()
+                
+                # TODO: Encrypt Secrete key for secure storage
+
+                # Update user object with hashed secret key and set 2FA enabled flag
+                user.two_factor_secret = secret_key
+
+            two_fa_method = set_2fa_method(method="google_auth_app", user_id=current_user_id)
+
+            # Generate QR code data URI 
+            qr_code_data = generate_google_authenticator_qr_code(secret_key, user.email)
+
+            api_response = success_response('2FA successfully enabled. Please scan the QR code with your Google Authenticator app.', 200, {'qr_code_data': qr_code_data})
+
+        except Exception as e:
+            logging.exception(f"An error occurred enabling 2FA: {e}")
+            api_response = error_response('Failed to activate 2FA with Google Auth App.', 500)
+        finally:
+            db.session.close()
+        
+        return api_response
+    
+    @staticmethod
+    def deactivate_google_2fa():
+        try:
+            current_user_id = get_jwt_identity()
+            
+            two_fa_method = set_2fa_method(method=None, user_id=current_user_id)
+
+            api_response = success_response('2 Factor Authentication with Google Auth App deactivated successfully.', 200)
+
+        except Exception as e:
+            logging.exception(f"An error occurred enabling 2FA: {e}")
+            api_response = error_response('Failed to activate 2FA with Google Auth App.', 500)
+        finally:
+            db.session.close()
+        
+        return api_response
+    

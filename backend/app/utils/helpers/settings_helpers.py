@@ -12,10 +12,36 @@ update security preference, and updating UI appearance preference.
 from sqlalchemy.exc import ( DataError, DatabaseError )
 from werkzeug.security import generate_password_hash
 from flask_jwt_extended import get_jwt_identity
+from PIL import Image
 
-from ...models import Trendit3User, SecuritySetting
+import pyotp, qrcode, io, base64
+
+from ...extensions import db
+from ...models import Trendit3User, UserSettings, SecuritySetting
 from ...exceptions import InvalidTwoFactorMethod
 
+def set_2fa_method(method=None, user_id=None):
+    try:
+        if not user_id:
+            user_id = get_jwt_identity()
+        
+        user_settings = UserSettings.query.filter_by(trendit3_user_id=user_id).first()
+        if not user_settings:
+            user_settings = UserSettings.create_user_settings(trendit3_user_id=user_id)
+        
+        if not user_settings.security_setting:
+            user_settings.security_setting = SecuritySetting()
+        
+        security_setting = user_settings.security_setting
+        security_setting.update(
+            two_factor_method=method
+        )
+        
+        return security_setting.two_factor_method
+    except (DataError, DatabaseError) as e:
+        raise e
+    except Exception as e:
+        raise e
 
 def update_notification_preferences(notification_preference: object, data: dict):
     """
@@ -127,3 +153,44 @@ def update_security_settings(security_setting: object, data: dict):
     
     return security_setting
 
+
+
+def verify_google_authenticator(secret_key, auth_code):
+    """
+    Verifies the entered Google Authenticator code against the user's secret key.
+    """
+    try:
+        totp = pyotp.TOTP(secret_key)
+        return totp.verify(auth_code)
+    except pyotp.InvalidDigitsError:
+        return False
+
+
+def generate_google_authenticator_secret_key():
+    """
+    Generates a secret key for Google Authenticator. 
+    (Call this function during user registration and store the hashed key in your database)
+    """
+    secret_key = pyotp.random_base32()
+    return secret_key
+
+
+def generate_google_authenticator_qr_code(secret_key, user_email):
+    """
+    Generates a QR code for Google Authenticator setup.
+    """
+    # Use the QRCode library to generate the QR code data URI 
+    # following Google Authenticator URI format.
+    uri = pyotp.TOTP(secret_key).provisioning_uri(
+        name=user_email, issuer="Trendit³")
+    img = qrcode.make(uri)
+    
+    # Convert the QR code image to a data URI
+    buffered = io.BytesIO()
+    img.save(buffered, format="PNG")
+    img_str = base64.b64encode(buffered.getvalue()).decode()
+    qr_code_data = f"data:image/png;base64,{img_str}"
+    
+    
+    # Return the QR code image data
+    return qr_code_data

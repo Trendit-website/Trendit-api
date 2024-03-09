@@ -30,8 +30,16 @@ class UserSettings(db.Model):
     def __repr__(self):
         return f'<ID: {self.id}, user_id: {self.trendit3_user_id} >'
     
+    @property
+    def is_2fa_enabled(self):
+        two_factor_method = self.security_setting.two_factor_method
+        if two_factor_method is None:
+            return False
+        
+        return True
+    
     @classmethod
-    def add_defaults(cls, trendit3_user_id):
+    def create_user_settings(cls, trendit3_user_id):
         default_settings = cls(trendit3_user_id=trendit3_user_id)
         
         db.session.add(default_settings)

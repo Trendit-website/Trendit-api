@@ -42,6 +42,7 @@ class Trendit3User(db.Model):
     username = db.Column(db.String(50), nullable=True, unique=True)
     thePassword = db.Column(db.String(255), nullable=True)
     date_joined = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    two_factor_secret = db.Column(db.String(255), nullable=True)
 
     # Relationships
     profile = db.relationship('Profile', back_populates="trendit3_user", uselist=False, cascade="all, delete-orphan")
@@ -68,6 +69,10 @@ class Trendit3User(db.Model):
         #This returns True if the password is same as hashed password in the database.
         '''
         return check_password_hash(self.thePassword, password)
+    
+    @property
+    def is_2fa_enabled(self):
+        return self.user_settings.is_2fa_enabled
     
     @property
     def wallet_balance(self):

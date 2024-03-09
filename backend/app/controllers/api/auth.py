@@ -19,7 +19,7 @@ from flask_jwt_extended.exceptions import JWTDecodeError
 from jwt import ExpiredSignatureError, DecodeError
 
 from ...extensions import db
-from ...models import Role, TempUser, Trendit3User, Address, Profile, OneTimeToken, ReferralHistory, Membership, Wallet
+from ...models import Role, TempUser, Trendit3User, Address, Profile, OneTimeToken, ReferralHistory, Membership, Wallet, UserSettings
 from ...utils.helpers.basic_helpers import console_log, log_exception
 from ...utils.helpers.response_helpers import error_response, success_response
 from ...utils.helpers.location_helpers import get_currency_info
@@ -212,8 +212,13 @@ class AuthController:
             new_user_profile = Profile(trendit3_user=new_user, firstname=firstname, lastname=lastname)
             new_user_address = Address(trendit3_user=new_user)
             new_membership = Membership(trendit3_user=new_user)
+            new_user_wallet = Wallet(trendit3_user=new_user)
+            new_user_setting = UserSettings(trendit3_user=new_user)
+            role = Role.query.filter_by(name='Advertiser').first()
+            if role:
+                new_user.roles.append(role)
             
-            db.session.add_all([new_user, new_user_profile, new_user_address, new_membership])
+            db.session.add_all([new_user, new_user_profile, new_user_address, new_membership, new_user_wallet, new_user_setting])
             db.session.delete(user)
             db.session.commit()
             

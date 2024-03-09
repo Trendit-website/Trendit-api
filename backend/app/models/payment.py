@@ -177,8 +177,8 @@ class Wallet(db.Model):
 
     id = db.Column(db.Integer(), primary_key=True)
     balance = db.Column(db.Float(), default=00.00, nullable=False)
-    currency_name = db.Column(db.String(), nullable=False)
-    currency_code = db.Column(db.String(), nullable=False)
+    currency_name = db.Column(db.String(), default='Dollars', nullable=False)
+    currency_code = db.Column(db.String(), default='USD', nullable=False)
     
     # Relationship with the user model
     trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
