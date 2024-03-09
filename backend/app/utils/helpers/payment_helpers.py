@@ -78,7 +78,11 @@ def initialize_payment(user_id, data, payment_type=None, meta_data=None):
         
         # Initialize the transaction
         response = requests.post(Config.PAYSTACK_INITIALIZE_URL, headers=auth_headers, data=json.dumps(auth_data))
+        console_log('response', response)
+        
         response_data = response.json()
+        console_log('response_data', response_data)
+        
         tx_ref=response_data['data']['reference'] # transaction reference
         
         if response_data['status']:
