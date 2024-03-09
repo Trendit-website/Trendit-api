@@ -88,7 +88,7 @@ def initialize_payment(user_id, data, payment_type=None, meta_data=None):
         if response_data['status']:
             transaction = Transaction(key=tx_ref, amount=amount, transaction_type='payment', description=f'{payment_type} payment', status='pending', trendit3_user=Trendit3_user)
             payment = Payment(key=tx_ref, amount=amount, payment_type=payment_type, payment_method=Config.PAYMENT_GATEWAY.lower(), status='pending', trendit3_user=Trendit3_user)
-            db.session.add(transaction, payment)
+            db.session.add_all([transaction, payment])
             db.session.commit()
             
             status_code = 200
