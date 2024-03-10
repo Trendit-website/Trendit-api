@@ -75,7 +75,7 @@ class PaymentController:
                 return error_response(f"Transaction not found", 404)
             
             user_id = transaction.trendit3_user_id
-            payment_type = transaction.payment_type
+            payment_type = payment.payment_type
             
             trendit3_user = transaction.trendit3_user
             if trendit3_user is None:
@@ -206,8 +206,8 @@ class PaymentController:
             transaction = Transaction.query.filter_by(key=reference).first()
             payment = Payment.query.filter_by(key=reference).first()
             if transaction:
-                user_id = transaction.user_id
-                payment_type = transaction.payment_type
+                user_id = transaction.trendit3_user_id
+                payment_type = payment.payment_type
                 trendit3_user = transaction.trendit3_user
 
                 # Check if this is a successful payment event
@@ -250,7 +250,7 @@ class PaymentController:
                 return jsonify({'status': 'failed'}), 404
         except Exception as e:
             db.session.rollback()
-            logging.exception("An exception occurred during registration.\n", str(e)) # Log the error details for debugging
+            logging.exception(f"An exception occurred Handling webhook. {str(e)}") # Log the error details for debugging
             return jsonify({
                 'status': 'failed'
             }), 500

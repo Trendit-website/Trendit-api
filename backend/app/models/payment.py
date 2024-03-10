@@ -71,7 +71,8 @@ class Transaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     key = db.Column(db.String(80), unique=True, nullable=False) # Unique identifier for the financial transaction
     amount = db.Column(db.Float(), nullable=False)
-    transaction_type = db.Column(db.String(50), nullable=False)  # 'withdrawal' or 'payment'
+    transaction_type = db.Column(db.String(50), nullable=False)  # 'credit', 'debit' or 'withdraw'
+    description = db.Column(db.String(150), nullable=False)
     status = db.Column(db.String(80), nullable=False) # Status of the financial transaction
     
     
@@ -84,8 +85,8 @@ class Transaction(db.Model):
     
     
     @classmethod
-    def create_transaction(cls, key, amount, transaction_type, status, trendit3_user):
-        transaction = cls(key=key, amount=amount, transaction_type=transaction_type, status=status, trendit3_user=trendit3_user)
+    def create_transaction(cls, key, amount, transaction_type, description, status, trendit3_user):
+        transaction = cls(key=key, amount=amount, transaction_type=transaction_type, description=description, status=status, trendit3_user=trendit3_user)
         
         db.session.add(transaction)
         db.session.commit()
@@ -107,6 +108,7 @@ class Transaction(db.Model):
             'key': self.key,
             'amount': self.amount,
             'transaction_type': self.transaction_type,
+            'description': self.description,
             'status': self.status,
             **user_info,
         }
@@ -175,8 +177,8 @@ class Wallet(db.Model):
 
     id = db.Column(db.Integer(), primary_key=True)
     balance = db.Column(db.Float(), default=00.00, nullable=False)
-    currency_name = db.Column(db.String(), nullable=False)
-    currency_code = db.Column(db.String(), nullable=False)
+    currency_name = db.Column(db.String(), default='Dollars', nullable=False)
+    currency_code = db.Column(db.String(), default='USD', nullable=False)
     
     # Relationship with the user model
     trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)

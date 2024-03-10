@@ -81,6 +81,19 @@ def send_code_to_email(user_email, six_digit_code, code_type='verify_email'):
     """
     Thread(target=send_async_email, args=(current_app._get_current_object(), user_email, six_digit_code, code_type)).start()
 
+def send_code_to_phone(user_phone, six_digit_code, code_type='verify_email'):
+    pass
+
+def send_2fa_code(user_obj, two_factor_method, six_digit_code):
+    if two_factor_method == 'email':
+        send_code_to_email(user_obj.email, six_digit_code, code_type='2FA') # send 2FA code to user's email
+    elif two_factor_method == 'phone':
+        #send_code_to_phone(user_obj.profile.phone, six_digit_code, code_type='2FA') # send 2FA code to user's email
+        pass
+    elif two_factor_method == 'google_auth_app':
+        pass
+    else:
+        pass
 
 def save_pwd_reset_token(reset_token, user=None):
     try:

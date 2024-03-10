@@ -23,7 +23,6 @@ class Item(db.Model):
     phone = db.Column(db.String(100), nullable=True)
     views_count = db.Column(db.Integer, default=0)
     slug = db.Column(db.String(), nullable=False, unique=True)
-    item_img_id = db.Column(db.Integer, db.ForeignKey('media.id'), nullable=True)
     country = db.Column(db.String(80), nullable=True)
     state = db.Column(db.String(80), nullable=True)
     city = db.Column(db.String(100), nullable=True)
@@ -32,6 +31,7 @@ class Item(db.Model):
     
     seller_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
     seller = db.relationship('Trendit3User', backref=db.backref('items', lazy='dynamic'))
+    item_img_id = db.Column(db.Integer, db.ForeignKey('media.id'), nullable=True)
     media = db.relationship('Media')
     
 

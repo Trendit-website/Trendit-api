@@ -19,14 +19,11 @@ from flask_jwt_extended.exceptions import JWTDecodeError
 from jwt import ExpiredSignatureError, DecodeError
 
 from ...extensions import db
-from ...models.role import Role
-from ...models.user import TempUser, Trendit3User, Address, Profile, OneTimeToken, ReferralHistory
-from ...models.membership import Membership
-from ...models.payment import Wallet
+from ...models import Role, TempUser, Trendit3User, Address, Profile, OneTimeToken, ReferralHistory, Membership, Wallet, UserSettings
 from ...utils.helpers.basic_helpers import console_log, log_exception
 from ...utils.helpers.response_helpers import error_response, success_response
 from ...utils.helpers.location_helpers import get_currency_info
-from ...utils.helpers.auth_helpers import generate_six_digit_code, send_code_to_email, save_pwd_reset_token
+from ...utils.helpers.auth_helpers import generate_six_digit_code, send_code_to_email, save_pwd_reset_token, send_2fa_code
 from ...utils.helpers.user_helpers import is_user_exist, get_trendit3_user, referral_code_exists
 
 class AuthController:
@@ -215,8 +212,13 @@ class AuthController:
             new_user_profile = Profile(trendit3_user=new_user, firstname=firstname, lastname=lastname)
             new_user_address = Address(trendit3_user=new_user)
             new_membership = Membership(trendit3_user=new_user)
+            new_user_wallet = Wallet(trendit3_user=new_user)
+            new_user_setting = UserSettings(trendit3_user=new_user)
+            role = Role.query.filter_by(name='Advertiser').first()
+            if role:
+                new_user.roles.append(role)
             
-            db.session.add_all([new_user, new_user_profile, new_user_address, new_membership])
+            db.session.add_all([new_user, new_user_profile, new_user_address, new_membership, new_user_wallet, new_user_setting])
             db.session.delete(user)
             db.session.commit()
             
@@ -271,6 +273,24 @@ class AuthController:
                 return error_response('Password is incorrect', 401)
             
             # TODO: implement logic to check if user enabled 2fa
+            # Check if user has enabled 2FA
+            user_settings = user.user_settings
+            user_security_setting = user_settings.security_setting
+            if user_security_setting and user_security_setting.two_factor_method in ['email', 'phone', 'google_auth_app']:
+                # Generate 2FA code and send it to the user
+                two_FA_code = generate_six_digit_code()
+                
+                send_2fa_code(user, user_security_setting.two_factor_method, two_FA_code)
+                
+                # Create a JWT that includes the user's info and the 2FA code
+                expires = timedelta(minutes=15)
+                two_FA_token = create_access_token(identity={
+                    'username': user.username,
+                    'email': user.email,
+                    'two_FA_code': two_FA_code
+                }, expires_delta=expires, additional_claims={'type': '2fa'})
+                
+            
             '''
             # Generate a random six-digit number
             two_FA_code = generate_six_digit_code()
@@ -288,6 +308,7 @@ class AuthController:
                 'two_FA_code': two_FA_code
             }, expires_delta=expires)
             '''
+            
             access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=1440), additional_claims={'type': 'access'})
             extra_data = {'access_token':access_token}
             return success_response('User logged in successfully', 200, extra_data)
@@ -394,7 +415,6 @@ class AuthController:
 
     @staticmethod
     def reset_password():
-        error = False
         
         try:
             data = request.get_json()
@@ -406,14 +426,15 @@ class AuthController:
             try:
                 # Decode the JWT and extract the user's info and the reset code
                 decoded_token = decode_token(reset_token)
+                if not decoded_token:
+                    return error_response('Invalid or expired reset code', 401)
+                
                 token_data = decoded_token['sub']
             except ExpiredSignatureError:
                 return error_response("The reset code has expired. Please request a new one.", 401)
             except Exception as e:
                 return error_response("An error occurred while processing the request.", 500)
             
-            if not decoded_token:
-                return error_response('Invalid or expired reset code', 401)
             
             # Check if the reset token exists in the database
             pwd_reset_token = OneTimeToken.query.filter_by(token=reset_token).first()

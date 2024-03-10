@@ -5,28 +5,6 @@ Trendit³ is a dynamic and innovative platform that provides users with an oppor
 
 This document provides information on the API endpoints for the Trendit³ application.
 
-## Setting up the Backend
-### Install Dependencies
-
-1. **Python 3.11.5** - Follow instructions to install the latest version of python for your platform in the [python docs](https://docs.python.org/3/using/unix.html#getting-and-installing-the-latest-version-of-python)
-
-2. **Virtual Environment** - I recommend working within a virtual environment whenever using Python for projects. This keeps your dependencies for each project separate and organized. Instructions for setting up a virtual environment for your platform can be found in the [python docs](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/)
-
-3. **PIP Dependencies** - Once your virtual environment is setup and running, install the required dependencies by navigating to the `/backend` directory and running:
-
-
-```bash
-  pip install -r requirements.txt
-```
-
-#### Key Pip Dependencies
-
-- [Flask](http://flask.pocoo.org/) is a lightweight backend microservices framework. Flask is required to handle requests and responses.
-
-- [SQLAlchemy](https://www.sqlalchemy.org/) is the Python SQL toolkit and ORM I use to handle the lightweight SQL database. You'll primarily work in `app/__init__.py`and can reference `app/models`.
-
-- [Flask-CORS](https://flask-cors.readthedocs.io/en/latest/#) is the extension used to handle cross-origin requests from our frontend server.
-    
 ### Response Structure:
 
 **Every API endpoint ensures a consistent response structure comprising:**
@@ -67,7 +45,7 @@ fetch('/api/items/new', {
 .catch((error) => {
   console.error('Error:', error);
 });
- ```
+```
 ## Authentication Endpoints
 This collection provides a general overview of the authentication process for the Trendit³ API V2. It outlines the steps involved in user registration, verification, login, and two-factor authentication (2FA).
 
@@ -2407,7 +2385,20 @@ If fetching the user profile fails (e.g., if there's an issue with the server), 
 - `country` (string): The updated country of residence of the user.
 - `state` (string): The updated state of residence of the user.
 - `local_government` (string): The updated local government area of residence of the user.
+- `birthday` (string): The updated User's birthday (format: "YYYY-MM-DD").
 - `profile_picture` (binary data, optional): The updated profile picture of the user.
+
+|   **Field**           | **Type**  |   **Description**                             |
+|   :---------------    | :--------:|   :------------------------------------------ |
+|   firstname           | string    |   User's first name                           |
+|   lastname            | string    |   User's last name                            |
+|   username            | string    |   Desired username (unique)                   |
+|   gender              | string    |   User's gender ("male", "female", "other")   |
+|   country             | string    |   User's country                              |
+|   state               | string    |   User's state                                |
+|   local_government    | string    |   User's local government                     |
+|   birthday            | string    |   User's birthday (format: "YYYY-MM-DD")      |
+|   profile_picture     | file      |   Profile picture file (optional)             |
 
 
 **Note:** Each parameter is optional, and you only need to include the ones that require an update. If a parameter is not included, the corresponding information will remain unchanged.

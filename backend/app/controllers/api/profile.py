@@ -8,6 +8,7 @@ from flask_jwt_extended.exceptions import JWTDecodeError
 
 from app.extensions import db
 from app.models.user import Trendit3User, Address, Profile
+from ...utils.helpers.location_helpers import get_currency_info
 from app.utils.helpers.basic_helpers import console_log, log_exception
 from app.utils.helpers.user_helpers import get_user_info
 from app.utils.helpers.media_helpers import save_media
@@ -40,13 +41,17 @@ class ProfileController:
     @staticmethod
     def edit_profile():
         try:
-            current_user_id = get_jwt_identity()
+            current_user_id = int(get_jwt_identity())
             current_user = Trendit3User.query.get(current_user_id)
             if not current_user:
                 return error_response(f"user not found", 404)
             
             user_address = current_user.address
             user_profile = current_user.profile
+            user_wallet = current_user.wallet
+            
+            
+            console_log('content_type', request.content_type)
             
             # Get the request data
             data = request.form.to_dict()
@@ -59,6 +64,14 @@ class ProfileController:
             local_government = data.get('local_government', user_address.local_government if user_address else '')
             birthday = data.get('birthday', user_profile.birthday if user_profile else None)
             profile_picture = request.files.get('profile_picture', '')
+            
+            if country and not user_address.country:
+                currency_info = get_currency_info(country)
+                
+                if currency_info is None:
+                    return error_response('Error getting the currency of user\'s country', 500)
+            
+            console_log('profile_picture', profile_picture)
             
             
             if is_username_exist(username, current_user):
@@ -84,6 +97,7 @@ class ProfileController:
             current_user.update(username=username)
             user_profile.update(firstname=firstname, lastname=lastname, gender=gender, profile_picture_id=profile_picture_id, birthday=birthday)
             user_address.update(country=country, state=state, local_government=local_government)
+            user_wallet.update(currency_name=currency_info['name'], currency_code=currency_info['code'])
             user_info = current_user.to_dict()
             extra_data={'user_profile': user_info}
             return success_response('User profile updated successfully', 200, extra_data)
