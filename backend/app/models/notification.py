@@ -36,8 +36,8 @@ class UserMessageStatus(db.Model):
     """UserMessageStatus model representing the status of messages for each user."""
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
-    message_id = db.Column(db.Integer, db.ForeignKey('notification.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id', ondelete="CASCADE"), nullable=False)
+    message_id = db.Column(db.Integer, db.ForeignKey('notification.id', ondelete="CASCADE"), nullable=False)
     status = db.Column(db.Enum(MessageStatus), nullable=False, default=MessageStatus.UNREAD)
 
 
@@ -71,7 +71,7 @@ class Notification(db.Model):
             body (str): Body of the notification message.
             message_type (MessageType): Type of the notification message.
         """
-        message = cls(sender_id=sender_id, body=body, type=message_type)
+        message = cls(sender_id=sender_id, body=body, type=message_type, recipients=recipients)
         db.session.add(message)
         db.session.flush()  # Ensure the message is added to the session before creating user message statuses
         user_message_statuses = [UserMessageStatus(user_id=recipient.id, message_id=message.id, status=MessageStatus.UNREAD) for recipient in recipients]
@@ -93,10 +93,10 @@ class Notification(db.Model):
     def to_dict(self):
         return {
             'id': self.id,
-            'title': self.title,
-            'description': self.description,
-            'type': self.type,
+            # 'title': self.title,
+            # 'description': self.description,
+            'type': self.type.value,
             'created_at': self.createdAt,
             'updated_at': self.updatedAt,
-            'content': self.content
+            'body': self.body
         }
