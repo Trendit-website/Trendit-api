@@ -363,7 +363,7 @@ class ProfileController:
                 else:
                     primary_bank = BankAccount.add_bank(trendit3_user=current_user, bank_name=bank_name, bank_code=bank_code, account_no=account_no, account_name=account_name, is_primary=True)
                 
-                msg = "Bank details update successfully"
+                msg = "Bank details updated successfully"
                 extra_data = {'bank_details': primary_bank.to_dict()}
             
             extra_data = {'bank_details': primary_bank.to_dict()  if primary_bank else None}
