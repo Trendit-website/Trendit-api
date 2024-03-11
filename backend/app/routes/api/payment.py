@@ -71,3 +71,9 @@ def withdraw_approval_webhook():
 @jwt_required()
 def verify_withdraw():
     return PaymentController.verify_withdraw()
+
+
+@api.route('/show_balance', methods=["POST"])
+@jwt_required()
+def show_balance():
+    return PaymentController.show_balance()
