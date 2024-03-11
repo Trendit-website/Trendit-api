@@ -30,11 +30,23 @@ from ...utils.helpers.user_helpers import is_user_exist, get_trendit3_user, refe
 # Facebook OAuth configuration
 CLIENT_ID = os.environ.get('FB_CLIENT_ID')
 CLIENT_SECRET = os.environ.get('FB_CLIENT_SECRET')
-REDIRECT_URI = os.environ.get('FB_REDIRECT_URI')
+FB_REDIRECT_URI = os.environ.get('FB_REDIRECT_URI')
 
 # Facebook OAuth endpoints
-AUTHORIZATION_BASE_URL = os.environ.get('FB_AUTHORIZATION_BASE_URL')
+FB_AUTHORIZATION_BASE_URL = os.environ.get('FB_AUTHORIZATION_BASE_URL')
 TOKEN_URL = os.environ.get('FB_TOKEN_URL')
+
+
+# Google OAuth configuration
+GOOGLE_CLIENT_ID = ''
+GOOGLE_CLIENT_SECRET = ''
+# REDIRECT_URI = 'http://localhost:5000/callback'  # Set this to your callback URL
+GOOGLE_REDIRECT_URI = 'https://api.trendit3.com/google/callback'
+
+# Google OAuth endpoints
+GOOGLE_AUTHORIZATION_BASE_URL = 'https://accounts.google.com/o/oauth2/auth'
+GOOGLE_TOKEN_URL = 'https://accounts.google.com/o/oauth2/token'
+GOOGLE_USER_INFO_URL = 'https://www.googleapis.com/oauth2/v1/userinfo'
 
 
 class SocialAuthController:
@@ -43,9 +55,9 @@ class SocialAuthController:
     def fb_signup():
 
         try:
-            facebook = OAuth2Session(CLIENT_ID, redirect_uri=REDIRECT_URI)
+            facebook = OAuth2Session(CLIENT_ID, redirect_uri=FB_REDIRECT_URI)
             facebook = facebook_compliance_fix(facebook)
-            authorization_url, state = facebook.authorization_url(AUTHORIZATION_BASE_URL)
+            authorization_url, state = facebook.authorization_url(FB_AUTHORIZATION_BASE_URL)
 
             # Save the state to compare it in the callback
             session['oauth_state'] = state
@@ -65,7 +77,7 @@ class SocialAuthController:
         #     print('here')
         #     return 'Invalid state'
         try:
-            facebook = OAuth2Session(CLIENT_ID, redirect_uri=REDIRECT_URI)
+            facebook = OAuth2Session(CLIENT_ID, redirect_uri=FB_REDIRECT_URI)
             token = facebook.fetch_token(TOKEN_URL, client_secret=CLIENT_SECRET, authorization_response=request.url)
 
 
@@ -91,9 +103,9 @@ class SocialAuthController:
     def fb_login():
 
         try:
-            facebook = OAuth2Session(CLIENT_ID, redirect_uri=REDIRECT_URI)
+            facebook = OAuth2Session(CLIENT_ID, redirect_uri=FB_REDIRECT_URI)
             facebook = facebook_compliance_fix(facebook)
-            authorization_url, state = facebook.authorization_url(AUTHORIZATION_BASE_URL)
+            authorization_url, state = facebook.authorization_url(FB_AUTHORIZATION_BASE_URL)
 
             # Save the state to compare it in the callback
             session['oauth_state'] = state
@@ -113,7 +125,7 @@ class SocialAuthController:
         #     print('here')
         #     return 'Invalid state'
         try:
-            facebook = OAuth2Session(CLIENT_ID, redirect_uri=REDIRECT_URI)
+            facebook = OAuth2Session(CLIENT_ID, redirect_uri=FB_REDIRECT_URI)
             token = facebook.fetch_token(TOKEN_URL, client_secret=CLIENT_SECRET, authorization_response=request.url)
 
 
@@ -223,3 +235,33 @@ class SocialAuthController:
             logging.exception("An error occured while fetching user data from tiktok ")
             status_code = 500
             return error_response(msg, status_code)
+
+    
+    @staticmethod
+    def google_login():
+        google = OAuth2Session(GOOGLE_CLIENT_ID, redirect_uri=GOOGLE_REDIRECT_URI, scope=['profile', 'email'])
+        authorization_url, state = google.authorization_url(GOOGLE_AUTHORIZATION_BASE_URL, access_type='offline') # offline for refresh token
+
+        # Save the state to compare it in the callback
+        session['oauth_state'] = state
+
+        return redirect(authorization_url)
+
+    @staticmethod
+    def google_login_callback():
+        # Check for CSRF attacks
+        # if request.args.get('state') != session.pop('oauth_state', None):
+        #     return 'Invalid state'
+
+        google = OAuth2Session(GOOGLE_CLIENT_ID, redirect_uri=GOOGLE_REDIRECT_URI)
+        token = google.fetch_token(GOOGLE_TOKEN_URL, client_secret=GOOGLE_CLIENT_SECRET, authorization_response=request.url)
+
+        # Use the token to make a request to the Google API to get user data
+        response = google.get(GOOGLE_USER_INFO_URL)
+
+        if response.status_code == 200:
+            user_data = response.json()
+            # Return the user's data (you can customize this response as needed)
+            return jsonify(user_data), 200
+        else:
+            return 'Failed to fetch user data from Google API'
