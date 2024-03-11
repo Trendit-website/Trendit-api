@@ -486,3 +486,27 @@ class PaymentController:
             print(f"Error handling approval: {e}")
             return jsonify(error='Internal Server Error'), 500
 
+
+    @staticmethod
+    def show_balance():
+        """
+        This function returns the user balance.
+        
+        @al-chris
+        """
+        try:
+            current_user_id = int(get_jwt_identity())
+            user = Trendit3User.query.get(current_user_id)
+            user_wallet = user.wallet
+
+            extra_data = {
+                "balance": user_wallet.balance if user_wallet else None,
+                'currency_name': user_wallet.currency_name if user_wallet else None,
+                'currency_code': user_wallet.currency_code if user_wallet else None
+            }
+
+            return success_response(f'Balanced fetched successfully', 200, extra_data)
+        
+        except Exception as e:
+            logging.exception(f"An exception occurred while fetching user's wallet balance: {str(e)}")
+            return error_response(f"An error occurred while processing the request: {str(e)}", 500)
