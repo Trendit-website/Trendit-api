@@ -34,3 +34,9 @@ def user_email_edit():
 @jwt_required()
 def verify_email_edit():
     return ProfileController.verify_email_edit()
+
+# bank details
+@api.route("profile/bank", methods=['GET', 'POST'])
+@jwt_required()
+def bank_details():
+    return ProfileController.bank_details()
