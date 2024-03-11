@@ -182,7 +182,7 @@ def generate_google_authenticator_qr_code(secret_key, user_email):
     # Use the QRCode library to generate the QR code data URI 
     # following Google Authenticator URI format.
     uri = pyotp.TOTP(secret_key).provisioning_uri(
-        name=user_email, issuer="Trendit³")
+        name=user_email, issuer_name="Trendit³")
     img = qrcode.make(uri)
     
     # Convert the QR code image to a data URI

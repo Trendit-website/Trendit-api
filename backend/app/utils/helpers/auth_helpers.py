@@ -88,6 +88,7 @@ def send_2fa_code(user_obj, two_factor_method, six_digit_code):
     if two_factor_method == 'email':
         send_code_to_email(user_obj.email, six_digit_code, code_type='2FA') # send 2FA code to user's email
     elif two_factor_method == 'phone':
+        # TODO: Implement Logic to send code to user's phone number. (For later when the platform grows)
         #send_code_to_phone(user_obj.profile.phone, six_digit_code, code_type='2FA') # send 2FA code to user's email
         pass
     elif two_factor_method == 'google_auth_app':

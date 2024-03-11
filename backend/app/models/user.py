@@ -42,7 +42,7 @@ class Trendit3User(db.Model):
     username = db.Column(db.String(50), nullable=True, unique=True)
     thePassword = db.Column(db.String(255), nullable=True)
     date_joined = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    two_factor_secret = db.Column(db.String(255), nullable=True)
+    two_fa_secret = db.Column(db.String(255), nullable=True)
 
     # Relationships
     profile = db.relationship('Profile', back_populates="trendit3_user", uselist=False, cascade="all, delete-orphan")

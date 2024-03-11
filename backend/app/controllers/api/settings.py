@@ -6,10 +6,11 @@ This module defines the controller methods for user setting on the Trendit³ Fla
 @package: Trendit³
 '''
 
-import logging, hashlib
+import logging, hashlib, pyotp
 from flask import request
 from sqlalchemy.exc import ( DataError, DatabaseError )
 from flask_jwt_extended import get_jwt_identity
+from werkzeug.exceptions import UnsupportedMediaType
 
 from ...extensions import db
 from ...models import Trendit3User, UserSettings, NotificationPreference, UserPreference, SecuritySetting
@@ -277,35 +278,67 @@ class ManageSettingsController:
             user = Trendit3User.query.get(current_user_id)
             
             # Generate a secret key
-            secret_key = user.two_factor_secret
+            secret_key = user.two_fa_secret
             if not secret_key:
                 secret_key = generate_google_authenticator_secret_key()
                 
                 # TODO: Encrypt Secrete key for secure storage
-
-                # Update user object with hashed secret key and set 2FA enabled flag
-                user.two_factor_secret = secret_key
-
-            two_fa_method = set_2fa_method(method="google_auth_app", user_id=current_user_id)
+                # Update user object with secret key
+                user.update(two_fa_secret=secret_key)
 
             # Generate QR code data URI 
             qr_code_data = generate_google_authenticator_qr_code(secret_key, user.email)
 
-            api_response = success_response('2FA successfully enabled. Please scan the QR code with your Google Authenticator app.', 200, {'qr_code_data': qr_code_data})
+            api_response = success_response('Download the Google Authentication app on your new device. Within the app, scan this QR code.', 200, {'qr_code_data': qr_code_data})
 
         except Exception as e:
             logging.exception(f"An error occurred enabling 2FA: {e}")
-            api_response = error_response('Failed to activate 2FA with Google Auth App.', 500)
+            api_response = error_response('Failed to activate 2-factor authentication with Google Auth App.', 500)
         finally:
             db.session.close()
         
         return api_response
     
+    
+    @staticmethod
+    def complete_google_2fa_activation():
+        try:
+            current_user_id = get_jwt_identity()
+            user = Trendit3User.query.get(current_user_id)
+            
+            if not user:
+                return error_response('user not found', 404)
+            
+            data = request.get_json()
+            entered_code = data.get('entered_code')
+            
+            secret_key = user.two_fa_secret
+            
+            # Verify the OTP
+            totp = pyotp.TOTP(secret_key)
+            if not totp.verify(entered_code):
+                return error_response('Wrong 2-factor authentication Code: Please provide a correct code to complete activation.', 400)
+            
+            # If the OTP is correct, enable 2FA for the user
+            two_fa_method = set_2fa_method(method="google_auth_app", user_id=current_user_id)
+            
+            api_response = success_response('2-factor authentication enabled successfully.', 200)
+        except UnsupportedMediaType as e:
+            api_response = error_response(f'{e}', 500)
+        except Exception as e:
+            logging.exception(f"An exception occurred trying to login: {e}") # Log the error details for debugging
+            api_response = error_response('An Unexpected error occurred processing the request.', 500)
+        
+        return api_response
+    
+    
     @staticmethod
     def deactivate_google_2fa():
         try:
             current_user_id = get_jwt_identity()
+            user = Trendit3User.query.get(current_user_id)
             
+            user.two_fa_secret = None
             two_fa_method = set_2fa_method(method=None, user_id=current_user_id)
 
             api_response = success_response('2 Factor Authentication with Google Auth App deactivated successfully.', 200)
