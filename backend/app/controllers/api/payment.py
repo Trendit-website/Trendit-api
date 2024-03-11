@@ -329,7 +329,7 @@ class PaymentController:
             if is_primary:
                 primary_bank = BankAccount.query.filter_by(trendit3_user_id=user.id, is_primary=True).first()
                 if not primary_bank:
-                    return error_response("no primary bank account. Edit you profile to add a primary bank account", 404)
+                    return error_response("no primary bank account. Go to settings to add your primary bank account", 404)
                 
                 recipient = primary_bank.recipient
                 

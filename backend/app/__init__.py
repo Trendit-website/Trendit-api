@@ -74,16 +74,19 @@ def create_app(config_name=Config.ENV):
     
     
     # Register blueprints
-    from app.routes.api import api as api_bp
+    from .routes.main import main
+    app.register_blueprint(main)
+    
+    from .routes.api import api as api_bp
     app.register_blueprint(api_bp)
     
-    from app.routes.api_admin import bp as api_admin_bp
+    from .routes.api_admin import bp as api_admin_bp
     app.register_blueprint(api_admin_bp)
     
-    from app.error_handlers import bp as errorHandler_bp
+    from .error_handlers import bp as errorHandler_bp
     app.register_blueprint(errorHandler_bp)
     
-    from app.utils.debugging import debugger as debugger_bp
+    from .utils.debugging import debugger as debugger_bp
     app.register_blueprint(debugger_bp)
     
     
