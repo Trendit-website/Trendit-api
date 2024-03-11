@@ -9,3 +9,4 @@ It includes controller handlers for admin authentication, stats, user management
 '''
 
 from app.controllers.api_admin.task_performance import AdminTaskPerformanceController
+from app.controllers.api_admin.auth import AdminAuthController

@@ -12,7 +12,7 @@ from app.utils.helpers.response_helpers import *
 
 class NotificationController:
     @staticmethod
-    def get_notifications():
+    def get_user_notifications():
         
         try:
             current_user_id = get_jwt_identity()
@@ -32,66 +32,41 @@ class NotificationController:
 
 
     @staticmethod
-    def get_messages():
+    def get_user_messages():
         
         try:
             current_user_id = get_jwt_identity()
             message = get_notifications(current_user_id, MessageType.MESSAGE)
             extra_data = {'user_notification': message}
-            result = success_response('User messages fetched successfully', 200, extra_data)
+            return success_response('User messages fetched successfully', 200, extra_data)
         
         except Exception as e:
             msg = f'An error occurred while getting user messages: {e}'
             # Log the error details for debugging
             logging.exception("An exception occurred while getting user messages.")
             status_code = 500
-            result = error_response(msg, status_code)
-
-        finally:
-            return result
+            return error_response(msg, status_code)
 
 
     @staticmethod
-    def get_activities():
+    def get_user_activities():
         
         try:
-            current_user_id = int(get_jwt_identity())
-            page = request.args.get("page", 1, type=int)
-            tasks_per_page = int(6)
-            pagination = Notification.query.filter_by(user_id=current_user_id, type=MessageType.ACTIVITY) \
-                .order_by(Notification.createdAt.desc()) \
-                .paginate(page=page, per_page=tasks_per_page, error_out=False)
-            
-            
-            activities = pagination.items
-            current_activities = [activity.to_dict() for activity in activities]
-            extra_data = {
-                'total': pagination.total,
-                "activities": current_activities,
-                "current_page": pagination.page,
-                "total_pages": pagination.pages,
-            }
-            
-            if not activities:
-                return success_response(f'There are no activities.', 200, extra_data)
-            
-            msg = f'All activities fetched successfully'
-            status_code = 200
-            result = success_response(msg, status_code, extra_data)
+            current_user_id = get_jwt_identity()
+            message = get_notifications(current_user_id, MessageType.ACTIVITY)
+            extra_data = {'user_notification': message}
+            return success_response('User messages fetched successfully', 200, extra_data)
         
         except Exception as e:
-            msg = f'Error getting all activities'
+            msg = f'An error occurred while getting user messages: {e}'
+            # Log the error details for debugging
+            logging.exception("An exception occurred while getting user messages.")
             status_code = 500
-            logging.exception(f"An exception occurred trying to get all activities: ==>", str(e))
-
-            result = error_response(msg, status_code)
-        
-        finally:
-            return result
+            return error_response(msg, status_code)
         
 
     @staticmethod
-    def send_notification(body):
+    def broadcast_message(body):
         """
         By default, this function sends the message to all users.
 
@@ -105,14 +80,60 @@ class NotificationController:
             
             msg = f'Notification sent successfully'
             status_code = 200
-            result = success_response(msg, status_code)
+            return success_response(msg, status_code)
 
         except Exception as e:
             msg = f'Error sending broadcast message'
             status_code = 500
             logging.exception(f"An exception occurred trying to send broadcast message: ==>", str(e))
 
-            result = error_response(msg, status_code)
+            return error_response(msg, status_code)
         
-        finally:
-            return result
+    @staticmethod
+    def create_user_notification(body):
+        """
+        This function creates a notification for events such as login, earning, ads approved.
+
+        Returns:
+        Notification: The sent notification object.
+        """
+        try:
+            sender_id = int(get_jwt_identity())
+            recipients = Trendit3User.query.filter_by(id=sender_id).first()
+            Notification.send_notification(sender_id=sender_id, recipients=recipients, body=body, message_type=MessageType.NOTIFICATION)
+            
+            msg = f'Notification sent successfully'
+            status_code = 200
+            return success_response(msg, status_code)
+
+        except Exception as e:
+            msg = f'Error sending broadcast message'
+            status_code = 500
+            logging.exception(f"An exception occurred trying to send broadcast message: ==>", str(e))
+
+            return error_response(msg, status_code)
+
+        
+    @staticmethod
+    def create_user_activity(body):
+        """
+        This function is used to create earning activities.
+
+        Returns:
+        Notification: The sent notification object.
+        """
+        try:
+            sender_id = int(get_jwt_identity())
+            recipients = Trendit3User.query.filter_by(id=sender_id).first()
+            Notification.send_notification(sender_id=sender_id, recipients=recipients, body=body, message_type=MessageType.ACTIVITY)
+            
+            msg = f'Notification sent successfully'
+            status_code = 200
+            return success_response(msg, status_code)
+
+        except Exception as e:
+            msg = f'Error sending broadcast message'
+            status_code = 500
+            logging.exception(f"An exception occurred trying to send broadcast message: ==>", str(e))
+
+            return error_response(msg, status_code)

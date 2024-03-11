@@ -5,3 +5,4 @@ This package contains the decorators for the Trendit³ Flask application.
 @link: https://github.com/zeddyemy
 @package: Trendit³
 """
+from .auth import roles_required

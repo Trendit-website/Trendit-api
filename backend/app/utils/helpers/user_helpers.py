@@ -12,7 +12,7 @@ These functions assist with tasks such as:
 '''
 from app.extensions import db
 from app.models.user import Trendit3User, Address, Profile
-from app.models.notification import MessageStatus, MessageType, UserMessageStatus
+from app.models.notification import MessageStatus, MessageType, UserMessageStatus, Notification
 from app.utils.helpers.basic_helpers import generate_random_string
 
 
@@ -134,24 +134,23 @@ def get_notifications(user_id:int, message_type=MessageType.NOTIFICATION):
     Returns:
         list of Message: List of notifications matching the criteria.
     """
-
+    
     if user_id is None:
         userNotifications = []
     else:
         trendit3_user = Trendit3User.query.filter(Trendit3User.id == user_id).first()
-        notifications = trendit3_user.received_messages.filter_by(type=message_type).all()
+        notifications = trendit3_user.notifications
+        print([notification.recipients for notification in Notification.query.all()])
         userNotifications = []
 
         for notification in notifications:
-            notification_dict = notification.to_dict()
-            noti_status = UserMessageStatus.query.filter_by(user_id=user_id, message_id=notification_dict['id']).first().status.value
-            notification_dict['status'] = noti_status
-            userNotifications.append(notification_dict)
+            if notification.type == message_type:
+                notification_dict = notification.to_dict()
+                noti_status = UserMessageStatus.query.filter_by(user_id=user_id, message_id=notification_dict['id']).first().status.value
+                notification_dict['status'] = noti_status
+                userNotifications.append(notification_dict)
     
     return userNotifications
-    # user = Trendit3User.query.filter(Trendit3User.id == user_id)
-    # return user.received_messages.filter_by(type=message_type).join(UserMessageStatus).filter_by(user_id=user_id, status=status).all()
-    # return user.received_messages.filter_by(type=message_type).all()
 
 
 def mark_as_read(user_id, message_id):
