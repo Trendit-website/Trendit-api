@@ -46,7 +46,7 @@ class PaymentController:
         Returns:
             json, int: A JSON object containing the status of the verification, a status code, a message (and payment details in case of success), and an HTTP status code.
         """
-        error = False
+        
         try:
             # Extract body from request
             data = request.get_json()

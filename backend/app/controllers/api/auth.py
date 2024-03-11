@@ -17,6 +17,7 @@ from werkzeug.exceptions import UnsupportedMediaType
 from flask_jwt_extended import create_access_token, decode_token, get_jwt_identity
 from flask_jwt_extended.exceptions import JWTDecodeError
 from jwt import ExpiredSignatureError, DecodeError
+import pyotp
 
 from ...extensions import db
 from ...models import Role, TempUser, Trendit3User, Address, Profile, OneTimeToken, ReferralHistory, Membership, Wallet, UserSettings
@@ -63,11 +64,13 @@ class AuthController:
             
             signup_token = create_access_token(identity=identity, expires_delta=expires, additional_claims={'type': 'signup'})
             extra_data = {'signup_token': signup_token}
-            return success_response('Verification code sent successfully', 200, extra_data)
+            api_response = success_response('Verification code sent successfully', 200, extra_data)
         except Exception as e:
             db.session.rollback()
             logging.exception(f"An exception occurred during registration. {e}") # Log the error details for debugging
-            return error_response('Error occurred processing the request.', 500)
+            api_response = error_response('Error occurred processing the request.', 500)
+        
+        return api_response
 
 
 
@@ -236,7 +239,7 @@ class AuthController:
                 'access_token':access_token
             }
             
-            return success_response('User registration completed successfully', 200, extra_data)
+            return success_response('Registration completed successfully', 200, extra_data)
             
         except IntegrityError as e:
             db.session.rollback()
@@ -256,7 +259,6 @@ class AuthController:
     
     @staticmethod
     def login():
-        error = False
         
         try:
             data = request.get_json()
@@ -272,54 +274,59 @@ class AuthController:
             if not user.verify_password(pwd):
                 return error_response('Password is incorrect', 401)
             
+            
             # TODO: implement logic to check if user enabled 2fa
             # Check if user has enabled 2FA
             user_settings = user.user_settings
             user_security_setting = user_settings.security_setting
-            if user_security_setting and user_security_setting.two_factor_method in ['email', 'phone', 'google_auth_app']:
+            two_factor_method = user_security_setting.two_factor_method
+            
+            console_log('user_settings', user_settings)
+            console_log('user_security_setting', user_security_setting)
+            console_log('two_factor_method', two_factor_method)
+            
+            identity={
+                'username': user.username,
+                'email': user.email,
+                'two_factor_method': two_factor_method
+            }
+            if not user_settings or not two_factor_method:
+                access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=1440), additional_claims={'type': 'access'})
+                extra_data = {'access_token':access_token}
+                msg = 'Logged in successfully'
+            elif user_security_setting and two_factor_method.lower() in ['email', 'phone']:
                 # Generate 2FA code and send it to the user
                 two_FA_code = generate_six_digit_code()
                 
-                send_2fa_code(user, user_security_setting.two_factor_method, two_FA_code)
+                try:
+                    send_2fa_code(user, two_factor_method.lower(), two_FA_code)
+                except Exception as e:
+                    return error_response(f'An error occurred sending the 2FA code', 500)
                 
                 # Create a JWT that includes the user's info and the 2FA code
                 expires = timedelta(minutes=15)
-                two_FA_token = create_access_token(identity={
-                    'username': user.username,
-                    'email': user.email,
-                    'two_FA_code': two_FA_code
-                }, expires_delta=expires, additional_claims={'type': '2fa'})
-                
+                identity.update({'two_FA_code': two_FA_code})
+                two_FA_token = create_access_token(identity=identity, expires_delta=expires, additional_claims={'type': '2fa'})
+                extra_data = { 'two_FA_token': two_FA_token }
+                msg = '2 Factor Authentication code sent successfully'
+            elif user_security_setting and two_factor_method.lower() == 'google_auth_app':
+                expires = timedelta(minutes=30)
+                two_FA_token = create_access_token(identity=identity, expires_delta=expires, additional_claims={'type': '2fa'})
+                extra_data = { 'two_FA_token': two_FA_token }
+                msg = 'Check the Google Auth App for 2 Factor Authentication code.'
             
-            '''
-            # Generate a random six-digit number
-            two_FA_code = generate_six_digit_code()
-            
-            try:
-                send_code_to_email(user.email, two_FA_code, code_type='2FA') # send 2FA code to user's email
-            except Exception as e:
-                return error_response(f'An error occurred sending the 2FA code to the email address', 500)
-            
-            # Create a JWT that includes the user's info and the 2FA code
-            expires = timedelta(minutes=15)
-            two_FA_token = create_access_token(identity={
-                'username': user.username,
-                'email': user.email,
-                'two_FA_code': two_FA_code
-            }, expires_delta=expires)
-            '''
-            
-            access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=1440), additional_claims={'type': 'access'})
-            extra_data = {'access_token':access_token}
-            return success_response('User logged in successfully', 200, extra_data)
+            api_response = success_response(msg, 200, extra_data)
+        
         except UnsupportedMediaType as e:
             logging.exception(f"An UnsupportedMediaType exception occurred: {e}")
-            return success_response(f"{str(e)}", 415)
+            api_response = success_response(f"{str(e)}", 415)
         except Exception as e:
             logging.exception(f"An exception occurred trying to login: {e}")
-            return success_response(f'An error occurred while processing the request.', 500)
+            api_response = success_response(f'An Unexpected error occurred processing the request.', 500)
         finally:
             db.session.close()
+        
+        return api_response
 
 
     @staticmethod
@@ -337,31 +344,51 @@ class AuthController:
             except ExpiredSignatureError:
                 return error_response("The 2FA code has expired. Please try again.", 401)
             except Exception as e:
-                return error_response("An error occurred while processing the request.", 500)
+                return error_response(f"An unexpected error occurred: {str(e)}.", 500)
             
             if not decoded_token:
                 return error_response('Invalid or expired 2FA code', 401)
             
+            user = get_trendit3_user(token_data['username'])
+            if not user:
+                return error_response('user not found', 404)
             
-            # Check if the entered code matches the one in the JWT
-            if int(entered_code) != int(token_data['two_FA_code']):
-                return error_response('The wrong 2FA Code was provided. Please check your mail for the correct code and try again.', 400)
+            two_factor_method = token_data['two_factor_method']
+            if not two_factor_method:
+                return error_response('2 Factor Authentication not set', 400)
             
-            # 2FA token is valid, log user in
-            # User authentication successful
-            # get user from db with the email/username.
-            user = get_trendit3_user(token_data['email'])
-            access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=1440), additional_claims={'type': 'access'})
-            extra_data = {'access_token':access_token}
+            elif two_factor_method.lower() in ['email', 'phone']:
+                # Check if the entered code matches the one in the JWT
+                if int(entered_code) != int(token_data['two_FA_code']):
+                    return error_response('The wrong 2FA Code was provided. Please check your mail for the correct code and try again.', 400)
             
+                # 2FA token is valid, log user in.
+                # User authentication successful
+                access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=1440), additional_claims={'type': 'access'})
+                extra_data = {'access_token':access_token}
+            elif two_factor_method.lower() == 'google_auth_app':
+                secret_key = user.two_fa_secret
+                console_log('secret_key', secret_key)
+                
+                # Verify the OTP
+                totp = pyotp.TOTP(secret_key)
+                if not totp.verify(entered_code):
+                    return error_response('The wrong 2FA Code was provided. Please check the Google Authentication app for the correct code and try again.', 400)
+                
+                # 2FA token is valid, log user in.
+                # User authentication successful
+                access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=1440), additional_claims={'type': 'access'})
+                extra_data = {'access_token':access_token}
             
-            return success_response('User logged in successfully', 200, extra_data)
+            api_response = success_response('User logged in successfully', 200, extra_data)
         except UnsupportedMediaType as e:
             logging.exception(f"An UnsupportedMediaType exception occurred: {e}")
             return error_response(f"{str(e)}", 415)
         except Exception as e:
             logging.exception(f"An exception occurred trying to login: {e}") # Log the error details for debugging
             return error_response('An error occurred while processing the request.', 500)
+        
+        return api_response
 
 
     @staticmethod

@@ -51,10 +51,15 @@ def update_security_settings():
     return ManageSettingsController.update_security_settings()
 
 
-@api.route("settings/activate/google-auth-app", methods=['GET'])
+@api.route("settings/activate/google-2fa", methods=['GET'])
 @jwt_required()
 def activate_google_2fa():
     return ManageSettingsController.activate_google_2fa()
+
+@api.route("settings/activate/complete-google-2fa", methods=['POST'])
+@jwt_required()
+def complete_google_2fa_activation():
+    return ManageSettingsController.complete_google_2fa_activation()
 
 @api.route("settings/deactivate/google-auth-app", methods=['GET'])
 @jwt_required()

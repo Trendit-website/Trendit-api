@@ -41,6 +41,6 @@ def roles_required(*required_roles):
             if user and any(role.name in required_roles for role in user.roles):
                 return fn(*args, **kwargs)
             else:
-                return error_response("Access denied", 403)
+                return error_response("Access denied: You do not have the required roles to access this resource", 403)
         return wrapper
     return decorator
