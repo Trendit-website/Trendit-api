@@ -347,7 +347,7 @@ class ProfileController:
                 return error_response("user not found", 404)
             
             primary_bank = BankAccount.query.filter_by(trendit3_user_id=current_user_id, is_primary=True).first()
-            msg = "Bank Fetch successfully"
+            msg = "Bank details Fetched successfully" if primary_bank else "Bank details haven't been provided"
             
             if request.method == 'POST':
                 # Get the request data
@@ -366,11 +366,20 @@ class ProfileController:
                 msg = "Bank details update successfully"
                 extra_data = {'bank_details': primary_bank.to_dict()}
             
-            extra_data = {'bank_details': primary_bank.to_dict()} if primary_bank else "Bank details hasn't been provided"
+            extra_data = {'bank_details': primary_bank.to_dict()  if primary_bank else None}
             api_response = success_response(msg, 200, extra_data)
-                
+        except (DataError, DatabaseError) as e:
+            if request.method == 'POST':
+                db.session.rollback()
+            log_exception('Database error occurred during registration', e)
+            api_response = error_response('Error interacting to the database.', 500)
         except Exception as e:
-            return error_response(f'Error: {e}', 500)
+            if request.method == 'POST':
+                db.session.rollback()
+            log_exception('An error occurred during registration', e)
+            api_response = error_response(f'An unexpected error occurred processing the request: {str(e)}', 500)
+        finally:
+            db.session.close()
         
         return api_response
-        
+

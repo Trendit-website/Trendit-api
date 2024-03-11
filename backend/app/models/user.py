@@ -389,6 +389,7 @@ class BankAccount(db.Model):
             'bank_name': self.bank_name,
             'bank_code': self.bank_code,
             'account_no': self.account_no,
+            'account_name': self.account_name,
             'is_primary': self.is_primary,
             **user_info,
         }

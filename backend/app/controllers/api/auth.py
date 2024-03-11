@@ -275,15 +275,11 @@ class AuthController:
                 return error_response('Password is incorrect', 401)
             
             
-            # TODO: implement logic to check if user enabled 2fa
             # Check if user has enabled 2FA
             user_settings = user.user_settings
             user_security_setting = user_settings.security_setting
             two_factor_method = user_security_setting.two_factor_method if user_security_setting else None
             
-            console_log('user_settings', user_settings)
-            console_log('user_security_setting', user_security_setting)
-            console_log('two_factor_method', two_factor_method)
             
             identity={
                 'username': user.username,
