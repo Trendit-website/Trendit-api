@@ -279,7 +279,7 @@ class AuthController:
             # Check if user has enabled 2FA
             user_settings = user.user_settings
             user_security_setting = user_settings.security_setting
-            two_factor_method = user_security_setting.two_factor_method
+            two_factor_method = user_security_setting.two_factor_method if user_security_setting else None
             
             console_log('user_settings', user_settings)
             console_log('user_security_setting', user_security_setting)

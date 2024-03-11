@@ -352,6 +352,7 @@ class BankAccount(db.Model):
     bank_name = db.Column(db.String(80), nullable=False)
     bank_code = db.Column(db.Integer, nullable=False)
     account_no = db.Column(db.String(20), nullable=False)
+    account_name = db.Column(db.String(250), nullable=True)
     is_primary = db.Column(db.Boolean, default=False)
     
     # Relationships
@@ -365,8 +366,8 @@ class BankAccount(db.Model):
     
     
     @classmethod
-    def add_bank(cls, trendit3_user, bank_name, bank_code, account_no, is_primary=False):
-        bank = cls(trendit3_user=trendit3_user, bank_name=bank_name, bank_code=bank_code, account_no=account_no, is_primary=is_primary)
+    def add_bank(cls, trendit3_user, bank_name, bank_code, account_no, account_name, is_primary=False):
+        bank = cls(trendit3_user=trendit3_user, bank_name=bank_name, bank_code=bank_code, account_no=account_no, account_name=account_name, is_primary=is_primary)
         
         db.session.add(bank)
         db.session.commit()
@@ -385,9 +386,8 @@ class BankAccount(db.Model):
     def to_dict(self, user=False):
         user_info = {'user': self.trendit3_user.to_dict(),} if user else {'user_id': self.trendit3_user_id} # optionally include user info in dict
         return {
-            'id': self.id,
-            'bank_code': self.bank_code,
             'bank_name': self.bank_name,
+            'bank_code': self.bank_code,
             'account_no': self.account_no,
             'is_primary': self.is_primary,
             **user_info,

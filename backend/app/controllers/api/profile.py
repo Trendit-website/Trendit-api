@@ -6,7 +6,8 @@ from sqlalchemy.exc import ( IntegrityError, DataError, DatabaseError, InvalidRe
 from flask_jwt_extended import create_access_token, decode_token, get_jwt_identity, jwt_required
 from flask_jwt_extended.exceptions import JWTDecodeError
 
-from app.extensions import db
+from ...extensions import db
+from ...models import Trendit3User, Address, Profile, BankAccount
 from app.models.user import Trendit3User, Address, Profile
 from ...utils.helpers.location_helpers import get_currency_info
 from app.utils.helpers.basic_helpers import console_log, log_exception
@@ -14,6 +15,7 @@ from app.utils.helpers.user_helpers import get_user_info
 from app.utils.helpers.media_helpers import save_media
 from app.utils.helpers.user_helpers import is_username_exist, is_email_exist
 from app.utils.helpers.auth_helpers import send_code_to_email, generate_six_digit_code
+from ...utils.helpers.bank_helpers import get_bank_code
 from app.utils.helpers.response_helpers import *
 
 class ProfileController:
@@ -334,3 +336,41 @@ class ProfileController:
         else:
             return success_response("profile pic updated successfully", 200, extra_data)
 
+    
+    @staticmethod
+    def bank_details():
+        try:
+            current_user_id = get_jwt_identity()
+            current_user = Trendit3User.query.filter(Trendit3User.id == current_user_id).first()
+            
+            if not current_user:
+                return error_response("user not found", 404)
+            
+            primary_bank = BankAccount.query.filter_by(trendit3_user_id=current_user_id, is_primary=True).first()
+            msg = "Bank Fetch successfully"
+            
+            if request.method == 'POST':
+                # Get the request data
+                data = request.get_json()
+                
+                bank_name = data.get('bank_name', '')
+                account_no = data.get('account_no', '')
+                account_name = data.get('account_name', '')
+                bank_code = get_bank_code(bank_name)
+                
+                if primary_bank:
+                    primary_bank.update(bank_name=bank_name, bank_code=bank_code, account_no=account_no, account_name=account_name)
+                else:
+                    primary_bank = BankAccount.add_bank(trendit3_user=current_user, bank_name=bank_name, bank_code=bank_code, account_no=account_no, account_name=account_name, is_primary=True)
+                
+                msg = "Bank details update successfully"
+                extra_data = {'bank_details': primary_bank.to_dict()}
+            
+            extra_data = {'bank_details': primary_bank.to_dict()} if primary_bank else "Bank details hasn't been provided"
+            api_response = success_response(msg, 200, extra_data)
+                
+        except Exception as e:
+            return error_response(f'Error: {e}', 500)
+        
+        return api_response
+        
