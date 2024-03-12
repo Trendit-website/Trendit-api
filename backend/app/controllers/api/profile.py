@@ -7,7 +7,7 @@ from flask_jwt_extended import create_access_token, decode_token, get_jwt_identi
 from flask_jwt_extended.exceptions import JWTDecodeError
 
 from ...extensions import db
-from ...models import Trendit3User, Address, Profile, BankAccount
+from ...models import Trendit3User, Address, Profile, BankAccount, Wallet
 from app.models.user import Trendit3User, Address, Profile
 from ...utils.helpers.location_helpers import get_currency_info
 from app.utils.helpers.basic_helpers import console_log, log_exception
@@ -52,6 +52,9 @@ class ProfileController:
             user_profile = current_user.profile
             user_wallet = current_user.wallet
             
+            if not user_wallet:
+                user_wallet = Wallet.create_wallet(trendit3_user=current_user)
+            
             
             console_log('content_type', request.content_type)
             
@@ -66,14 +69,15 @@ class ProfileController:
             local_government = data.get('local_government', user_address.local_government if user_address else '')
             birthday = data.get('birthday', user_profile.birthday if user_profile else None)
             profile_picture = request.files.get('profile_picture', '')
+            console_log('profile_picture', profile_picture)
             
-            if country and not user_address.country:
+            
+            currency_info = {}
+            if country != user_address.country:
                 currency_info = get_currency_info(country)
                 
                 if currency_info is None:
                     return error_response('Error getting the currency of user\'s country', 500)
-            
-            console_log('profile_picture', profile_picture)
             
             
             if is_username_exist(username, current_user):
@@ -94,28 +98,28 @@ class ProfileController:
             else:
                 profile_picture_id = None
             
-            
             # update user details
             current_user.update(username=username)
             user_profile.update(firstname=firstname, lastname=lastname, gender=gender, profile_picture_id=profile_picture_id, birthday=birthday)
+            user_wallet.update(currency_name=currency_info.get('name', user_wallet.currency_name), currency_code=currency_info.get('code', user_wallet.currency_code))
             user_address.update(country=country, state=state, local_government=local_government)
-            if country and not user_address.country:
-                user_wallet.update(currency_name=currency_info['name'], currency_code=currency_info['code'])
             
-            user_info = current_user.to_dict()
-            extra_data={'user_profile': user_info}
-            return success_response('User profile updated successfully', 200, extra_data)
-        
+            
+            extra_data={'user_data': current_user.to_dict()}
+            api_response = success_response('User profile updated successfully', 200, extra_data)
+            
         except (DataError, DatabaseError) as e:
             db.session.rollback()
             log_exception('Database error occurred during registration', e)
-            return error_response('Error connecting to the database.', 500)
+            api_response = error_response('Error connecting to the database.', 500)
         except Exception as e:
             db.session.rollback()
             log_exception('An exception occurred updating user profile.', e)
-            return error_response('An error occurred while updating user profile', 500)
+            api_response = error_response('An error occurred while updating user profile', 500)
         finally:
             db.session.close()
+        
+        return api_response
 
 
 
