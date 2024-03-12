@@ -150,7 +150,7 @@ class NotificationController:
             
             results = Notification.query.filter(Notification.body.ilike(f'%{query}%')).all()
             
-            extra_data = [result.to_dict() for result in results]
+            extra_data = {"search_result": [result.to_dict() for result in results]}
 
             return success_response("Search successful", 200, extra_data)
         
