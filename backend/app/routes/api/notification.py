@@ -22,12 +22,14 @@ def get_user_messages():
 def get_user_activities():
     return NotificationController.get_user_activities()
 
+
 @api.route('/broadcast_message', methods=['POST'])
 @jwt_required()
 def broadcast_message():
     data = request.get_json()
     message = data.get('message')
     return NotificationController.broadcast_message(message)
+
 
 @api.route('/global_search', methods=["POST"])
 @jwt_required()
