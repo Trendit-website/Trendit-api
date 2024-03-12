@@ -8,7 +8,8 @@
 # TODO: Religion endpoint (DONE)
 # TODO: Implement admin, advertiser and earner roles (DONE)
 # TODO: Implement assigning task to users (DONE)
-# TODO: Implemt Wallet System (DONE)
+# TODO: Implement Wallet System (DONE)
+# TODO: Implement search (DONE)
 
 # PENDING
 
@@ -17,7 +18,6 @@
         * Sending Emails
         * Periodic check for expired Task Performance (this job should be performed every 15 mins)
 '''
-# TODO: Implemt search (PENDING)
 # TODO: Refine save_task function (PENDING)
 # Todo: rename 'item_upload_paid' to 'marketplace_upload_paid' (PENDING)
 # TODO: Return error response when a body data wasn't included in request headers (PENDING)
@@ -26,6 +26,7 @@
 # TODO: Implement Caching.
 # TODO: Integrate Coinbase as a payment Option.
 # TODO: send email after payment.
+# TODO: Implement Pagination for Global Search
 
 '''
 1. Task Payment Processing:

@@ -288,7 +288,8 @@ class AuthController:
             }
             if not user_settings or not two_factor_method:
                 access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=1440), additional_claims={'type': 'access'})
-                extra_data = {'access_token':access_token}
+                user_data = user.to_dict()
+                extra_data = {'access_token':access_token, 'user_data':user_data}
                 msg = 'Logged in successfully'
             elif user_security_setting and two_factor_method.lower() in ['email', 'phone']:
                 # Generate 2FA code and send it to the user
@@ -358,23 +359,19 @@ class AuthController:
                 if int(entered_code) != int(token_data['two_FA_code']):
                     return error_response('The wrong 2FA Code was provided. Please check your mail for the correct code and try again.', 400)
             
-                # 2FA token is valid, log user in.
-                # User authentication successful
-                access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=1440), additional_claims={'type': 'access'})
-                extra_data = {'access_token':access_token}
             elif two_factor_method.lower() == 'google_auth_app':
                 secret_key = user.two_fa_secret
-                console_log('secret_key', secret_key)
                 
                 # Verify the OTP
                 totp = pyotp.TOTP(secret_key)
                 if not totp.verify(entered_code):
                     return error_response('The wrong 2FA Code was provided. Please check the Google Authentication app for the correct code and try again.', 400)
-                
-                # 2FA token is valid, log user in.
-                # User authentication successful
-                access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=1440), additional_claims={'type': 'access'})
-                extra_data = {'access_token':access_token}
+            
+            # 2FA token is valid, log user in.
+            # User authentication successful
+            access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=1440), additional_claims={'type': 'access'})
+            user_data = user.to_dict()
+            extra_data = {'access_token':access_token, 'user_data':user_data}
             
             api_response = success_response('User logged in successfully', 200, extra_data)
         except UnsupportedMediaType as e:
