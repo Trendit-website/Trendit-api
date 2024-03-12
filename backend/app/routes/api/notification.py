@@ -30,5 +30,6 @@ def broadcast_message():
     return NotificationController.broadcast_message(message)
 
 @api.route('/global_search', methods=["POST"])
+@jwt_required()
 def global_search():
     return NotificationController.global_search()
