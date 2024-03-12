@@ -143,7 +143,7 @@ class NotificationController:
 
         try:
             data = request.get_json()
-            query = data.query
+            query = data["query"]
 
             if not query:
                 return error_response('No search query', 400)
