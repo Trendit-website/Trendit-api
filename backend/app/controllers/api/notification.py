@@ -142,14 +142,14 @@ class NotificationController:
     def global_search():
 
         try:
-            user_id = int(get_jwt_identity())
+            # user_id = int(get_jwt_identity())
             data = request.get_json()
             query = data["query"]
 
             if not query:
                 return error_response('No search query', 400)
             
-            results = Notification.query.filter(Notification.body.ilike(f'%{query}%', user_id in (Notification.recipients))).all()
+            results = Notification.query.filter(Notification.type == MessageType.ACTIVITY).filter(Notification.body.ilike(f'%{query}%')).all()
             
             extra_data = {"search_result": [result.to_dict() for result in results]}
 
