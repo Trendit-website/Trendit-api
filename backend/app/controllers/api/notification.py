@@ -137,3 +137,26 @@ class NotificationController:
             logging.exception(f"An exception occurred trying to send broadcast message: ==>", str(e))
 
             return error_response(msg, status_code)
+        
+    @staticmethod
+    def global_search():
+
+        try:
+            data = request.get_json()
+            query = data.query
+
+            if not query:
+                return error_response('No search query', 400)
+            
+            results = Notification.query.filter(Notification.body.ilike(f'%{query}%')).all()
+            
+            extra_data = [result.to_json() for result in results]
+
+            return success_response("Search successful", 200, extra_data)
+        
+        except Exception as e:
+            msg = f'Error getting search results'
+            status_code = 500
+            logging.exception(f"An exception occurred trying to fetch search results: ==>", str(e))
+
+            return error_response(msg, status_code)

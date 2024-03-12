@@ -28,3 +28,7 @@ def broadcast_message():
     data = request.get_json()
     message = data.get('message')
     return NotificationController.broadcast_message(message)
+
+@api.route('/global_search', methods=["POST"])
+def global_search():
+    return NotificationController.global_search()
