@@ -153,6 +153,7 @@ class PaymentController:
                 
                 msg = 'Payment verification failed: ' + verification_response['message']
             
+            extra_data.update({'user_data': trendit3_user.to_dict()})
             api_response = success_response(msg, status_code, extra_data)
         except DataError as e:
             db.session.rollback()

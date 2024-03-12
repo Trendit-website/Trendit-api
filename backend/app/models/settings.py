@@ -130,7 +130,7 @@ class NotificationPreference(db.Model):
 class UserPreference(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
-    appearance = db.Column(db.String(150), nullable=False) # 'light', 'dark', or 'system'
+    appearance = db.Column(db.String(150), default='light', nullable=False) # 'light', 'dark', or 'system'
     
     user_settings_id = db.Column(db.Integer, db.ForeignKey('user_settings.id', ondelete='CASCADE'), nullable=False,)
     user_settings = db.relationship('UserSettings', back_populates="user_preference")
