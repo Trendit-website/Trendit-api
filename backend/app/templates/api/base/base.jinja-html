@@ -15,11 +15,13 @@
 </head>
 
 <body>
+    <!--
     <header class="flex">
         <div class="logo flex">
             <h1>Trendit³</h1>
         </div>
     </header>
+    -->
 
     <div class="wrapper">
         <div class="alertBox">
