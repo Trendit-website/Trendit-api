@@ -149,7 +149,7 @@ class NotificationController:
             if not query:
                 return error_response('No search query', 400)
             
-            results = Notification.query.filter(Notification.body.ilike(f'%{query}%', user_id.in_(Notification.recipients))).all()
+            results = Notification.query.filter(Notification.body.ilike(f'%{query}%', user_id in (Notification.recipients))).all()
             
             extra_data = {"search_result": [result.to_dict() for result in results]}
 
