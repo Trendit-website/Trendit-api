@@ -99,7 +99,9 @@ class ProfileController:
             current_user.update(username=username)
             user_profile.update(firstname=firstname, lastname=lastname, gender=gender, profile_picture_id=profile_picture_id, birthday=birthday)
             user_address.update(country=country, state=state, local_government=local_government)
-            user_wallet.update(currency_name=currency_info['name'], currency_code=currency_info['code'])
+            if country and not user_address.country:
+                user_wallet.update(currency_name=currency_info['name'], currency_code=currency_info['code'])
+            
             user_info = current_user.to_dict()
             extra_data={'user_profile': user_info}
             return success_response('User profile updated successfully', 200, extra_data)
