@@ -75,6 +75,8 @@ class Transaction(db.Model):
     description = db.Column(db.String(150), nullable=False)
     status = db.Column(db.String(80), nullable=False) # Status of the financial transaction
     
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationship with the user model
     trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)

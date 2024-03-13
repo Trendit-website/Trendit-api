@@ -22,3 +22,4 @@ from .stats import StatsController
 from .notification import NotificationController
 from .settings import ManageSettingsController
 from .social_auth import SocialAuthController
+from .transactions import TransactionController
