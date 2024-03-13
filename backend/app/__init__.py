@@ -90,8 +90,8 @@ def create_app(config_name=Config.ENV):
     app.register_blueprint(debugger_bp)
     
     
-    with app.app_context():
-        create_roles()  # Create roles for trendit3
+    #with app.app_context():
+        #create_roles()  # Create roles for trendit3
     
     
     return app

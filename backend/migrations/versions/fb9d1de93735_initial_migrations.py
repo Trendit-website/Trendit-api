@@ -1,8 +1,8 @@
-"""Initial migration.
+"""initial migrations
 
-Revision ID: 002a12b122f7
+Revision ID: fb9d1de93735
 Revises: 
-Create Date: 2024-02-29 18:57:46.762076
+Create Date: 2024-03-13 10:29:35.176577
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '002a12b122f7'
+revision = 'fb9d1de93735'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -45,6 +45,7 @@ def upgrade():
     sa.Column('username', sa.String(length=50), nullable=True),
     sa.Column('thePassword', sa.String(length=255), nullable=True),
     sa.Column('date_joined', sa.DateTime(), nullable=False),
+    sa.Column('two_fa_secret', sa.String(length=255), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email'),
     sa.UniqueConstraint('username')
@@ -64,6 +65,7 @@ def upgrade():
     sa.Column('bank_name', sa.String(length=80), nullable=False),
     sa.Column('bank_code', sa.Integer(), nullable=False),
     sa.Column('account_no', sa.String(length=20), nullable=False),
+    sa.Column('account_name', sa.String(length=250), nullable=True),
     sa.Column('is_primary', sa.Boolean(), nullable=True),
     sa.Column('trendit3_user_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['trendit3_user_id'], ['trendit3_user.id'], ),
@@ -83,13 +85,13 @@ def upgrade():
     sa.Column('phone', sa.String(length=100), nullable=True),
     sa.Column('views_count', sa.Integer(), nullable=True),
     sa.Column('slug', sa.String(), nullable=False),
-    sa.Column('item_img_id', sa.Integer(), nullable=True),
     sa.Column('country', sa.String(length=80), nullable=True),
     sa.Column('state', sa.String(length=80), nullable=True),
     sa.Column('city', sa.String(length=100), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.Column('seller_id', sa.Integer(), nullable=False),
+    sa.Column('item_img_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['item_img_id'], ['media.id'], ),
     sa.ForeignKeyConstraint(['seller_id'], ['trendit3_user.id'], ),
     sa.PrimaryKeyConstraint('id'),
@@ -163,6 +165,17 @@ def upgrade():
     sa.UniqueConstraint('status'),
     sa.UniqueConstraint('username')
     )
+    op.create_table('social_i_ds',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('google_id', sa.String(length=200), nullable=True),
+    sa.Column('facebook_id', sa.String(length=200), nullable=True),
+    sa.Column('instagram_id', sa.String(length=200), nullable=True),
+    sa.Column('tiktok_id', sa.String(length=200), nullable=True),
+    sa.Column('x_id', sa.String(length=200), nullable=True),
+    sa.Column('trendit3_user_id', sa.Integer(), nullable=False),
+    sa.ForeignKeyConstraint(['trendit3_user_id'], ['trendit3_user.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('task',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('task_type', sa.String(length=50), nullable=False),
@@ -186,6 +199,7 @@ def upgrade():
     sa.Column('key', sa.String(length=80), nullable=False),
     sa.Column('amount', sa.Float(), nullable=False),
     sa.Column('transaction_type', sa.String(length=50), nullable=False),
+    sa.Column('description', sa.String(length=150), nullable=False),
     sa.Column('status', sa.String(length=80), nullable=False),
     sa.Column('trendit3_user_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['trendit3_user_id'], ['trendit3_user.id'], ),
@@ -198,11 +212,17 @@ def upgrade():
     sa.ForeignKeyConstraint(['role_id'], ['role.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['trendit3_user.id'], )
     )
+    op.create_table('user_settings',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('trendit3_user_id', sa.Integer(), nullable=False),
+    sa.ForeignKeyConstraint(['trendit3_user_id'], ['trendit3_user.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('wallet',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('balance', sa.Float(), nullable=False),
-    sa.Column('currency_name', sa.String(), nullable=False),
-    sa.Column('currency_code', sa.String(), nullable=False),
+    sa.Column('balance', sa.Float(), nullable=True),
+    sa.Column('currency_name', sa.String(), nullable=True),
+    sa.Column('currency_code', sa.String(), nullable=True),
     sa.Column('trendit3_user_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['trendit3_user_id'], ['trendit3_user.id'], ),
     sa.PrimaryKeyConstraint('id')
@@ -258,6 +278,21 @@ def upgrade():
     sa.ForeignKeyConstraint(['user_id'], ['trendit3_user.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('notification_preference',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('email_new_features', sa.Boolean(), nullable=True),
+    sa.Column('email_new_tasks', sa.Boolean(), nullable=True),
+    sa.Column('email_money_earned', sa.Boolean(), nullable=True),
+    sa.Column('in_app_new_features', sa.Boolean(), nullable=True),
+    sa.Column('in_app_new_tasks', sa.Boolean(), nullable=True),
+    sa.Column('in_app_money_earned', sa.Boolean(), nullable=True),
+    sa.Column('push_new_features', sa.Boolean(), nullable=True),
+    sa.Column('push_new_tasks', sa.Boolean(), nullable=True),
+    sa.Column('push_money_earned', sa.Boolean(), nullable=True),
+    sa.Column('user_settings_id', sa.Integer(), nullable=False),
+    sa.ForeignKeyConstraint(['user_settings_id'], ['user_settings.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('recipient',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=255), nullable=False),
@@ -271,6 +306,13 @@ def upgrade():
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('recipient_code'),
     sa.UniqueConstraint('recipient_type')
+    )
+    op.create_table('security_setting',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('two_factor_method', sa.String(length=150), nullable=True),
+    sa.Column('user_settings_id', sa.Integer(), nullable=False),
+    sa.ForeignKeyConstraint(['user_settings_id'], ['user_settings.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id')
     )
     op.create_table('share',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -303,8 +345,8 @@ def upgrade():
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('message_id', sa.Integer(), nullable=False),
     sa.Column('status', sa.Enum('READ', 'UNREAD', name='messagestatus'), nullable=False),
-    sa.ForeignKeyConstraint(['message_id'], ['notification.id'], ),
-    sa.ForeignKeyConstraint(['user_id'], ['trendit3_user.id'], ),
+    sa.ForeignKeyConstraint(['message_id'], ['notification.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['user_id'], ['trendit3_user.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('user_notification',
@@ -314,25 +356,37 @@ def upgrade():
     sa.ForeignKeyConstraint(['notification_id'], ['notification.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['trendit3_user.id'], )
     )
+    op.create_table('user_preference',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('appearance', sa.String(length=150), nullable=False),
+    sa.Column('user_settings_id', sa.Integer(), nullable=False),
+    sa.ForeignKeyConstraint(['user_settings_id'], ['user_settings.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id')
+    )
     # ### end Alembic commands ###
 
 
 def downgrade():
     # ### commands auto generated by Alembic - please adjust! ###
+    op.drop_table('user_preference')
     op.drop_table('user_notification')
     op.drop_table('user_message_status')
     op.drop_table('task_performance')
     op.drop_table('share')
+    op.drop_table('security_setting')
     op.drop_table('recipient')
+    op.drop_table('notification_preference')
     op.drop_table('like_log')
     op.drop_table('engagement_task')
     op.drop_table('comment')
     op.drop_table('advert_task')
     op.drop_table('withdrawal')
     op.drop_table('wallet')
+    op.drop_table('user_settings')
     op.drop_table('user_roles')
     op.drop_table('transaction')
     op.drop_table('task')
+    op.drop_table('social_i_ds')
     op.drop_table('referral_history')
     op.drop_table('profile')
     op.drop_table('payment')
