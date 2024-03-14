@@ -95,13 +95,6 @@ class Trendit3User(db.Model):
         db.session.delete(self)
         db.session.commit()
     
-    def activation_fee(self, paid: bool) -> None:
-        if not isinstance(paid, bool):
-            raise TypeError("paid must be a boolean")
-        
-        self.membership.activation_fee_paid = paid
-        db.session.commit()
-        
     def membership_fee(self, paid: bool) -> None:
         if not isinstance(paid, bool):
             raise TypeError("paid must be a boolean")
@@ -143,6 +136,7 @@ class Trendit3User(db.Model):
             'username': self.username,
             'email': self.email,
             'date_joined': self.date_joined,
+            'membership_fee': self.membership.membership_fee_paid,
             'wallet': {
                 'balance': user_wallet.balance if user_wallet else None,
                 'currency_name': user_wallet.currency_name if user_wallet else None,
