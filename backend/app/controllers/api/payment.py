@@ -496,7 +496,7 @@ class PaymentController:
         @al-chris
         """
         try:
-            current_user_id = int(get_jwt_identity())
+            current_user_id = get_jwt_identity()
             user = Trendit3User.query.get(current_user_id)
             user_wallet = user.wallet
 
