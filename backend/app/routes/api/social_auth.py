@@ -52,6 +52,7 @@ def tt_signup():
 def tt_signup_callback():
     return SocialAuthController.tiktok_signup_callback()
 
+
 @api.route('/gg_login')
 def gg_login():
     return SocialAuthController.google_login()
