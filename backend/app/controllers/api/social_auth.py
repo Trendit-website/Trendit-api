@@ -38,10 +38,10 @@ TOKEN_URL = os.environ.get('FB_TOKEN_URL')
 
 
 # Google OAuth configuration
-GOOGLE_CLIENT_ID = ''
-GOOGLE_CLIENT_SECRET = ''
-# REDIRECT_URI = 'http://localhost:5000/callback'  # Set this to your callback URL
-GOOGLE_REDIRECT_URI = 'https://api.trendit3.com/google/callback'
+GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
+GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
+GOOGLE_SIGNUP_REDIRECT_URI = 'https://api.trendit3.com/gg_signup_callback'
+GOOGLE_LOGIN_REDIRECT_URI = 'https://api.trendit3.com/gg_login_callback'
 
 # Google OAuth endpoints
 GOOGLE_AUTHORIZATION_BASE_URL = 'https://accounts.google.com/o/oauth2/auth'
@@ -238,8 +238,8 @@ class SocialAuthController:
 
     
     @staticmethod
-    def google_login():
-        google = OAuth2Session(GOOGLE_CLIENT_ID, redirect_uri=GOOGLE_REDIRECT_URI, scope=['profile', 'email'])
+    def google_signup():
+        google = OAuth2Session(GOOGLE_CLIENT_ID, redirect_uri=GOOGLE_SIGNUP_REDIRECT_URI, scope=['profile', 'email'])
         authorization_url, state = google.authorization_url(GOOGLE_AUTHORIZATION_BASE_URL, access_type='offline') # offline for refresh token
 
         # Save the state to compare it in the callback
@@ -248,12 +248,12 @@ class SocialAuthController:
         return redirect(authorization_url)
 
     @staticmethod
-    def google_login_callback():
+    def google_signup_callback():
         # Check for CSRF attacks
         # if request.args.get('state') != session.pop('oauth_state', None):
         #     return 'Invalid state'
 
-        google = OAuth2Session(GOOGLE_CLIENT_ID, redirect_uri=GOOGLE_REDIRECT_URI)
+        google = OAuth2Session(GOOGLE_CLIENT_ID, redirect_uri=GOOGLE_SIGNUP_REDIRECT_URI)
         token = google.fetch_token(GOOGLE_TOKEN_URL, client_secret=GOOGLE_CLIENT_SECRET, authorization_response=request.url)
 
         # Use the token to make a request to the Google API to get user data
@@ -265,3 +265,35 @@ class SocialAuthController:
             return jsonify(user_data), 200
         else:
             return 'Failed to fetch user data from Google API'
+
+    
+    @staticmethod
+    def google_login():
+        google = OAuth2Session(GOOGLE_CLIENT_ID, redirect_uri=GOOGLE_LOGIN_REDIRECT_URI, scope=['profile', 'email'])
+        authorization_url, state = google.authorization_url(GOOGLE_AUTHORIZATION_BASE_URL, access_type='offline') # offline for refresh token
+
+        # Save the state to compare it in the callback
+        session['oauth_state'] = state
+
+        return redirect(authorization_url)
+    
+
+    @staticmethod
+    def google_login_callback():
+        # Check for CSRF attacks
+        # if request.args.get('state') != session.pop('oauth_state', None):
+        #     return 'Invalid state'
+
+        google = OAuth2Session(GOOGLE_CLIENT_ID, redirect_uri=GOOGLE_LOGIN_REDIRECT_URI)
+        token = google.fetch_token(GOOGLE_TOKEN_URL, client_secret=GOOGLE_CLIENT_SECRET, authorization_response=request.url)
+
+        # Use the token to make a request to the Google API to get user data
+        response = google.get(GOOGLE_USER_INFO_URL)
+
+        if response.status_code == 200:
+            user_data = response.json()
+            # Return the user's data (you can customize this response as needed)
+            return jsonify(user_data), 200
+        else:
+            return 'Failed to fetch user data from Google API'
+
