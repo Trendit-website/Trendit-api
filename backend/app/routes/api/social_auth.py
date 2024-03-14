@@ -68,6 +68,6 @@ def gg_signup():
     return SocialAuthController.google_signup()
 
 
-@api.route('/gg_signup_callback', methods=["POST"])
+@api.route('/gg_signup_callback')
 def gg_signup_callback():
     return SocialAuthController.google_signup_callback()
