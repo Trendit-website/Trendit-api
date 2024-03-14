@@ -1,12 +1,11 @@
 import logging
 from flask import request
-from sqlalchemy.exc import ( DataError, DatabaseError )
 from flask_jwt_extended import get_jwt_identity
 
-from ...models.user import Trendit3User
-from ...models.payment import Transaction
+from ...models import Trendit3User, Payment, Transaction
 from ...utils.helpers.response_helpers import error_response, success_response
-from ...utils.helpers.basic_helpers import console_log
+from ...utils.helpers.basic_helpers import console_log, log_exception
+from ...utils.helpers.payment_helpers import get_total_amount_earned, get_total_amount_spent
 
 
 class TransactionController:
@@ -52,3 +51,45 @@ class TransactionController:
         except Exception as e:
             logging.exception(f"An exception occurred during fetching transaction history. {str(e)}") # Log the error details for debugging
             return error_response("An error occurred while processing the request", 500)
+
+    
+    @staticmethod
+    def get_transaction_stats():
+        try:
+            # get the current user's ID
+            current_user_id = get_jwt_identity()
+            
+            # Check if user exists
+            current_user = Trendit3User.query.get(current_user_id)
+            if current_user is None:
+                return error_response('User not found', 404)
+            
+            # get the user's wallet balance
+            wallet_balance = current_user.wallet_balance
+            
+            
+            # get the total earnings for the current month and overall
+            total_earned_overall, total_earned_current_month = get_total_amount_earned(current_user_id)
+            
+            # get the total amount spent for the current month and overall
+            total_spent_overall, total_spent_current_month = get_total_amount_spent(current_user_id)
+            
+            
+            # create a dictionary with the stats
+            metrics = {
+                'wallet_balance': wallet_balance,
+                'total_earned_overall': total_earned_overall,
+                'total_earned_current_month': total_earned_current_month,
+                'total_spent_overall': total_spent_overall,
+                'total_spent_current_month': total_spent_current_month,
+                'currency_code': current_user.wallet.currency_code,
+                'currency_name': current_user.wallet.currency_name
+            }
+            
+            api_response = success_response(f"metrics fetched successfully", 200, {"metrics": metrics})
+        except Exception as e:
+            log_exception(f"An exception occurred fetching transaction metrics.", e)
+            api_response = error_response(f"Error fetching transaction metrics: {str(e)}", 500)
+        
+        return api_response
+    

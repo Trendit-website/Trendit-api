@@ -102,7 +102,7 @@ def generate_random_string(length=8):
     return ''.join(random.choice(characters) for _ in range(length))
 
 
-def get_object_by_slug(model: db.Model, slug: str):
+def get_object_by_slug(model: object, slug: str):
     """
     Retrieve an object from the database based on its unique slug.
 

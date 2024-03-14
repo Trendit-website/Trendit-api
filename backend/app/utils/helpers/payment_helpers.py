@@ -12,9 +12,11 @@ These functions assist with tasks such:
 @link: https://github.com/zeddyemy
 @package: Trendit³
 '''
+from datetime import datetime, date
 import requests, logging
 from flask import json
 from flask_jwt_extended import get_jwt_identity
+from sqlalchemy import func, sql
 
 from app.extensions import db
 from app.models.payment import Payment, Transaction, Withdrawal
@@ -233,3 +235,89 @@ def initiate_transfer(amount, recipient, user):
     except Exception as e:
         raise e
 
+
+'''
+Transaction Helpers
+'''
+def get_total_amount_spent(user_id):
+    """
+    Get the total amount spent by the user, both overall and in the current month.
+
+    Args:
+        user_id (int): The ID of the user.
+
+    Returns:
+        tuple: A tuple containing the total amount spent overall and the total amount spent in the current month.
+    """
+    
+    # Get the current month and year
+    current_month = datetime.now().month
+    current_year = datetime.now().year
+    
+    # Calculate total amount spent by the current user in the current month
+    total_spent_current_month = db.session.query(
+        func.sum(Payment.amount)
+    ).filter(
+        Payment.trendit3_user_id == user_id,
+        Payment.payment_type != 'credit-wallet',
+        db.extract('month', Payment.created_at) == current_month,
+        db.extract('year', Payment.created_at) == current_year
+    ).scalar() or 0.0
+    
+    # Calculate total amount spent by the current user across all payments ever made
+    total_spent_overall = db.session.query(
+        func.sum(Payment.amount)
+    ).filter(
+        Payment.trendit3_user_id == user_id,
+        Payment.payment_type != 'credit-wallet'
+    ).scalar() or 0.0
+    
+    
+    return total_spent_overall, total_spent_current_month
+
+
+def get_total_amount_earned(user_id):
+    """
+    Get the total amount earned by the user, both overall and in the current month.
+
+    Args:
+        user_id (int): The ID of the user.
+
+    Returns:
+        tuple: A tuple containing the total amount earned overall and the total amount earned in the current month.
+    """
+    
+    # Get the current month and year
+    current_month = datetime.now().month
+    current_year = datetime.now().year
+
+    # Filter out transactions with corresponding records in the Payment table with payment_type 'credit-wallet'
+    subquery_filter = ~Transaction.key.in_(
+        db.session.query(Transaction.key).join(
+            Payment, Transaction.key == Payment.key
+        ).filter(
+            Payment.payment_type == 'credit-wallet'
+        ).subquery()
+    )
+
+    # Calculate total amount earned by the current user
+    total_earned_overall = db.session.query(
+        func.sum(Transaction.amount)
+    ).filter(
+        Transaction.trendit3_user_id == user_id,
+        Transaction.transaction_type == 'credit',
+        subquery_filter
+    ).scalar() or 0.0
+
+    # Calculate total amount earned by the current user in the current month
+    total_earned_current_month = db.session.query(
+        func.sum(Transaction.amount)
+    ).filter(
+        Transaction.trendit3_user_id == user_id,
+        Transaction.transaction_type == 'credit',
+        subquery_filter,
+        db.extract('month', Transaction.created_at) == current_month,
+        db.extract('year', Transaction.created_at) == current_year
+    ).scalar() or 0.0
+
+    return total_earned_overall, total_earned_current_month

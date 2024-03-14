@@ -28,6 +28,5 @@ class Membership(db.Model):
         return {
             'id': self.id,
             'membership_fee_paid': self.membership_fee_paid,
-            'trendit3_user_id': self.trendit3_user_id,
             **user_info,
         }

@@ -7,7 +7,7 @@ from ...extensions import db
 from ...models.user import Trendit3User, BankAccount, Recipient
 from ...models.payment import Payment, Transaction, Withdrawal
 from ...utils.helpers.response_helpers import error_response, success_response
-from ...utils.helpers.basic_helpers import console_log, generate_random_string
+from ...utils.helpers.basic_helpers import console_log
 from ...utils.helpers.payment_helpers import initialize_payment, credit_wallet, initiate_transfer
 from ...utils.helpers.bank_helpers import get_bank_code
 from ...utils.helpers.task_helpers import get_task_by_key
