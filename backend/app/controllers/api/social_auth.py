@@ -269,6 +269,7 @@ class SocialAuthController:
     
     @staticmethod
     def google_login():
+        print("started")
         google = OAuth2Session(GOOGLE_CLIENT_ID, redirect_uri=GOOGLE_LOGIN_REDIRECT_URI, scope=['profile', 'email'])
         authorization_url, state = google.authorization_url(GOOGLE_AUTHORIZATION_BASE_URL, access_type='offline') # offline for refresh token
 
