@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Template</title>
+  <style>
+    /* Add your custom CSS styles here */
+    .container {
+      max-width: 666px;
+      margin: auto;
+      padding: 41px 31px;
+      background-color: black;
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    .logo {
+      margin-bottom: 6px;
+    }
+    .content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+    }
+    .image-container {
+      position: relative;
+      width: 100%;
+      max-width: 595px;
+      height: 207px;
+      background-color: #FFD700;
+      border-radius: 10px;
+    }
+    .image-overlay {
+      position: absolute;
+      bottom: 13px;
+      right: 13px;
+      opacity: 0.1;
+    }
+    .illustration {
+      position: absolute;
+      left: 50%;
+      top: 20px;
+      transform: translateX(-50%);
+    }
+    .button {
+      width: 290px;
+      padding: 12px;
+      background-color: #FF00FF;
+      border-radius: 100px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .footer {
+      text-align: center;
+    }
+    .footer-links {
+      margin-top: 12px;
+      font-size: 9px;
+      color: #B1B1B1;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <img src="./Logo_Default.svg" alt="logo">
+    </div>
+    <div class="content">
+      <div class="image-container">
+        <img src="./template-image.svg" alt="engage" class="image-overlay">
+        <img src="./Illustration-dog.svg" alt="engage" class="illustration">
+      </div>
+      <div class="text-white text-2xl font-medium font-Campton">
+        Dear Chima,
+      </div>
+      <div class="text-zinc-400 text-base font-normal font-Campton">
+        Introducing Yougazine - the ultimate prints product for the modern generation! Say goodbye to boring, generic prints and hello to a world of vibrant, personalized designs.<br><br>With Yougazine, you can create your own magazine-style prints that reflect your unique personality and style. From stunning fashion spreads to travel-inspired layouts, the possibilities are endless.<br><br>But that's not all - Yougazine also offers a wide range of high-quality materials to choose from, ensuring that your prints not only look great but also stand the test of time.
+      </div>
+      <div class="button">
+        <div class="text-white text-sm font-medium font-Campton">
+          Continue
+        </div>
+      </div>
+      <div class="text-zinc-400 text-base font-normal font-Campton">
+        Please contact us with any questions, we're always happy to help.<br><br>Cheers,<br>The Trendit team
+      </div>
+    </div>
+    <div class="footer">
+      <div class="footer-links">
+        Privacy Policy • Contact us • Read our Blog
+      </div>
+      <div class="footer-info">
+        Copyright 2024 Atlassian Pty Ltd. All rights reserved. We are located at<br>341 George Street, Sydney, NSW, 2000, Australia
+      </div>
+    </div>
+  </div>
+</body>
+</html>
