@@ -41,8 +41,8 @@ FB_TOKEN_URL = os.environ.get('FB_TOKEN_URL')
 # Google OAuth configuration
 GOOGLE_CLIENT_ID = app.Config.GOOGLE_CLIENT_ID
 GOOGLE_CLIENT_SECRET = app.Config.GOOGLE_CLIENT_SECRET
-GOOGLE_SIGNUP_REDIRECT_URI = 'https://api.trendit3.com/gg_signup_callback'
-GOOGLE_LOGIN_REDIRECT_URI = 'https://api.trendit3.com/gg_login_callback'
+GOOGLE_SIGNUP_REDIRECT_URI = 'https://api.trendit3.com/api/gg_signup_callback'
+GOOGLE_LOGIN_REDIRECT_URI = 'https://api.trendit3.com/api/gg_login_callback'
 
 # Google OAuth endpoints
 GOOGLE_AUTHORIZATION_BASE_URL = 'https://accounts.google.com/o/oauth2/auth'
