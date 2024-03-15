@@ -77,6 +77,18 @@ class Config:
     CELERY_RESULT_SERIALIZER = 'json'
 
 
+    # Google config
+    GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
+    GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
+
+    # Facebook config
+    FB_CLIENT_ID = os.environ.get('FB_CLIENT_ID')
+    FB_CLIENT_SECRET = os.environ.get('FB_CLIENT_SECRET')
+    FB_REDIRECT_URI = os.environ.get('FB_REDIRECT_URI')
+
+    # TikTok config
+
+
 class DevelopmentConfig(Config):
     FLASK_DEBUG = True
     DEBUG_TOOLBAR = True  # Enable debug toolbar

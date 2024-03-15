@@ -13,6 +13,7 @@ from requests_oauthlib.compliance_fixes import facebook_compliance_fix
 import requests
 import random
 import os
+import app
 
 from ...extensions import db
 from ...models.role import Role
@@ -28,18 +29,18 @@ from ...utils.helpers.user_helpers import is_user_exist, get_trendit3_user, refe
 
 
 # Facebook OAuth configuration
-CLIENT_ID = os.environ.get('FB_CLIENT_ID')
-CLIENT_SECRET = os.environ.get('FB_CLIENT_SECRET')
-FB_REDIRECT_URI = os.environ.get('FB_REDIRECT_URI')
+FB_CLIENT_ID = app.Config.FB_CLIENT_ID
+FB_CLIENT_SECRET = app.Config.FB_CLIENT_SECRET
+FB_REDIRECT_URI = app.Config.FB_REDIRECT_URI
 
 # Facebook OAuth endpoints
 FB_AUTHORIZATION_BASE_URL = os.environ.get('FB_AUTHORIZATION_BASE_URL')
-TOKEN_URL = os.environ.get('FB_TOKEN_URL')
+FB_TOKEN_URL = os.environ.get('FB_TOKEN_URL')
 
 
 # Google OAuth configuration
-GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
-GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
+GOOGLE_CLIENT_ID = app.Config.GOOGLE_CLIENT_ID
+GOOGLE_CLIENT_SECRET = app.Config.GOOGLE_CLIENT_SECRET
 GOOGLE_SIGNUP_REDIRECT_URI = 'https://api.trendit3.com/gg_signup_callback'
 GOOGLE_LOGIN_REDIRECT_URI = 'https://api.trendit3.com/gg_login_callback'
 
@@ -55,7 +56,7 @@ class SocialAuthController:
     def fb_signup():
 
         try:
-            facebook = OAuth2Session(CLIENT_ID, redirect_uri=FB_REDIRECT_URI)
+            facebook = OAuth2Session(FB_CLIENT_ID, redirect_uri=FB_REDIRECT_URI)
             facebook = facebook_compliance_fix(facebook)
             authorization_url, state = facebook.authorization_url(FB_AUTHORIZATION_BASE_URL)
 
@@ -77,8 +78,8 @@ class SocialAuthController:
         #     print('here')
         #     return 'Invalid state'
         try:
-            facebook = OAuth2Session(CLIENT_ID, redirect_uri=FB_REDIRECT_URI)
-            token = facebook.fetch_token(TOKEN_URL, client_secret=CLIENT_SECRET, authorization_response=request.url)
+            facebook = OAuth2Session(FB_CLIENT_ID, redirect_uri=FB_REDIRECT_URI)
+            token = facebook.fetch_token(FB_TOKEN_URL, client_secret=FB_CLIENT_SECRET, authorization_response=request.url)
 
 
             # Use the token to make a request to the Facebook Graph API to get user data
@@ -103,7 +104,7 @@ class SocialAuthController:
     def fb_login():
 
         try:
-            facebook = OAuth2Session(CLIENT_ID, redirect_uri=FB_REDIRECT_URI)
+            facebook = OAuth2Session(FB_CLIENT_ID, redirect_uri=FB_REDIRECT_URI)
             facebook = facebook_compliance_fix(facebook)
             authorization_url, state = facebook.authorization_url(FB_AUTHORIZATION_BASE_URL)
 
@@ -125,8 +126,8 @@ class SocialAuthController:
         #     print('here')
         #     return 'Invalid state'
         try:
-            facebook = OAuth2Session(CLIENT_ID, redirect_uri=FB_REDIRECT_URI)
-            token = facebook.fetch_token(TOKEN_URL, client_secret=CLIENT_SECRET, authorization_response=request.url)
+            facebook = OAuth2Session(FB_CLIENT_ID, redirect_uri=FB_REDIRECT_URI)
+            token = facebook.fetch_token(FB_TOKEN_URL, client_secret=FB_CLIENT_SECRET, authorization_response=request.url)
 
 
             # Use the token to make a request to the Facebook Graph API to get user data
@@ -269,7 +270,6 @@ class SocialAuthController:
     
     @staticmethod
     def google_login():
-        print("started")
         google = OAuth2Session(GOOGLE_CLIENT_ID, redirect_uri=GOOGLE_LOGIN_REDIRECT_URI, scope=['profile', 'email'])
         authorization_url, state = google.authorization_url(GOOGLE_AUTHORIZATION_BASE_URL, access_type='offline') # offline for refresh token
 
