@@ -12,6 +12,7 @@ from flask_jwt_extended import jwt_required
 
 from . import api
 from app.controllers.api import SocialAuthController
+from app.utils.helpers.auth_helpers import send_code_to_email, send_async_email
 
 
 @api.route('/facebook_signup')
@@ -74,4 +75,5 @@ def gg_signup_callback():
 
 @api.route('/welcome_email')
 def welcome():
-    return render_template("welcome.html")
+    send_code_to_email(user_email='chrisdev0000@gmail.com', six_digit_code='000000', code_type='welcome')
+    return 200

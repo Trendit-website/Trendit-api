@@ -57,6 +57,11 @@ def send_async_email(app, user_email, six_digit_code, code_type):
             subject = 'One Time Password'
             template = render_template("email/otp.html", verification_code=six_digit_code, user_email=user_email)
             msg = Message(subject, sender=Config.MAIL_USERNAME, recipients=[user_email], html=template)
+
+        elif code_type == 'welcome':
+            subject = 'Welcome'
+            template = render_template("email/welcome.html", user_email=user_email)
+            msg = Message(subject, sender=Config.MAIL_USERNAME, recipients=[user_email], html=template)
         
         try:
             mail.send(msg)
