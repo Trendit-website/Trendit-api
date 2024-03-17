@@ -14,7 +14,8 @@ from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from ..extensions import db
-from ..models import Media, Role
+from ..models import Media
+from ..models.role import Role
 from config import Config
 
 # temporary user
