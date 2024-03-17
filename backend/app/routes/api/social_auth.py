@@ -7,11 +7,13 @@ It includes routes for signing up with google, facebook and tiktok accounts.
 @link: https://github.com/al-chris
 @package: Trendit³
 '''
-from flask import request
+from flask import request, render_template
 from flask_jwt_extended import jwt_required
 
 from . import api
 from app.controllers.api import SocialAuthController
+from app.utils.helpers.auth_helpers import send_code_to_email, send_async_email
+from ...utils.helpers.response_helpers import error_response, success_response
 
 
 @api.route('/facebook_signup')
@@ -51,3 +53,28 @@ def tt_signup():
 @api.route('/tt_signup_callback')
 def tt_signup_callback():
     return SocialAuthController.tiktok_signup_callback()
+
+
+@api.route('/gg_login')
+def gg_login():
+    return SocialAuthController.google_login()
+
+
+@api.route('/gg_login_callback')
+def gg_login_callback():
+    return SocialAuthController.google_login_callback()
+
+
+@api.route('/gg_signup')
+def gg_signup():
+    return SocialAuthController.google_signup()
+
+
+@api.route('/gg_signup_callback')
+def gg_signup_callback():
+    return SocialAuthController.google_signup_callback()
+
+@api.route('/welcome_email')
+def welcome():
+    send_code_to_email(user_email='chrisdev0000@gmail.com', six_digit_code='000000', code_type='welcome')
+    return success_response('email sent', 200)
