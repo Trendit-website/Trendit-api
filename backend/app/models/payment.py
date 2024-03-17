@@ -1,5 +1,6 @@
 from sqlalchemy.orm import backref
 from datetime import datetime
+from enum import Enum
 
 from ..extensions import db
 from ..utils.helpers.basic_helpers import generate_random_string
@@ -15,7 +16,7 @@ class Payment(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     key = db.Column(db.String(80), unique=True, nullable=False) # Unique identifier for the payments
     amount = db.Column(db.Float(), nullable=False)
-    payment_type = db.Column(db.String(50), nullable=False)  # 'task-creation', 'membership_fee' or 'product_fee'
+    payment_type = db.Column(db.String(50), nullable=False)  # 'task-creation', 'membership_fee', 'credit-wallet' or 'product_fee'
     payment_method = db.Column(db.String(), nullable=False)  # 'wallet' or 'payment gateway(paystack)'
     status = db.Column(db.String(20), nullable=False, default="pending")  # Status of the payment request
     
@@ -62,6 +63,12 @@ class Payment(db.Model):
         }
 
 
+class TransactionType(Enum):
+    CREDIT = 'credit'
+    DEBIT = 'debit'
+    PAYMENT = 'payment'
+    WITHDRAW = 'withdraw'
+    
 class Transaction(db.Model):
     """
     Model to represent a financial transaction associated with a payment in Trendit³.
@@ -71,7 +78,7 @@ class Transaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     key = db.Column(db.String(80), unique=True, nullable=False) # Unique identifier for the financial transaction
     amount = db.Column(db.Float(), nullable=False)
-    transaction_type = db.Column(db.String(50), nullable=False)  # 'credit', 'debit' or 'withdraw'
+    transaction_type = db.Column(db.Enum(TransactionType), nullable=False)  # 'credit', 'debit', 'payment' or 'withdraw'
     description = db.Column(db.String(150), nullable=False)
     status = db.Column(db.String(80), nullable=False) # Status of the financial transaction
     

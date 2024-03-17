@@ -14,7 +14,7 @@ from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from ..extensions import db
-from ..models import Media
+from ..models import Media, Role
 from config import Config
 
 # temporary user
@@ -81,6 +81,14 @@ class Trendit3User(db.Model):
     
     def __repr__(self):
         return f'<ID: {self.id}, username: {self.username}, email: {self.email}>'
+    
+    def has_role(self, role):
+        return bool(
+            Role.query
+            .join(Role.users)
+            .filter(Trendit3User.id == self.id)
+            .count() == 1
+        )
     
     def insert(self):
         db.session.add(self)
