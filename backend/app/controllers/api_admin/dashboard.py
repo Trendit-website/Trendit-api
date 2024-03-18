@@ -28,39 +28,53 @@ from ...utils.helpers.location_helpers import get_currency_info
 from ...utils.helpers.auth_helpers import generate_six_digit_code, send_code_to_email, save_pwd_reset_token, send_2fa_code
 from ...utils.helpers.user_helpers import is_user_exist, get_trendit3_user, referral_code_exists
 
+#TODO: Change type to enum when available -> remove received and payout
+
 class AdminDashboardController:
 
     @staticmethod
     def admin_dashboard():
-        # Calculate total received payments
-        total_received_payments = db.session.query(func.sum(Transaction.amount)).filter_by(transaction_type='received').scalar() or 0
 
-        # Calculate total payouts
-        total_payouts = db.session.query(func.sum(Transaction.amount)).filter_by(transaction_type='payout').scalar() or 0
+        try:
 
-        # Calculate total received payments per month
-        received_payments_per_month = db.session.query(func.strftime('%Y-%m', Transaction.timestamp),
-                                                    func.sum(Transaction.amount)).filter_by(transaction_type='received')\
-                                        .group_by(func.strftime('%Y-%m', Transaction.timestamp)).all()
+            # Calculate total received payments
+            total_received_payments = db.session.query(func.sum(Transaction.amount)).filter_by(transaction_type='received').scalar() or 0
 
-        # Calculate total payouts per month
-        payouts_per_month = db.session.query(func.strftime('%Y-%m', Transaction.timestamp),
-                                            func.sum(Transaction.amount)).filter_by(transaction_type='payout')\
-                                        .group_by(func.strftime('%Y-%m', Transaction.timestamp)).all()
+            # Calculate total payouts
+            total_payouts = db.session.query(func.sum(Transaction.amount)).filter_by(transaction_type='payout').scalar() or 0
 
-        # Calculate total payment activities per month
-        payment_activities_per_month = db.session.query(func.strftime('%Y-%m', Transaction.timestamp),
-                                                        func.count(Transaction.id)).group_by(func.strftime('%Y-%m', Transaction.timestamp)).all()
+            # Calculate total received payments per month
+            received_payments_per_month = db.session.query(func.strftime('%Y-%m', Transaction.timestamp),
+                                                        func.sum(Transaction.amount)).filter_by(transaction_type='received')\
+                                            .group_by(func.strftime('%Y-%m', Transaction.timestamp)).all()
 
-        # Format data for bar chart
-        received_payments_per_month_dict = {date: amount for date, amount in received_payments_per_month}
-        payouts_per_month_dict = {date: amount for date, amount in payouts_per_month}
-        payment_activities_per_month_dict = {date: count for date, count in payment_activities_per_month}
+            # Calculate total payouts per month
+            payouts_per_month = db.session.query(func.strftime('%Y-%m', Transaction.timestamp),
+                                                func.sum(Transaction.amount)).filter_by(transaction_type='payout')\
+                                            .group_by(func.strftime('%Y-%m', Transaction.timestamp)).all()
 
-        return jsonify({
-            'total_received_payments': total_received_payments,
-            'total_payouts': total_payouts,
-            'received_payments_per_month': received_payments_per_month_dict,
-            'payouts_per_month': payouts_per_month_dict,
-            'payment_activities_per_month': payment_activities_per_month_dict
-        })
+            # Calculate total payment activities per month
+            payment_activities_per_month = db.session.query(func.strftime('%Y-%m', Transaction.timestamp),
+                                                            func.count(Transaction.id)).group_by(func.strftime('%Y-%m', Transaction.timestamp)).all()
+
+            # Format data for bar chart
+            received_payments_per_month_dict = {date: amount for date, amount in received_payments_per_month}
+            payouts_per_month_dict = {date: amount for date, amount in payouts_per_month}
+            payment_activities_per_month_dict = {date: count for date, count in payment_activities_per_month}
+
+            extra_data = {
+                'total_received_payments': total_received_payments,
+                'total_payouts': total_payouts,
+                'received_payments_per_month': received_payments_per_month_dict,
+                'payouts_per_month': payouts_per_month_dict,
+                'payment_activities_per_month': payment_activities_per_month_dict
+            }
+
+            return success_response('Admin dashboard data', 200, extra_data)
+        
+        except Exception as e:
+            console_log('Admin Dashboard EXCEPTION', str(e))
+            current_app.logger.error(f"An error occurred fetching the Admin Dashboard data: {str(e)}")
+            db.session.rollback()
+            db.session.close()
+            return error_response('An error occurred fetching the Admin Dashboard data', 500)
