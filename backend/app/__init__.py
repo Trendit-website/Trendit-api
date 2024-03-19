@@ -26,7 +26,7 @@ from .models.payment import Payment, Transaction, Wallet, Withdrawal
 from .jobs import celery_app
 from .extensions import db, mail, limiter
 from .utils.helpers.response_helpers import error_response
-from .utils.before_request_functions import json_check, check_emerge
+from .utils.middleware import set_access_control_allows, check_emerge, json_check, ping_url
 from config import Config, configure_logging, config_by_name
 
 def create_app(config_name=Config.ENV):
@@ -47,30 +47,21 @@ def create_app(config_name=Config.ENV):
     mail.init_app(app) # Initialize Flask-Mail
     limiter.init_app(app) # initialize rate limiter
     migrate = Migrate(app, db)
+    jwt = JWTManager(app) # Setup the Flask-JWT-Extended extension
     
     # Set up CORS. Allow '*' for origins.
     cors = CORS(app, resources={r"/*": {"origins": Config.CLIENT_ORIGINS}}, supports_credentials=True)
 
-    
     # Use the after_request decorator to set Access-Control-Allow
-    @app.after_request
-    def after_request(response):
-        response.headers.add(
-            "Access-Control-Allow-Headers", "Content-Type,Authorization,true"
-        )
-        response.headers.add(
-            "Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS"
-        )
-        return response
+    app.after_request(set_access_control_allows)
+    
+    #app.before_request(ping_url)
+    app.before_request(check_emerge)
+    # app.before_request(json_check)
+    
     
     # Configure logging
     configure_logging(app)
-    
-    # Setup the Flask-JWT-Extended extension
-    jwt = JWTManager(app)
-    
-    app.before_request(check_emerge)
-    # app.before_request(json_check)
     
     
     # Register blueprints

@@ -25,11 +25,14 @@ class Config:
     STATIC_DIR = 'app/static'
     UPLOADS_DIR = 'app/static/uploads'
     EMERGENCY_MODE = os.environ.get('EMERGENCY_MODE') or False
-    DOMAIN_NAME = os.environ.get('DOMAIN_NAME') or 'www.trendit3.com'
-    TASKS_PER_PAGE = os.environ.get('TASKS_PER_PAGE') or 10
-    ITEMS_PER_PAGE = os.environ.get('ITEMS_PER_PAGE') or 10
+    DOMAIN_NAME = os.environ.get('DOMAIN_NAME') or 'https://www.trendit3.com'
+    API_DOMAIN_NAME = os.environ.get('API_DOMAIN_NAME') or 'https://api.trendit3.com'
     CLIENT_ORIGINS = os.environ.get('CLIENT_ORIGINS') or 'http://localhost:3000,http://localhost:5173,https://trendit3.vercel.app'
     CLIENT_ORIGINS = [origin.strip() for origin in CLIENT_ORIGINS.split(',')]
+    
+    # Constants
+    TASKS_PER_PAGE = os.environ.get('TASKS_PER_PAGE') or 10
+    ITEMS_PER_PAGE = os.environ.get('ITEMS_PER_PAGE') or 10
     PAYMENT_TYPES = ['task-creation', 'membership-fee', 'credit-wallet', 'item-upload']
     
     # JWT configurations

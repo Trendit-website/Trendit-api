@@ -1,8 +1,8 @@
-"""initial migrations
+"""Initial migration.
 
-Revision ID: fb9d1de93735
+Revision ID: 822237bdbceb
 Revises: 
-Create Date: 2024-03-13 10:29:35.176577
+Create Date: 2024-03-17 22:08:14.100902
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'fb9d1de93735'
+revision = '822237bdbceb'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -198,9 +198,11 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('key', sa.String(length=80), nullable=False),
     sa.Column('amount', sa.Float(), nullable=False),
-    sa.Column('transaction_type', sa.String(length=50), nullable=False),
+    sa.Column('transaction_type', sa.Enum('CREDIT', 'DEBIT', 'PAYMENT', 'WITHDRAW', name='transactiontype'), nullable=False),
     sa.Column('description', sa.String(length=150), nullable=False),
     sa.Column('status', sa.String(length=80), nullable=False),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.Column('trendit3_user_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['trendit3_user_id'], ['trendit3_user.id'], ),
     sa.PrimaryKeyConstraint('id'),

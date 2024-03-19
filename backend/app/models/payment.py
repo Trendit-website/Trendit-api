@@ -64,10 +64,11 @@ class Payment(db.Model):
 
 
 class TransactionType(Enum):
+    """ENUMS for the transaction_type filed in Transaction Model"""
     CREDIT = 'credit'
     DEBIT = 'debit'
     PAYMENT = 'payment'
-    WITHDRAW = 'withdraw'
+    WITHDRAWAL = 'withdrawal'
     
 class Transaction(db.Model):
     """

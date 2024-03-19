@@ -4,8 +4,7 @@ from sqlalchemy.exc import ( DataError, DatabaseError )
 from flask_jwt_extended import get_jwt_identity
 
 from ...extensions import db
-from ...models.user import Trendit3User, BankAccount, Recipient
-from ...models.payment import Payment, Transaction, Withdrawal
+from ...models import (Trendit3User, BankAccount, Recipient, Payment, Transaction, Withdrawal)
 from ...utils.helpers.response_helpers import error_response, success_response
 from ...utils.helpers.basic_helpers import console_log
 from ...utils.helpers.payment_helpers import initialize_payment, credit_wallet, initiate_transfer

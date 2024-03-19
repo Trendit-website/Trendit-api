@@ -12,17 +12,16 @@ These functions assist with tasks such:
 @link: https://github.com/zeddyemy
 @package: Trendit³
 '''
-from datetime import datetime, date
+from datetime import datetime
 import requests, logging
 from flask import json
 from flask_jwt_extended import get_jwt_identity
 from sqlalchemy import func, sql
 
-from app.extensions import db
-from app.models.payment import Payment, Transaction, Withdrawal
-from app.models.user import Trendit3User
-from app.utils.helpers.basic_helpers import console_log, generate_random_string
-from app.utils.helpers.response_helpers import error_response, success_response
+from ...extensions import db
+from ...models import Payment, Transaction, TransactionType, Withdrawal, Trendit3User
+from ...utils.helpers.basic_helpers import console_log, generate_random_string
+from ...utils.helpers.response_helpers import error_response, success_response
 from config import Config
 
 
@@ -88,7 +87,7 @@ def initialize_payment(user_id, data, payment_type=None, meta_data=None):
         tx_ref=response_data['data']['reference'] # transaction reference
         
         if response_data['status']:
-            transaction = Transaction(key=tx_ref, amount=amount, transaction_type='payment', description=f'{payment_type} payment', status='pending', trendit3_user=Trendit3_user)
+            transaction = Transaction(key=tx_ref, amount=amount, transaction_type=TransactionType.PAYMENT, description=f'{payment_type} payment', status='pending', trendit3_user=Trendit3_user)
             payment = Payment(key=tx_ref, amount=amount, payment_type=payment_type, payment_method=Config.PAYMENT_GATEWAY.lower(), status='pending', trendit3_user=Trendit3_user)
             db.session.add_all([transaction, payment])
             db.session.commit()
@@ -166,7 +165,7 @@ def debit_wallet(user_id, amount, payment_type=None):
         wallet.balance -= amount
         
         payment = Payment(amount=amount, payment_type=payment_type, payment_method='wallet', status='complete', trendit3_user=user)
-        transaction = Transaction(key=generate_random_string(16), amount=amount, transaction_type='payment', status='complete', trendit3_user=user)
+        transaction = Transaction(key=generate_random_string(16), amount=amount, transaction_type=TransactionType.DEBIT, status='complete', trendit3_user=user)
         
         db.session.add(payment, transaction)
         db.session.commit()
@@ -227,7 +226,7 @@ def initiate_transfer(amount, recipient, user):
         status = response['data']['status']
         
         if response['status']:
-            transaction = Transaction.create_transaction(key=reference, amount=amount, transaction_type='withdrawal', status='pending', trendit3_user=user)
+            transaction = Transaction.create_transaction(key=reference, amount=amount, transaction_type=TransactionType.WITHDRAWAL, status='pending', trendit3_user=user)
             withdrawal = Withdrawal.create_withdrawal(reference=reference, amount=amount, bank_name=bank_name, account_no=account_no, status=status, trendit3_user=user)
             return response
         else:
@@ -236,9 +235,8 @@ def initiate_transfer(amount, recipient, user):
         raise e
 
 
-'''
-Transaction Helpers
-'''
+
+# Transaction Helpers
 def get_total_amount_spent(user_id):
     """
     Get the total amount spent by the user, both overall and in the current month.
@@ -305,7 +303,7 @@ def get_total_amount_earned(user_id):
         func.sum(Transaction.amount)
     ).filter(
         Transaction.trendit3_user_id == user_id,
-        Transaction.transaction_type == 'credit',
+        Transaction.transaction_type == TransactionType.CREDIT,
         subquery_filter
     ).scalar() or 0.0
 
@@ -314,7 +312,7 @@ def get_total_amount_earned(user_id):
         func.sum(Transaction.amount)
     ).filter(
         Transaction.trendit3_user_id == user_id,
-        Transaction.transaction_type == 'credit',
+        Transaction.transaction_type == TransactionType.CREDIT,
         subquery_filter,
         db.extract('month', Transaction.created_at) == current_month,
         db.extract('year', Transaction.created_at) == current_year
