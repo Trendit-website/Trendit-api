@@ -4,9 +4,9 @@ from sqlalchemy.exc import ( DataError, DatabaseError )
 from flask_jwt_extended import get_jwt_identity
 
 from ...extensions import db
-from ...models import (Trendit3User, BankAccount, Recipient, Payment, Transaction, Withdrawal)
+from ...models import (Trendit3User, BankAccount, Recipient, Payment, Transaction, Withdrawal, TaskPaymentStatus)
 from ...utils.helpers.response_helpers import error_response, success_response
-from ...utils.helpers.basic_helpers import console_log
+from ...utils.helpers.basic_helpers import console_log, log_exception
 from ...utils.helpers.payment_helpers import initialize_payment, credit_wallet, initiate_transfer
 from ...utils.helpers.bank_helpers import get_bank_code
 from ...utils.helpers.task_helpers import get_task_by_key
@@ -104,7 +104,7 @@ class PaymentController:
                     elif payment_type == 'task-creation':
                         task_key = verification_response['data']['metadata']['task_key']
                         task = get_task_by_key(task_key)
-                        task.update(payment_status='complete')
+                        task.update(payment_status=TaskPaymentStatus.COMPLETE)
                         task_dict = task.to_dict()
                         msg = 'Payment verified and Task has been created successfully'
                         extra_data.update({'task': task_dict})
@@ -154,16 +154,14 @@ class PaymentController:
             
             extra_data.update({'user_data': trendit3_user.to_dict()})
             api_response = success_response(msg, status_code, extra_data)
-        except DataError as e:
+        except (DataError, DatabaseError) as e:
             db.session.rollback()
-            logging.exception(f"A DataError exception occurred during payment verification. {str(e)}")
-            return error_response(f"Invalid Entry", 400)
-        except DatabaseError as e:
-            db.session.rollback()
-            logging.exception(f"A DatabaseError exception occurred during payment verification. {str(e)}")
-            return error_response(f"Error connecting to the database", 500)
+            fund_wallet = credit_wallet(user_id, amount) if payment_status and payment_status == 'success' else False
+            log_exception('Database error occurred during payment verification', e)
+            return error_response('Error interacting to the database.', 500)
         except Exception as e:
             db.session.rollback()
+            fund_wallet = credit_wallet(user_id, amount) if payment_status and payment_status == 'success' else False
             logging.exception(f"An exception occurred during payment verification {str(e)}")
             return error_response('An error occurred while processing the request.', 500)
         finally:
@@ -224,7 +222,7 @@ class PaymentController:
                         elif payment_type == 'task-creation':
                             task_key = data['data']['metadata']['task_key']
                             task = get_task_by_key(task_key)
-                            task.update(payment_status='Complete')
+                            task.update(payment_status=TaskPaymentStatus.COMPLETE)
                         elif payment_type == 'credit-wallet':
                             # Credit user's wallet
                             try:
@@ -250,6 +248,7 @@ class PaymentController:
                 return jsonify({'status': 'failed'}), 404
         except Exception as e:
             db.session.rollback()
+            fund_wallet = credit_wallet(user_id, amount) if data['event'] == 'charge.success' else False
             logging.exception(f"An exception occurred Handling webhook. {str(e)}") # Log the error details for debugging
             return jsonify({
                 'status': 'failed'
