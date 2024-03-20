@@ -108,7 +108,7 @@ def send_code_to_email(user_email, six_digit_code, code_type='verify_email'):
     """
     Sends a code to the user's email address in a new thread.
 
-    This function creates a new thread and calls the send_code_async_email function in it. 
+    This function creates a new thread and calls the send_async_email function in it. 
     This allows the rest of the application to continue running while the email is being sent.
 
     Args:
@@ -120,7 +120,7 @@ def send_code_to_email(user_email, six_digit_code, code_type='verify_email'):
     Returns:
         None
     """
-    Thread(target=send_code_async_email, args=(current_app._get_current_object(), user_email, six_digit_code, code_type)).start()
+    Thread(target=send_async_email, args=(current_app._get_current_object(), user_email, six_digit_code, code_type)).start()
 
 def send_code_to_phone(user_phone, six_digit_code, code_type='verify_email'):
     pass
