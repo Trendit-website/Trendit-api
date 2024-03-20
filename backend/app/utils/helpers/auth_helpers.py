@@ -60,7 +60,7 @@ def send_async_email(app, user_email, six_digit_code, code_type):
 
         elif code_type == 'welcome':
             subject = 'Welcome'
-            template = render_template("email/welcome2.html", user_email=user_email)
+            template = render_template("email/welcome.html", redirect_link='https://app.trendit3.com/', user_email=user_email)
             msg = Message(subject, sender=Config.MAIL_USERNAME, recipients=[user_email], html=template)
         
         try:

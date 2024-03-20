@@ -11,3 +11,9 @@ A Flask blueprint named 'api_admin' is created to group these routes, and it is 
 from flask import Blueprint
 
 bp = Blueprint('api_admin', __name__, url_prefix='/api/admin')
+
+from . import auth, task_performance
+
+@bp.route('/')
+def index():
+    return 'Admin API routes'
