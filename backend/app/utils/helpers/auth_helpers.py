@@ -19,6 +19,19 @@ from config import Config
 from app.extensions import db
 from app.models.user import OneTimeToken
 from app.utils.helpers.basic_helpers import console_log
+from app.models.user import Trendit3User, TempUser
+from enum import Enum
+
+
+class EmailType(Enum):
+    VERIFY_EMAIL = 'verify_email'
+    PWD_RESET = 'pwd_reset'
+    TWO_FA = '2FA'
+    WELCOME = 'welcome'
+    TASK_APPROVED = 'task_approved'
+    TASK_REJECTED = 'task_rejected'
+    CREDIT = 'credit'
+    DEBIT = 'debit'
 
 
 def generate_six_digit_code():
@@ -28,7 +41,7 @@ def generate_six_digit_code():
     return six_digit_code
 
 
-def send_async_email(app, user_email, six_digit_code, code_type):
+def send_async_email(app, user_email, six_digit_code, code_type, amount=None,):
     """
     Sends an email asynchronously.
 
@@ -48,11 +61,13 @@ def send_async_email(app, user_email, six_digit_code, code_type):
         subject = 'Verify Your Email'
         template = render_template("email/verify_email2.html", verification_code=six_digit_code)
         msg = Message(subject, sender=Config.MAIL_USERNAME, recipients=[user_email], html=template)
+        username = Trendit3User.query.filter(Trendit3User.email == user_email).first().username
         
         if code_type == 'pwd_reset':
             subject = 'Reset your password'
-            template = render_template("email/pwd_reset2.html", verification_code=six_digit_code, user_email=user_email)
+            template = render_template("email/pwd_reset2.html", verification_code=six_digit_code, user_email=user_email, username=username)
             msg = Message(subject, sender=Config.MAIL_USERNAME, recipients=[user_email], html=template)
+
         elif code_type == '2FA':
             subject = 'One Time Password'
             template = render_template("email/otp.html", verification_code=six_digit_code, user_email=user_email)
@@ -60,13 +75,34 @@ def send_async_email(app, user_email, six_digit_code, code_type):
 
         elif code_type == 'welcome':
             subject = 'Welcome'
-            template = render_template("email/welcome.html", redirect_link='https://app.trendit3.com/', user_email=user_email)
+            template = render_template("email/welcome.html", redirect_link='https://app.trendit3.com/', user_email=user_email, username=username)
+            msg = Message(subject, sender=Config.MAIL_USERNAME, recipients=[user_email], html=template)
+
+        elif code_type == 'task_approved':
+            subject = 'Task Approved'
+            template = render_template("email/task_approved.html", redirect_link='https://app.trendit3.com/', user_email=user_email, username=username)
+            msg = Message(subject, sender=Config.MAIL_USERNAME, recipients=[user_email], html=template)
+
+        elif code_type == 'task_rejected':
+            subject = 'Task Rejected'
+            template = render_template("email/task_declined.html", redirect_link='https://app.trendit3.com/', user_email=user_email, username=username)
+            msg = Message(subject, sender=Config.MAIL_USERNAME, recipients=[user_email], html=template)
+
+        elif code_type == 'credit':
+            subject = 'Account Credited'
+            template = render_template("email/credit_alert.html", redirect_link='https://app.trendit3.com/', user_email=user_email, username=username, amount=amount)
+            msg = Message(subject, sender=Config.MAIL_USERNAME, recipients=[user_email], html=template)
+
+        elif code_type == 'debit':
+            subject = 'Account Debited'
+            template = render_template("email/debit_alert.html", redirect_link='https://app.trendit3.com/', user_email=user_email, username=username, amount=amount)
             msg = Message(subject, sender=Config.MAIL_USERNAME, recipients=[user_email], html=template)
         
         try:
             mail.send(msg)
         except Exception as e:
             console_log('EXCEPTION SENDING MAIL', f'An error occurred while sending the {code_type} code: {str(e)}')
+
 
 def send_code_to_email(user_email, six_digit_code, code_type='verify_email'):
     """
@@ -89,6 +125,7 @@ def send_code_to_email(user_email, six_digit_code, code_type='verify_email'):
 def send_code_to_phone(user_phone, six_digit_code, code_type='verify_email'):
     pass
 
+
 def send_2fa_code(user_obj, two_factor_method, six_digit_code):
     if two_factor_method == 'email':
         send_code_to_email(user_obj.email, six_digit_code, code_type='2FA') # send 2FA code to user's email
@@ -100,6 +137,7 @@ def send_2fa_code(user_obj, two_factor_method, six_digit_code):
         pass
     else:
         pass
+
 
 def save_pwd_reset_token(reset_token, user=None):
     try:
