@@ -13,7 +13,6 @@ from flask import current_app, abort, request, render_template, url_for
 from slugify import slugify
 from flask_mail import Message
 
-from ... import mail
 from ...extensions import db
 from ...models import Item
 from ...exceptions import UniqueSlugError
@@ -202,29 +201,3 @@ def log_exception(label='EXCEPTION', data='Nothing'):
     logging.exception(f'\n\n{label:-^50}\n {str(data)} \n {"//":-^50}\n\n')  # Log the error details for debugging
 
 
-def send_code_async_email(app, user_email):
-    """
-    Sends an email asynchronously.
-
-    This function runs in a separate thread and sends an email to the user. 
-    It uses the Flask application context to ensure the mail object works correctly.
-
-    Args:
-        app (Flask): The Flask application instance.
-        user_email (str): The email address of the user.
-
-    Returns:
-        None
-    """
-    with app.app_context():
-        subject = 'Verify Your Email'
-        template = render_template("email/verify_email2.html")
-        msg = Message(subject, sender=Config.MAIL_USERNAME, recipients=[user_email], html=template)
-        
-        try:
-            mail.send(msg)
-        except Exception as e:
-            log_exception(f'An error occurred while sending email', e)
-
-def send_mail_to_user():
-    pass
