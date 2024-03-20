@@ -239,6 +239,8 @@ class AuthController:
                 'access_token':access_token
             }
             
+            # TODO: Send Welcome Email
+            #send_mail_to_user()
             return success_response('Registration completed successfully', 200, extra_data)
             
         except IntegrityError as e:

@@ -6,7 +6,7 @@ from config import Config
 from ...models import Task, AdvertTask, EngagementTask, TaskPaymentStatus, TaskStatus
 from ...utils.helpers.task_helpers import save_task, get_tasks_dict_grouped_by_field, fetch_task, get_aggregated_task_counts_by_field
 from ...utils.helpers.response_helpers import error_response, success_response
-from ...utils.helpers.basic_helpers import console_log
+from ...utils.helpers.basic_helpers import console_log, log_exception
 from ...utils.helpers.payment_helpers import initialize_payment, debit_wallet
 
 
@@ -76,7 +76,7 @@ class TaskController:
             error = True
             msg = 'Error getting all tasks created by current user'
             status_code = 500
-            logging.exception("An exception trying to get all Tasks by current user:\n", str(e))
+            log_exception("An exception trying to get all Tasks by current user", e)
         if error:
             return error_response(msg, status_code)
         else:
@@ -150,6 +150,44 @@ class TaskController:
     
     
     # ADVERT TASKS
+    @staticmethod
+    def get_current_user_advert_tasks():
+        error = False
+        
+        try:
+            current_user_id = int(get_jwt_identity())
+            page = request.args.get("page", 1, type=int)
+            tasks_per_page = int(Config.TASKS_PER_PAGE)
+            pagination = AdvertTask.query.filter_by(trendit3_user_id=current_user_id) \
+                .order_by(AdvertTask.date_created.desc()) \
+                .paginate(page=page, per_page=tasks_per_page, error_out=False)
+            
+            tasks = pagination.items
+            current_tasks = [task.to_dict() for task in tasks]
+            extra_data = {
+                'total': pagination.total,
+                "advert_tasks": current_tasks,
+                "current_page": pagination.page,
+                "total_pages": pagination.pages,
+            }
+            
+            if not tasks:
+                return success_response(f'No advert tasks have been created', 200, extra_data)
+            
+            msg = 'All Advert Tasks fetched successfully'
+            status_code = 200
+            
+        except Exception as e:
+            error = True
+            msg = 'Error getting all advert tasks'
+            status_code = 500
+            log_exception("An exception occurred trying to get all Advert Tasks", e)
+        if error:
+            return error_response(msg, status_code)
+        else:
+            return success_response(msg, status_code, extra_data)
+
+
     @staticmethod
     def get_advert_tasks():
         error = False
