@@ -42,9 +42,9 @@ def get_tasks_dict_grouped_by_field(field, task_type):
     
     try:
         if task_type == 'advert':
-            tasks = AdvertTask.query.filter_by(payment_status='complete', status=TaskStatus.APPROVED).all()
+            tasks = AdvertTask.query.filter_by(payment_status=TaskPaymentStatus.COMPLETE, status=TaskStatus.APPROVED).all()
         elif task_type == 'engagement':
-            tasks = EngagementTask.query.filter_by(payment_status='complete', status=TaskStatus.APPROVED).all()
+            tasks = EngagementTask.query.filter_by(payment_status=TaskPaymentStatus.COMPLETE, status=TaskStatus.APPROVED).all()
         else:
             raise ValueError(f"Invalid task_type: {task_type}")
 
@@ -85,7 +85,7 @@ def get_aggregated_task_counts_by_field(field, task_type=None):
         task_model = (AdvertTask if task_type == 'advert' else EngagementTask if task_type == 'engagement' else Task)
         
         results = db.session.query(getattr(task_model, field), func.count(task_model.id).label('task_count')) \
-                            .filter_by(payment_status='complete', status=TaskStatus.APPROVED) \
+                            .filter_by(payment_status=TaskPaymentStatus.COMPLETE, status=TaskStatus.APPROVED) \
                             .group_by(getattr(task_model, field)) \
                             .all()
         
@@ -128,7 +128,7 @@ def generate_random_task(task_type, filter_value):
         # Filter for unassigned tasks
         unassigned_task = task_model.query.filter(
             getattr(task_model, filter_field) == filter_value,
-            task_model.payment_status == 'complete',
+            task_model.payment_status == TaskPaymentStatus.COMPLETE,
             task_model.status == TaskStatus.APPROVED,
             getattr(task_model, count_field) > getattr(task_model, 'total_success')
         ).order_by(func.random()).first()
@@ -160,7 +160,7 @@ def get_task_by_key(task_key):
     return task
 
 
-def save_task(data, task_id_key=None, payment_status='Pending'):
+def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
     try:
         user_id = int(get_jwt_identity())
         task_type = data.get('task_type', '')
