@@ -2,9 +2,9 @@ from datetime import datetime
 from sqlalchemy.orm import backref
 from sqlalchemy.exc import IntegrityError
 
-from app.extensions import db
-from app.models import Media
-from app.utils.helpers.basic_helpers import generate_random_string
+from ..extensions import db
+from ..models import Media
+from ..utils.helpers.basic_helpers import generate_random_string
 
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)

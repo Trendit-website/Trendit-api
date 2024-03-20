@@ -173,7 +173,8 @@ def save_task(data, task_id_key=None, payment_status='Pending'):
         gender = data.get('gender', '')
         caption = data.get('caption', '')
         hashtags = data.get('hashtags', '')
-        media =  request.files['media']
+        media = request.files.get('media', '')
+        
         
         goal = data.get('goal','')
         account_link = data.get('account_link', '')

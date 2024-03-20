@@ -450,7 +450,7 @@ class TaskController:
                 extra_data = {'task': new_task.to_dict()}
         except Exception as e:
             error = True
-            status_code = 500
+            status_code = e.code or 500
             msg = "Error creating new task"
             logging.exception(f"An exception occurred during creation of Task ==> {str(e)}")
         
