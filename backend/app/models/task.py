@@ -32,6 +32,7 @@ class Task(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     total_allocated = db.Column(db.Integer, default=0, nullable=True)
     total_success = db.Column(db.Integer, default=0, nullable=True)
+    
     payment_status = db.Column(db.Enum(TaskPaymentStatus), nullable=False)  # complete, pending, failed, abandoned
     status = db.Column(db.Enum(TaskStatus), default=TaskStatus.PENDING, nullable=False)  # approved, pending, declined
     

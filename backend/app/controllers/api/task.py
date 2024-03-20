@@ -3,11 +3,12 @@ from flask import request
 from flask_jwt_extended import get_jwt_identity
 
 from config import Config
-from app.models.task import Task, AdvertTask, EngagementTask
-from app.utils.helpers.task_helpers import save_task, get_tasks_dict_grouped_by_field, fetch_task, get_aggregated_task_counts_by_field
-from app.utils.helpers.response_helpers import error_response, success_response
-from app.utils.helpers.basic_helpers import console_log
-from app.utils.helpers.payment_helpers import initialize_payment, debit_wallet
+from ...models import Task, AdvertTask, EngagementTask, TaskPaymentStatus, TaskStatus
+from ...utils.helpers.task_helpers import save_task, get_tasks_dict_grouped_by_field, fetch_task, get_aggregated_task_counts_by_field
+from ...utils.helpers.response_helpers import error_response, success_response
+from ...utils.helpers.basic_helpers import console_log
+from ...utils.helpers.payment_helpers import initialize_payment, debit_wallet
+
 
 
 class TaskController:
@@ -52,7 +53,7 @@ class TaskController:
             current_user_id = int(get_jwt_identity())
             page = request.args.get("page", 1, type=int)
             tasks_per_page = int(Config.TASKS_PER_PAGE)
-            pagination = Task.query.filter_by(trendit3_user_id=current_user_id, payment_status='Complete') \
+            pagination = Task.query.filter_by(trendit3_user_id=current_user_id, payment_status=TaskPaymentStatus.COMPLETE) \
                 .order_by(Task.date_created.desc()) \
                 .paginate(page=page, per_page=tasks_per_page, error_out=False)
             
@@ -89,7 +90,7 @@ class TaskController:
         try:
             page = request.args.get("page", 1, type=int)
             tasks_per_page = int(Config.TASKS_PER_PAGE)
-            pagination = Task.query.filter_by(payment_status='Complete') \
+            pagination = Task.query.filter_by(payment_status=TaskPaymentStatus.COMPLETE) \
                 .order_by(Task.date_created.desc()) \
                 .paginate(page=page, per_page=tasks_per_page, error_out=False)
             
@@ -156,7 +157,7 @@ class TaskController:
         try:
             page = request.args.get("page", 1, type=int)
             tasks_per_page = int(Config.TASKS_PER_PAGE)
-            pagination = AdvertTask.query.filter_by(payment_status='Complete') \
+            pagination = AdvertTask.query.filter_by(payment_status=TaskPaymentStatus.COMPLETE) \
                 .order_by(AdvertTask.date_created.desc()) \
                 .paginate(page=page, per_page=tasks_per_page, error_out=False)
             
@@ -193,7 +194,7 @@ class TaskController:
         try:
             page = request.args.get("page", 1, type=int)
             tasks_per_page = int(Config.TASKS_PER_PAGE)
-            pagination = AdvertTask.query.filter_by(payment_status='Complete', platform=platform) \
+            pagination = AdvertTask.query.filter_by(payment_status=TaskPaymentStatus.COMPLETE, platform=platform) \
                 .order_by(AdvertTask.date_created.desc()) \
                 .paginate(page=page, per_page=tasks_per_page, error_out=False)
             
@@ -314,7 +315,7 @@ class TaskController:
         try:
             page = request.args.get("page", 1, type=int)
             tasks_per_page = int(Config.TASKS_PER_PAGE)
-            pagination = EngagementTask.query.filter_by(payment_status='Complete') \
+            pagination = EngagementTask.query.filter_by(payment_status=TaskPaymentStatus.COMPLETE) \
                 .order_by(EngagementTask.date_created.desc()) \
                 .paginate(page=page, per_page=tasks_per_page, error_out=False)
             
@@ -441,7 +442,7 @@ class TaskController:
                     msg = f'Error creating new Task: {e}'
                     return error_response(msg, 400)
                 
-                new_task = save_task(data, payment_status='Complete')
+                new_task = save_task(data, payment_status=TaskPaymentStatus.COMPLETE)
                 if new_task is None:
                     return error_response('Error creating new task', 500)
                 
