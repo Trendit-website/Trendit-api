@@ -46,12 +46,12 @@ def send_async_email(app, user_email, six_digit_code, code_type):
     """
     with app.app_context():
         subject = 'Verify Your Email'
-        template = render_template("email/verify_email.html", verification_code=six_digit_code)
+        template = render_template("email/verify_email2.html", verification_code=six_digit_code)
         msg = Message(subject, sender=Config.MAIL_USERNAME, recipients=[user_email], html=template)
         
         if code_type == 'pwd_reset':
             subject = 'Reset your password'
-            template = render_template("email/pwd_reset.html", verification_code=six_digit_code, user_email=user_email)
+            template = render_template("email/pwd_reset2.html", verification_code=six_digit_code, user_email=user_email)
             msg = Message(subject, sender=Config.MAIL_USERNAME, recipients=[user_email], html=template)
         elif code_type == '2FA':
             subject = 'One Time Password'
