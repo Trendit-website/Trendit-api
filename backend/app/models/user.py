@@ -52,7 +52,7 @@ class Trendit3User(db.Model):
     membership = db.relationship('Membership', back_populates="trendit3_user", uselist=False, cascade="all, delete-orphan")
     wallet = db.relationship('Wallet', back_populates="trendit3_user", uselist=False, cascade="all, delete-orphan")
     otp_token = db.relationship('OneTimeToken', back_populates="trendit3_user", uselist=False, cascade="all, delete-orphan")
-    roles = db.relationship('Role', secondary='user_roles', backref=db.backref('users', lazy='dynamic'))
+    roles = db.relationship('Role', secondary='user_roles', backref=db.backref('users', lazy='dynamic'), cascade="all, delete-orphan", single_parent=True)
     user_settings = db.relationship('UserSettings', back_populates='trendit3_user', uselist=False, cascade='all, delete-orphan')
     
     # notifications = db.relationship('Notification', secondary='user_notification', backref=db.backref('users', lazy='dynamic'))
@@ -79,6 +79,11 @@ class Trendit3User(db.Model):
     @property
     def wallet_balance(self):
         return self.wallet.balance
+    
+    @property
+    def role_names(self) -> list[str]:
+        """Returns a list of role names for the user."""
+        return [str(role.name) for role in self.roles]
     
     def __repr__(self):
         return f'<ID: {self.id}, username: {self.username}, email: {self.email}>'
@@ -159,6 +164,7 @@ class Trendit3User(db.Model):
                 'x_id': user_social_ids.x_id if user_social_ids else None,
             },
             'primary_bank': bank_details,
+            'roles': self.role_names,
             **address_info,  # Merge address information into the output dictionary
             **profile_data # Merge profile information into the output dictionary
         }

@@ -3,11 +3,12 @@ from flask import request, jsonify, current_app
 from sqlalchemy import func, or_
 from flask_jwt_extended import get_jwt_identity
 
-from app.extensions import db
-from app.models.task import Task, AdvertTask, EngagementTask, TaskPerformance
-from app.utils.helpers.basic_helpers import console_log
-from app.utils.helpers.media_helpers import save_media
-from app.exceptions import PendingTaskError, NoUnassignedTaskError
+from ...extensions import db
+from ...models import Task, AdvertTask, EngagementTask, TaskStatus, TaskPaymentStatus, TaskPerformance
+from ...utils.helpers.basic_helpers import console_log
+from ...utils.helpers.media_helpers import save_media
+from ...exceptions import PendingTaskError, NoUnassignedTaskError
+
 
 
 def fetch_task(task_id_key):
@@ -41,9 +42,9 @@ def get_tasks_dict_grouped_by_field(field, task_type):
     
     try:
         if task_type == 'advert':
-            tasks = AdvertTask.query.filter_by(payment_status='complete').all()
+            tasks = AdvertTask.query.filter_by(payment_status='complete', status=TaskStatus.APPROVED).all()
         elif task_type == 'engagement':
-            tasks = EngagementTask.query.filter_by(payment_status='complete').all()
+            tasks = EngagementTask.query.filter_by(payment_status='complete', status=TaskStatus.APPROVED).all()
         else:
             raise ValueError(f"Invalid task_type: {task_type}")
 
@@ -84,7 +85,7 @@ def get_aggregated_task_counts_by_field(field, task_type=None):
         task_model = (AdvertTask if task_type == 'advert' else EngagementTask if task_type == 'engagement' else Task)
         
         results = db.session.query(getattr(task_model, field), func.count(task_model.id).label('task_count')) \
-                            .filter_by(payment_status='complete') \
+                            .filter_by(payment_status='complete', status=TaskStatus.APPROVED) \
                             .group_by(getattr(task_model, field)) \
                             .all()
         
@@ -128,6 +129,7 @@ def generate_random_task(task_type, filter_value):
         unassigned_task = task_model.query.filter(
             getattr(task_model, filter_field) == filter_value,
             task_model.payment_status == 'complete',
+            task_model.status == TaskStatus.APPROVED,
             getattr(task_model, count_field) > getattr(task_model, 'total_success')
         ).order_by(func.random()).first()
         
@@ -173,7 +175,8 @@ def save_task(data, task_id_key=None, payment_status='Pending'):
         gender = data.get('gender', '')
         caption = data.get('caption', '')
         hashtags = data.get('hashtags', '')
-        media =  request.files['media']
+        media = request.files.get('media', '')
+        
         
         goal = data.get('goal','')
         account_link = data.get('account_link', '')
@@ -186,7 +189,9 @@ def save_task(data, task_id_key=None, payment_status='Pending'):
         if task_id_key:
             task = fetch_task(task_id_key)
         
-        if media.filename != '':
+        if not media:
+            media_id = None
+        elif media.filename != '':
             try:
                 media_id = save_media(media)
             except Exception as e:

@@ -1,8 +1,8 @@
-"""Initial migration.
+"""initial Migration
 
-Revision ID: 822237bdbceb
+Revision ID: 6d9a7cd450b6
 Revises: 
-Create Date: 2024-03-17 22:08:14.100902
+Create Date: 2024-03-20 12:43:42.201014
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '822237bdbceb'
+revision = '6d9a7cd450b6'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -27,10 +27,12 @@ def upgrade():
     )
     op.create_table('role',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('name', sa.String(length=20), nullable=False),
+    sa.Column('name', sa.Enum('SUPER_ADMIN', 'Admin', 'JUNIOR_ADMIN', 'ADVERTISER', 'EARNER', 'CUSTOMER', name='rolenames'), nullable=False),
+    sa.Column('slug', sa.String(length=100), nullable=False),
     sa.Column('description', sa.String(length=100), nullable=True),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('name')
+    sa.UniqueConstraint('name'),
+    sa.UniqueConstraint('slug')
     )
     op.create_table('temp_user',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -183,11 +185,12 @@ def upgrade():
     sa.Column('fee', sa.Float(), nullable=False),
     sa.Column('media_id', sa.Integer(), nullable=True),
     sa.Column('task_key', sa.String(length=120), nullable=False),
-    sa.Column('payment_status', sa.String(length=80), nullable=False),
     sa.Column('date_created', sa.DateTime(), nullable=False),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.Column('total_allocated', sa.Integer(), nullable=True),
     sa.Column('total_success', sa.Integer(), nullable=True),
+    sa.Column('payment_status', sa.Enum('COMPLETE', 'PENDING', 'FAILED', 'ABANDONED', name='taskpaymentstatus'), nullable=False),
+    sa.Column('status', sa.Enum('APPROVED', 'PENDING', 'DECLINED', name='taskstatus'), nullable=False),
     sa.Column('trendit3_user_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['media_id'], ['media.id'], ),
     sa.ForeignKeyConstraint(['trendit3_user_id'], ['trendit3_user.id'], ),
@@ -198,7 +201,7 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('key', sa.String(length=80), nullable=False),
     sa.Column('amount', sa.Float(), nullable=False),
-    sa.Column('transaction_type', sa.Enum('CREDIT', 'DEBIT', 'PAYMENT', 'WITHDRAW', name='transactiontype'), nullable=False),
+    sa.Column('transaction_type', sa.Enum('CREDIT', 'DEBIT', 'PAYMENT', 'WITHDRAWAL', name='transactiontype'), nullable=False),
     sa.Column('description', sa.String(length=150), nullable=False),
     sa.Column('status', sa.String(length=80), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=True),

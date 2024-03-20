@@ -1,10 +1,25 @@
 from datetime import datetime
+from enum import Enum
 from sqlalchemy.orm import backref
 from sqlalchemy.exc import IntegrityError
 
-from app.extensions import db
-from app.models import Media
-from app.utils.helpers.basic_helpers import generate_random_string
+from ..extensions import db
+from ..models import Media
+from ..utils.helpers.basic_helpers import generate_random_string
+
+
+class TaskStatus(Enum):
+    """ENUMS for the Status filed in Task Model"""
+    APPROVED = 'approved'
+    PENDING = 'pending'
+    DECLINED = 'declined'
+
+class TaskPaymentStatus(Enum):
+    """ENUMS for the payment_status filed in Task Model"""
+    COMPLETE = 'complete'
+    PENDING = 'pending'
+    FAILED = 'failed'
+    ABANDONED = 'abandoned'
 
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -13,11 +28,13 @@ class Task(db.Model):
     fee = db.Column(db.Float, nullable=False)
     media_id = db.Column(db.Integer, db.ForeignKey('media.id'), nullable=True)
     task_key = db.Column(db.String(120), unique=True, nullable=False)
-    payment_status = db.Column(db.String(80), nullable=False) # complete, pending, failed
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     total_allocated = db.Column(db.Integer, default=0, nullable=True)
     total_success = db.Column(db.Integer, default=0, nullable=True)
+    
+    payment_status = db.Column(db.Enum(TaskPaymentStatus), nullable=False)  # complete, pending, failed, abandoned
+    status = db.Column(db.Enum(TaskStatus), default=TaskStatus.PENDING, nullable=False)  # approved, pending, declined
     
     trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
     trendit3_user = db.relationship('Trendit3User', backref=db.backref('tasks', lazy='dynamic'))

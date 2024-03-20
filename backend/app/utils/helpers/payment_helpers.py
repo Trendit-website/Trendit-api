@@ -163,9 +163,9 @@ def debit_wallet(user_id, amount, payment_type=None):
     try:
         # Debit the wallet
         wallet.balance -= amount
-        
-        payment = Payment(amount=amount, payment_type=payment_type, payment_method='wallet', status='complete', trendit3_user=user)
-        transaction = Transaction(key=generate_random_string(16), amount=amount, transaction_type=TransactionType.DEBIT, status='complete', trendit3_user=user)
+        key = generate_random_string(16)
+        payment = Payment(key=key, amount=amount, payment_type=payment_type, payment_method='wallet', status='complete', trendit3_user=user)
+        transaction = Transaction(key=key, amount=amount, transaction_type=TransactionType.DEBIT, status='complete', trendit3_user=user)
         
         db.session.add(payment, transaction)
         db.session.commit()
