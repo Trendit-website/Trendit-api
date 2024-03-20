@@ -83,7 +83,7 @@ class Trendit3User(db.Model):
     @property
     def role_names(self) -> list[str]:
         """Returns a list of role names for the user."""
-        return [role.name for role in self.roles]
+        return [str(role.name) for role in self.roles]
     
     def __repr__(self):
         return f'<ID: {self.id}, username: {self.username}, email: {self.email}>'
