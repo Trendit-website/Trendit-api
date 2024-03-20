@@ -28,13 +28,13 @@ class Role(db.Model):
 
 
 
-def create_roles(clear=False):
+def create_roles(clear: bool = False) -> None:
     """Creates default roles if the 'role' table doesn't exist.
 
     Args:
         clear (bool, optional): If True, clears all existing roles before creating new ones. Defaults to False.
     """
-    if not inspect(db.engine).has_table('role'):
+    if inspect(db.engine).has_table('role'):
         if clear:
             # Clear existing roles before creating new ones
             Role.query.delete()

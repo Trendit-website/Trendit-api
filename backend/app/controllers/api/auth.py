@@ -20,7 +20,7 @@ from jwt import ExpiredSignatureError, DecodeError
 import pyotp
 
 from ...extensions import db
-from ...models import Role, TempUser, Trendit3User, Address, Profile, OneTimeToken, ReferralHistory, Membership, Wallet, UserSettings
+from ...models import Role, RoleNames, TempUser, Trendit3User, Address, Profile, OneTimeToken, ReferralHistory, Membership, Wallet, UserSettings
 from ...utils.helpers.basic_helpers import console_log, log_exception
 from ...utils.helpers.response_helpers import error_response, success_response
 from ...utils.helpers.location_helpers import get_currency_info
@@ -217,7 +217,7 @@ class AuthController:
             new_membership = Membership(trendit3_user=new_user)
             new_user_wallet = Wallet(trendit3_user=new_user)
             new_user_setting = UserSettings(trendit3_user=new_user)
-            role = Role.query.filter_by(name='Advertiser').first()
+            role = Role.query.filter_by(name=RoleNames.CUSTOMER).first()
             if role:
                 new_user.roles.append(role)
             

@@ -15,4 +15,4 @@ from ..models.user import Trendit3User, Address, Profile, ReferralHistory, TempU
 from ..models.task import Task, AdvertTask, EngagementTask, TaskStatus, TaskPaymentStatus, TaskPerformance
 from ..models.notification import UserMessageStatus, Notification, user_notification
 from ..models.settings import UserSettings, NotificationPreference, SecuritySetting, UserPreference
-from ..models.role import Role, user_roles, create_roles
+from ..models.role import Role, RoleNames, user_roles, create_roles
