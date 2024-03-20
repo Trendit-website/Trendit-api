@@ -10,3 +10,6 @@ It includes controller handlers for admin authentication, stats, user management
 
 from app.controllers.api_admin.task_performance import AdminTaskPerformanceController
 from app.controllers.api_admin.auth import AdminAuthController
+from app.controllers.api_admin.dashboard import AdminDashboardController
+from app.controllers.api_admin.tasks import AdminTaskController
+from app.controllers.api_admin.users import AdminUsersController

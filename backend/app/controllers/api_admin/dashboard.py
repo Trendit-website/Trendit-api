@@ -21,14 +21,14 @@ from jwt import ExpiredSignatureError, DecodeError
 from sqlalchemy import func
 
 from ...extensions import db
-from ...models import Role, TempUser, Trendit3User, Address, Profile, OneTimeToken, ReferralHistory, Membership, Wallet, UserSettings, Transaction
+from ...models import Role, TempUser, Trendit3User, Address, Profile, OneTimeToken, ReferralHistory, Membership, Wallet, UserSettings, Transaction, TransactionType
 from ...utils.helpers.basic_helpers import console_log, log_exception
 from ...utils.helpers.response_helpers import error_response, success_response
 from ...utils.helpers.location_helpers import get_currency_info
 from ...utils.helpers.auth_helpers import generate_six_digit_code, send_code_to_email, save_pwd_reset_token, send_2fa_code
 from ...utils.helpers.user_helpers import is_user_exist, get_trendit3_user, referral_code_exists
 
-#TODO: Change type to enum when available -> remove received and payout
+
 
 class AdminDashboardController:
 
@@ -38,19 +38,19 @@ class AdminDashboardController:
         try:
 
             # Calculate total received payments
-            total_received_payments = db.session.query(func.sum(Transaction.amount)).filter_by(transaction_type='received').scalar() or 0
+            total_received_payments = db.session.query(func.sum(Transaction.amount)).filter_by(transaction_type=TransactionType.PAYMENT).scalar() or 0
 
             # Calculate total payouts
-            total_payouts = db.session.query(func.sum(Transaction.amount)).filter_by(transaction_type='payout').scalar() or 0
+            total_payouts = db.session.query(func.sum(Transaction.amount)).filter_by(transaction_type=TransactionType.WITHDRAWAL).scalar() or 0
 
             # Calculate total received payments per month
             received_payments_per_month = db.session.query(func.strftime('%Y-%m', Transaction.timestamp),
-                                                        func.sum(Transaction.amount)).filter_by(transaction_type='received')\
+                                                        func.sum(Transaction.amount)).filter_by(transaction_type=TransactionType.PAYMENT)\
                                             .group_by(func.strftime('%Y-%m', Transaction.timestamp)).all()
 
             # Calculate total payouts per month
             payouts_per_month = db.session.query(func.strftime('%Y-%m', Transaction.timestamp),
-                                                func.sum(Transaction.amount)).filter_by(transaction_type='payout')\
+                                                func.sum(Transaction.amount)).filter_by(transaction_type=TransactionType.WITHDRAWAL)\
                                             .group_by(func.strftime('%Y-%m', Transaction.timestamp)).all()
 
             # Calculate total payment activities per month
@@ -78,3 +78,27 @@ class AdminDashboardController:
             db.session.rollback()
             db.session.close()
             return error_response('An error occurred fetching the Admin Dashboard data', 500)
+        
+        
+    @staticmethod
+    def create_admin(user_id: int):
+        try:
+            user = Trendit3User.query.get(user_id)
+            if user is None:
+                return error_response('User not found', 404)
+            
+            #TODO: change name from 'Advertiser' to 'Admin'
+            
+            role = Role.query.filter_by(name='Advertiser').first()
+            if role:
+                user.roles.append(role)
+            
+            db.session.commit()
+            return success_response('User is now an Admin', 200)
+        
+        except Exception as e:
+            console_log('Create Admin EXCEPTION', str(e))
+            current_app.logger.error(f"An error occurred creating an Admin: {str(e)}")
+            db.session.rollback()
+            db.session.close()
+            return error_response('An error occurred creating an Admin', 500)

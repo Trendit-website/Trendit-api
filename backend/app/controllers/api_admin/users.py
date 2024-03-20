@@ -9,7 +9,7 @@ from app.utils.helpers.response_helpers import error_response, success_response
 from app.utils.helpers.basic_helpers import generate_random_string, console_log
 
 
-class AdminUsers:
+class AdminUsersController:
     @staticmethod
     def get_all_users():
         try:
