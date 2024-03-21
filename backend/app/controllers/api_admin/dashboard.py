@@ -43,21 +43,6 @@ class AdminDashboardController:
             # Calculate total payouts
             total_payouts = db.session.query(func.sum(Transaction.amount)).filter_by(transaction_type=TransactionType.WITHDRAWAL).scalar() or 0
 
-            # # Calculate total received payments per month
-            # received_payments_per_month = db.session.query(func.strftime('%Y-%m', Transaction.created_at),
-            #                                             func.sum(Transaction.amount)).filter_by(transaction_type=TransactionType.PAYMENT)\
-            #                                 .group_by(func.strftime('%Y-%m', Transaction.created_at)).all()
-
-            # # Calculate total payouts per month
-            # payouts_per_month = db.session.query(func.strftime('%Y-%m', Transaction.created_at),
-            #                                     func.sum(Transaction.amount)).filter_by(transaction_type=TransactionType.WITHDRAWAL)\
-            #                                 .group_by(func.strftime('%Y-%m', Transaction.created_at)).all()
-
-            # # Calculate total payment activities per month
-            # payment_activities_per_month = db.session.query(func.strftime('%Y-%m', Transaction.created_at),
-            #                                                 func.count(Transaction.id)).group_by(func.strftime('%Y-%m', Transaction.created_at)).all()
-
-
             # Calculate total received payments per month
             received_payments_per_month = db.session.query(func.to_char(Transaction.created_at, 'YYYY-MM'),
                                                         func.sum(Transaction.amount)).filter_by(transaction_type=TransactionType.PAYMENT)\
