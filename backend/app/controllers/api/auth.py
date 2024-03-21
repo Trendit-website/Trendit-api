@@ -24,8 +24,9 @@ from ...models import Role, RoleNames, TempUser, Trendit3User, Address, Profile,
 from ...utils.helpers.basic_helpers import console_log, log_exception
 from ...utils.helpers.response_helpers import error_response, success_response
 from ...utils.helpers.location_helpers import get_currency_info
-from ...utils.helpers.auth_helpers import generate_six_digit_code, send_code_to_email, save_pwd_reset_token, send_2fa_code
+from ...utils.helpers.auth_helpers import generate_six_digit_code, save_pwd_reset_token, send_2fa_code
 from ...utils.helpers.user_helpers import is_user_exist, get_trendit3_user, referral_code_exists
+from ...utils.helpers.mail_helpers import send_other_emails, send_code_to_email
 
 class AuthController:
     @staticmethod
@@ -239,8 +240,13 @@ class AuthController:
                 'access_token':access_token
             }
             
-            # TODO: Send Welcome Email
-            #send_mail_to_user()
+            # Send Welcome Email
+            try:
+                send_other_emails(email, email_type='welcome') # send Welcome message to user's email
+            except Exception as e:
+                logging.exception(f"Error sending Email: {str(e)}")
+                return error_response(f'An error occurred while sending the verification email: {str(e)}', 500)
+            
             return success_response('Registration completed successfully', 200, extra_data)
             
         except IntegrityError as e:

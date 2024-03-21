@@ -10,6 +10,7 @@ from ...utils.helpers.basic_helpers import console_log, log_exception
 from ...utils.helpers.payment_helpers import initialize_payment, credit_wallet, initiate_transfer
 from ...utils.helpers.bank_helpers import get_bank_code
 from ...utils.helpers.task_helpers import get_task_by_key
+from ...utils.helpers.mail_helpers import send_other_emails
 from config import Config
 
 class PaymentController:
@@ -219,6 +220,11 @@ class PaymentController:
                         # Update user's membership status in the database
                         if payment_type == 'membership-fee':
                             trendit3_user.membership_fee(paid=True)
+                            try:
+                                send_other_emails(trendit3_user.email, amount=amount) # send email
+                            except Exception as e:
+                                return error_response('Error occurred sending Email', 500)
+                        
                         elif payment_type == 'task-creation':
                             task_key = data['data']['metadata']['task_key']
                             task = get_task_by_key(task_key)
@@ -227,8 +233,12 @@ class PaymentController:
                             # Credit user's wallet
                             try:
                                 credit_wallet(user_id, amount)
+                                send_other_emails(trendit3_user.email, email_type='credit', amount=amount) # send credit alert to user's email
                             except ValueError as e:
                                 return error_response('Error crediting wallet.', 400)
+                            except Exception as e:
+                                logging.exception(f"Error occurred either sending Email or crediting wallet: {str(e)}")
+                                return error_response('Error occurred sending Email or crediting wallet', 500)
                     
                     return jsonify({'status': 'success'}), 200
                 elif data['event'] == 'charge.abandoned':

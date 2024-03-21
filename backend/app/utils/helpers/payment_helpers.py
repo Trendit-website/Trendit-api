@@ -22,6 +22,7 @@ from ...extensions import db
 from ...models import Payment, Transaction, TransactionType, Withdrawal, Trendit3User
 from ...utils.helpers.basic_helpers import console_log, generate_random_string
 from ...utils.helpers.response_helpers import error_response, success_response
+from ...utils.helpers.mail_helpers import send_other_emails
 from config import Config
 
 
@@ -169,6 +170,7 @@ def debit_wallet(user_id, amount, payment_type=None):
         
         db.session.add(payment, transaction)
         db.session.commit()
+        send_other_emails(user.email, email_type='debit', amount=amount) # send debit alert to user's mail
         return 'Wallet debited successful'
     except Exception as e:
         # Handle the exception appropriately (rollback, log the error, etc.)
