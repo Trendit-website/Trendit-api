@@ -10,3 +10,6 @@ def get_all_users():
     return AdminUsersController.get_all_users()
 
 
+@bp.route('/users/<int:user_id>', methods=['GET'])
+def get_user(user_id):
+    return AdminUsersController.get_user(user_id)
