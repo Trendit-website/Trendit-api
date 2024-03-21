@@ -16,6 +16,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from ..extensions import db
 from ..models import Media
 from ..models.role import Role
+from ..models.payment import TransactionType
 from config import Config
 
 # temporary user
@@ -85,6 +86,50 @@ class Trendit3User(db.Model):
         """Returns a list of role names for the user."""
         return [str(role.name) for role in self.roles]
     
+    @property
+    def total_tasks(self) -> int:
+        """Returns the total number of tasks for the user."""
+        return self.tasks.count()
+    
+    @property
+    def total_advert_tasks(self) -> int:
+        """Returns the total number of advert tasks for the user."""
+        return self.tasks.filter_by(task_type="advert").count()
+    
+    @property
+    def total_engagement_tasks(self) -> int:
+        """Returns the total number of engagement tasks for the user."""
+        return self.tasks.filter_by(task_type="engagement").count()
+    
+    @property
+    def total_performed_tasks(self) -> int:
+        """Returns the total number of performed tasks for the user."""
+        return self.performed_tasks.count()
+    
+    @property
+    def task_metrics(self) -> dict:
+        return {
+            'total_tasks': self.total_tasks,
+            'total_advert_tasks': self.total_advert_tasks,
+            'total_engagement_tasks': self.total_engagement_tasks,
+            'total_performed_tasks': self.total_performed_tasks,
+        }
+    
+    @property
+    def total_credited(self) -> float:
+        """Returns the total amount ever credited to the user."""
+        return self.transactions.filter_by(transaction_type=TransactionType.CREDIT).sum('amount')
+
+    @property
+    def total_debited(self) -> float:
+        """Returns the total amount ever debited from the user."""
+        return self.transactions.filter_by(transaction_type=TransactionType.DEBIT).sum('amount')
+    
+    @property
+    def total_withdrawal(self) -> float:
+        """Returns the total amount ever debited from the user."""
+        return self.transactions.filter_by(transaction_type=TransactionType.WITHDRAWAL).sum('amount')
+    
     def __repr__(self):
         return f'<ID: {self.id}, username: {self.username}, email: {self.email}>'
     
@@ -116,7 +161,8 @@ class Trendit3User(db.Model):
         self.membership.membership_fee_paid = paid
         db.session.commit()
     
-    def to_dict(self):
+    def to_dict(self) -> dict:
+        
         address_info = {}
         if self.address:
             address_info.update({
@@ -142,27 +188,31 @@ class Trendit3User(db.Model):
         if primary_bank:
             bank_details.update(primary_bank.to_dict())
         
-        
         user_wallet = self.wallet
+        wallet_info = {
+            'balance': user_wallet.balance if user_wallet else None,
+            'currency_name': user_wallet.currency_name if user_wallet else None,
+            'currency_code': user_wallet.currency_code if user_wallet else None,
+        }
+        
         user_social_ids = self.social_ids
+        social_ids = {
+            'google_id': user_social_ids.google_id if user_social_ids else None,
+            'facebook_id': user_social_ids.facebook_id if user_social_ids else None,
+            'instagram_id': user_social_ids.instagram_id if user_social_ids else None,
+            'tiktok_id': user_social_ids.tiktok_id if user_social_ids else None,
+            'x_id': user_social_ids.x_id if user_social_ids else None,
+        }
+        
+        
         return {
             'id': self.id,
             'username': self.username,
             'email': self.email,
             'date_joined': self.date_joined,
             'membership_fee': self.membership.membership_fee_paid,
-            'wallet': {
-                'balance': user_wallet.balance if user_wallet else None,
-                'currency_name': user_wallet.currency_name if user_wallet else None,
-                'currency_code': user_wallet.currency_code if user_wallet else None,
-            },
-            'social_ids': {
-                'google_id': user_social_ids.google_id if user_social_ids else None,
-                'facebook_id': user_social_ids.facebook_id if user_social_ids else None,
-                'instagram_id': user_social_ids.instagram_id if user_social_ids else None,
-                'tiktok_id': user_social_ids.tiktok_id if user_social_ids else None,
-                'x_id': user_social_ids.x_id if user_social_ids else None,
-            },
+            'wallet': wallet_info,
+            'social_ids': social_ids,
             'primary_bank': bank_details,
             'roles': self.role_names,
             **address_info,  # Merge address information into the output dictionary
