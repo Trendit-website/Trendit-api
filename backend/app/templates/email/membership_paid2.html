@@ -1,0 +1,32 @@
+{% extends "email/base/base_email.html" %}
+
+{% block title %}Trendit³ - Membership Paid{% endblock %}
+
+{% block content %}
+<div style="width: 100%; text-align: left; line-height: 1.5;">
+    <div style="margin-bottom: 56px;">
+        <div style="font-size: 24px; font-family: Campton; font-weight: 500; color: white;">
+            Dear {{ username }},
+        </div>
+    </div>
+    <div style="margin-bottom: 24px;">
+        <div style="font-size: 16px; font-family: Campton; font-weight: 400; color: #B1B1B1;">
+            Your payment for Membership was successful and your account has been activated successfully
+        </div>
+    </div>
+    <div style="margin-bottom: 24px;">
+        <div style="width: 290px; padding: 14px 24px; background: #CB29BE; border-radius: 100px; text-align: center;">
+            <div style="font-size: 12.83px; font-family: Campton; font-weight: 500; color: white;">
+                <a href="https://app.trendit3.com" style="color: white; text-decoration: none;">View Account</a>
+            </div>
+        </div>
+    </div>
+    <div style="font-size: 16px; font-family: Campton; font-weight: 500; color: #B1B1B1;">
+        For further inquiries, please contact our customer support through the following channels:<br/>
+        Email: <a href="mailto:trendit3media@gmail.com" style="color: #B1B1B1; text-decoration: none;">trendit3media@gmail.com</a><br/>
+        Phone: <a href="tel:+2340923446788" style="color: #B1B1B1; text-decoration: none;">+234 092 344 6788</a><br/><br/>
+        Thanks for choosing Trendit.
+    </div>
+</div>
+
+{% endblock %}

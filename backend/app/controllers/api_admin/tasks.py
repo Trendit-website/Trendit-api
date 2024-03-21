@@ -7,6 +7,9 @@ from app.models.task import TaskPerformance, Task
 from app.utils.helpers.task_helpers import save_performed_task
 from app.utils.helpers.response_helpers import error_response, success_response
 from app.utils.helpers.basic_helpers import generate_random_string, console_log
+from app.models.task import TaskStatus, TaskPaymentStatus
+from app.models.user import Trendit3User
+from ...utils.helpers.mail_helpers import send_other_emails
 
 
 class AdminTaskController:
@@ -34,8 +37,16 @@ class AdminTaskController:
             task = Task.query.get(task_id)
             if task is None:
                 return error_response('Task not found', 404)
-            task.approved = True
+            task.status = TaskStatus.APPROVED
             db.session.commit()
+            
+            email = Trendit3User.query.get(task.trendit3_user_id).email
+
+            try:
+                send_other_emails(email, email_type='task_approved') # send email
+            except Exception as e:
+                return error_response('Error occurred sending Email', 500)
+            
             return success_response('Task approved successfully', 200)
         except Exception as e:
             logging.exception("An exception occurred trying to approve task:\n", str(e))
@@ -48,8 +59,16 @@ class AdminTaskController:
             task = Task.query.get(task_id)
             if task is None:
                 return error_response('Task not found', 404)
-            task.approved = False
+            task.status = TaskStatus.DECLINED
             db.session.commit()
+            
+            email = Trendit3User.query.get(task.trendit3_user_id).email
+
+            try:
+                send_other_emails(email, email_type='task_rejected') # send email
+            except Exception as e:
+                return error_response('Error occurred sending Email', 500)
+            
             return success_response('Task rejected successfully', 200)
         except Exception as e:
             logging.exception("An exception occurred trying to reject task:\n", str(e))
