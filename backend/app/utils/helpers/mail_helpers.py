@@ -39,7 +39,9 @@ def send_code_async_email(app, user_email, six_digit_code, code_type):
         subject = 'Verify Your Email'
         template = render_template("email/verify_email2.html", verification_code=six_digit_code)
         msg = Message(subject, sender=Config.MAIL_USERNAME, recipients=[user_email], html=template)
-        username = Trendit3User.query.filter(Trendit3User.email == user_email).first().username
+        
+        user = Trendit3User.query.filter(Trendit3User.email == user_email).first()
+        username = user.username if user else ''
         
         if code_type == 'pwd_reset':
             subject = 'Reset your password'
@@ -94,7 +96,9 @@ def send_async_other_email(app, user_email, email_type, amount=None,):
     """
     
     with app.app_context():
-        username = Trendit3User.query.filter(Trendit3User.email == user_email).first().username
+        user = Trendit3User.query.filter(Trendit3User.email == user_email).first()
+        username = user.username if user else ''
+        
         subject = 'membership'
         template = render_template("email/membership_paid.html", redirect_link='https://app.trendit3.com/', user_email=user_email, username=username)
         msg = Message(subject, sender=Config.MAIL_USERNAME, recipients=[user_email], html=template)
