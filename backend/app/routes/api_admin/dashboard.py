@@ -9,6 +9,6 @@ def dashboard_data():
     return AdminDashboardController.admin_dashboard()
 
 
-@bp.route('/create_admin', methods=['POST'])
-def create_admin():
+@bp.route('/create_admin/<int:user_id>', methods=['POST'])
+def create_admin(user_id: int):
     return AdminDashboardController.create_admin()

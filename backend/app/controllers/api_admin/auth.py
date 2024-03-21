@@ -33,7 +33,13 @@ class AdminAuthController:
     def admin_login():
         """
         This function takes in email and if the user exists and has the required roles,
-        sends a login link to their email
+        sends a login link to their email.
+
+        Returns:
+            If the login link is successfully sent, it returns a success response with status code 200.
+            If the email is incorrect or doesn't exist, it returns an error response with status code 401.
+            If the user does not have the required roles, it returns an error response with status code 403.
+            If an exception occurs, it returns None.
         """
         try:
             data = request.get_json()
@@ -71,7 +77,22 @@ class AdminAuthController:
     @staticmethod
     def verify_admin_login(token):
         """
-        This function takes in the token sent to the user's email and verifies it
+        Verify the admin login token.
+
+        This function takes in the token sent to the user's email and verifies it.
+        If the token is valid and has not been used, it updates the token status,
+        creates an access token, and returns a success response with the access token.
+        If the token is invalid or has been used, it returns an error response.
+
+        Args:
+            token (str): The token sent to the user's email.
+
+        Returns:
+            dict: A dictionary containing the success or error response.
+
+        Raises:
+            None
+
         """
         try:
             signin_token = OneTimeToken.query.filter(OneTimeToken.token == token).first()
