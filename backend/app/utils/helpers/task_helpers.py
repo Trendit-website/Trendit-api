@@ -244,7 +244,7 @@ def initiate_task(task, status='pending'):
         
         
         # Create a new TaskPerformance instance
-        initiated_task = TaskPerformance.create_task_performance(user_id=current_user_id, task_id=task.id, task_type=task.task_type, status=status, reward_money=0.0, proof_screenshot_id=None)
+        initiated_task = TaskPerformance.create_task_performance(user_id=current_user_id, task_id=task.id, task_type=task.task_type, reward_money=0.0, proof_screenshot_id=None, account_name='', status=status)
         
         # Mark the task as assigned
         task.total_allocated += 1

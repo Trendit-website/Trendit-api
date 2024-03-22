@@ -84,7 +84,7 @@ class Trendit3User(db.Model):
     @property
     def role_names(self) -> list[str]:
         """Returns a list of role names for the user."""
-        return [str(role.name) for role in self.roles]
+        return [str(role.name.value) for role in self.roles]
     
     @property
     def total_tasks(self) -> int:
@@ -130,16 +130,17 @@ class Trendit3User(db.Model):
         """Returns the total amount ever debited from the user."""
         return self.transactions.filter_by(transaction_type=TransactionType.WITHDRAWAL).sum('amount')
     
+    @property
+    def transaction_metrics(self) -> dict:
+        return {
+            'total_credited': self.total_credited,
+            'total_debited': self.total_debited,
+            'total_withdrawal': self.total_withdrawal
+        }
+    
     def __repr__(self):
         return f'<ID: {self.id}, username: {self.username}, email: {self.email}>'
     
-    def has_role(self, role):
-        return bool(
-            Role.query
-            .join(Role.users)
-            .filter(Trendit3User.id == self.id)
-            .count() == 1
-        )
     
     def insert(self):
         db.session.add(self)
