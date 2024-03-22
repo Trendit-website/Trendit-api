@@ -39,6 +39,11 @@ class Task(db.Model):
     trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
     trendit3_user = db.relationship('Trendit3User', backref=db.backref('tasks', lazy='dynamic'))
     
+    @property
+    def total_performances(self) -> int:
+        """Returns the total number times the task has been performed."""
+        return self.performances.count()
+    
     @classmethod
     def create_task(cls, trendit3_user_id, task_type, platform, fee, payment_status, media_id=None, **kwargs):
         the_task_ref = generate_random_string(20)
@@ -219,9 +224,9 @@ class TaskPerformance(db.Model):
     started_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     date_completed = db.Column(db.DateTime, nullable=True)
     
+    proof_screenshot_id = db.Column(db.Integer, db.ForeignKey('media.id'), nullable=True)
     task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)  # either an AdvertTask id or an EngagementTask id
     user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
-    proof_screenshot_id = db.Column(db.Integer, db.ForeignKey('media.id'), nullable=True)
     trendit3_user = db.relationship('Trendit3User', backref=db.backref('performed_tasks', lazy='dynamic'))
     task = db.relationship('Task', backref=db.backref('performances', lazy='dynamic'))
     
