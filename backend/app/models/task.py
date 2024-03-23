@@ -21,6 +21,15 @@ class TaskPaymentStatus(Enum):
     FAILED = 'failed'
     ABANDONED = 'abandoned'
 
+class TaskPerformanceStatus(Enum):
+    """ENUMS for the payment_status filed in Task Model"""
+    PENDING = 'pending'
+    IN_REVIEW = 'in_review'
+    FAILED = 'failed'
+    COMPLETED = 'completed'
+    CANCELLED = 'cancelled'
+    TIMED_OUT = 'timed_out'
+
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     task_type = db.Column(db.String(50), nullable=False) # advert task, or engagement task
@@ -220,7 +229,7 @@ class TaskPerformance(db.Model):
     task_type = db.Column(db.String(80), nullable=False)  # either 'advert' or 'engagement'
     reward_money = db.Column(db.Float(), default=00.00, nullable=True)
     account_name = db.Column(db.String(80), nullable=True)
-    status = db.Column(db.String(80), default='pending') # pending, in_review, timed_out
+    status = db.Column(db.String(80), default='pending') # pending, in_review, timed_out, cancelled or completed
     started_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     date_completed = db.Column(db.DateTime, nullable=True)
     

@@ -302,3 +302,34 @@ class TaskPerformanceController:
             return error_response(msg, 500)
         
         return api_response
+
+
+    @staticmethod
+    def cancel_performed_task(pt_id_key):
+        try:
+            current_user_id = int(get_jwt_identity())
+            
+            # Check if user exists
+            user = Trendit3User.query.get(current_user_id)
+            if user is None:
+                return error_response('User not found', 404)
+            
+            performed_task = fetch_performed_task(pt_id_key)
+            
+            if performed_task is None:
+                return error_response('Performed task not found', 404)
+            
+            if performed_task.user_id != current_user_id:
+                return error_response('You are not authorized to cancel this performed task', 401)
+            
+            performed_task.update(status='canceled')
+            msg = 'Performed task canceled successfully'
+            api_response = success_response(msg, 200)
+        except Exception as e:
+            db.session.rollback()
+            msg = "Error deleting performed tasks"
+            logging.exception(f"An exception occurred trying to delete performed tasks: {str(e)}")
+            return error_response(msg, 500)
+        
+        return api_response
+

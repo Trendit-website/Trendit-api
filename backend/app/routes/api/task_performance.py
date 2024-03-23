@@ -54,6 +54,11 @@ def update_performed_task(pt_id_key):
 def delete_performed_task(pt_id_key):
     return TaskPerformanceController.delete_performed_task(pt_id_key)
 
+@api.route('/performed-tasks/cancel/<pt_id_key>', methods=['PUT'])
+@jwt_required()
+def cancel_performed_task(pt_id_key):
+    return TaskPerformanceController.cancel_performed_task(pt_id_key)
+
 
 
 # Get Performed Tasks by their status. (in_review, failed, completed, canceled)
