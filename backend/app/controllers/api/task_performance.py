@@ -1,5 +1,6 @@
 import logging
 from flask import request, jsonify
+from sqlalchemy import not_
 from flask_jwt_extended import get_jwt_identity
 
 from ...extensions import db
@@ -104,7 +105,12 @@ class TaskPerformanceController:
             
             task_id = task.id
             
-            performedTask = TaskPerformance.query.filter_by(user_id=current_user_id, task_id=task_id).first()
+            performedTask = TaskPerformance.query.filter(
+                TaskPerformance.user_id == current_user_id,
+                TaskPerformance.task_id == task_id,
+                not_(TaskPerformance.status == 'pending')
+            ).first()
+            
             if performedTask:
                 return error_response(f"Task already performed and cannot be repeated", 409)
             
