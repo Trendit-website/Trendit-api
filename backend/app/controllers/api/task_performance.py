@@ -322,7 +322,7 @@ class TaskPerformanceController:
             if performed_task.user_id != current_user_id:
                 return error_response('You are not authorized to cancel this performed task', 401)
             
-            performed_task.update(status='canceled')
+            performed_task.update(status='cancelled')
             msg = 'Performed task canceled successfully'
             api_response = success_response(msg, 200)
         except Exception as e:
