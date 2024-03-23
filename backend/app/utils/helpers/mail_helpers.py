@@ -100,7 +100,7 @@ def send_async_other_email(app, user_email, email_type, amount=None,):
         username = user.username if user else ''
         
         subject = 'membership'
-        template = render_template("email/membership_paid.html2", redirect_link='https://app.trendit3.com/', user_email=user_email, username=username)
+        template = render_template("email/membership_paid2.html", redirect_link='https://app.trendit3.com/', user_email=user_email, username=username)
         msg = Message(subject, sender=Config.MAIL_USERNAME, recipients=[user_email], html=template)
         
         if email_type == 'welcome':
