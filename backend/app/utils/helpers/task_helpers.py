@@ -284,6 +284,9 @@ def save_performed_task(data, pt_id=None, status='pending'):
         if screenshot.filename != '':
             try:
                 screenshot_id = save_media(screenshot)
+            except ValueError as e:
+                current_app.logger.error(f"An error occurred while saving Screenshot: {str(e)}")
+                raise ValueError(f"{e}")
             except Exception as e:
                 current_app.logger.error(f"An error occurred while saving Screenshot: {str(e)}")
                 raise Exception("Error saving Screenshot.")

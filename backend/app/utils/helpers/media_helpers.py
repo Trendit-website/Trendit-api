@@ -55,7 +55,7 @@ def save_media(media_file):
     
     
     # Check the file type and set the resource_type accordingly
-    if theMediaExt.lower() in ['.jpg', '.jpeg', '.png', '.webp']:
+    if theMediaExt.lower() in ['.jpg', '.jpeg', '.png', '.webp', 'svg']:
         resource_type = "image"
     elif theMediaExt.lower() in ['.mp4', '.avi', '.mov', '.flv']:
         resource_type = "video"
