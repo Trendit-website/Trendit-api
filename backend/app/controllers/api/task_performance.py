@@ -99,7 +99,10 @@ class TaskPerformanceController:
             data = request.form.to_dict()
             
             task_id_key = data.get('task_id_key', '')
+            console_log('task_id_key', task_id_key)
+            
             task = fetch_task(task_id_key)
+            console_log('task', task)
             if task is None:
                 return error_response('Task not found', 404)
             
@@ -107,6 +110,7 @@ class TaskPerformanceController:
             
             performedTask = TaskPerformance.query.filter_by(user_id=current_user_id, task_id=task_id).filter(not_(TaskPerformance.status == 'pending')).first()
             
+            console_log('performedTask', performedTask)
             if performedTask:
                 return error_response(f"Task already performed and cannot be repeated", 409)
             
