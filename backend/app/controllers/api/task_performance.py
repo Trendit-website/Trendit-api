@@ -105,11 +105,7 @@ class TaskPerformanceController:
             
             task_id = task.id
             
-            performedTask = TaskPerformance.query.filter(
-                TaskPerformance.user_id == current_user_id,
-                TaskPerformance.task_id == task_id,
-                not_(TaskPerformance.status == 'pending')
-            ).first()
+            performedTask = TaskPerformance.query.filter_by(user_id=current_user_id, task_id=task_id).filter(not_(TaskPerformance.status == 'pending')).first()
             
             if performedTask:
                 return error_response(f"Task already performed and cannot be repeated", 409)
