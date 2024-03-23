@@ -125,10 +125,10 @@ class TaskPerformanceController:
             api_response = success_response(msg, 201, extra_data)
         except ValueError as e:
             logging.exception("An exception occurred trying to create performed tasks:\n", str(e))
-            return success_response(str(e), 404, extra_data)
+            return success_response(str(e), 404)
         except Exception as e:
             logging.exception("An exception occurred trying to create performed tasks:\n", str(e))
-            return success_response(f'Error performing task: {e}', 500, extra_data)
+            return success_response(f'Error performing task: {e}', 500)
         
         return api_response
     

@@ -16,6 +16,7 @@ import cloudinary.uploader
 from app.extensions import db
 from app.models import Media
 from config import Config
+from .basic_helpers import console_log
 
 cloudinary.config( 
     cloud_name = Config.CLOUDINARY_CLOUD_NAME, 
@@ -37,6 +38,8 @@ def save_media(media_file):
     Raises:
         ValueError: If the file type is not supported.
     """
+    
+    console_log('media_file', media_file)
     
     # Generate a random string and append it to the original file name
     rand_string = ''.join(random.choices(string.ascii_lowercase + string.digits, k=4))

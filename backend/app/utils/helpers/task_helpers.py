@@ -270,9 +270,10 @@ def save_performed_task(data, pt_id=None, status='pending'):
         task_id = task.id
         
         reward_money = float(data.get('reward_money'))
-        screenshot = request.files['screenshot']
+        screenshot = request.files.get('screenshot', '')
         account_name = data.get('account_name')
         
+        console_log('screenshot', screenshot)
         
         task_type = task.task_type
         
@@ -286,7 +287,7 @@ def save_performed_task(data, pt_id=None, status='pending'):
             except Exception as e:
                 current_app.logger.error(f"An error occurred while saving Screenshot: {str(e)}")
                 raise Exception("Error saving Screenshot.")
-        elif screenshot.filename == '' and task:
+        elif screenshot == '' and task:
             if performed_task.proof_screenshot_id:
                 screenshot_id = performed_task.proof_screenshot_id
             else:
