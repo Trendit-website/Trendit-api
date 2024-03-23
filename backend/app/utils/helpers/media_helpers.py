@@ -39,8 +39,6 @@ def save_media(media_file):
         ValueError: If the file type is not supported.
     """
     
-    console_log('media_file', media_file)
-    
     # Generate a random string and append it to the original file name
     rand_string = ''.join(random.choices(string.ascii_lowercase + string.digits, k=4))
     media_name = secure_filename(media_file.filename) # Grab file name of the selected media

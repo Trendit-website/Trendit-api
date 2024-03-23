@@ -273,13 +273,13 @@ def save_performed_task(data, pt_id=None, status='pending'):
         screenshot = request.files.get('screenshot', '')
         account_name = data.get('account_name')
         
-        console_log('screenshot', screenshot)
-        
         task_type = task.task_type
         
         performed_task = None
         if pt_id:
             performed_task = TaskPerformance.query.get(pt_id)
+        else:
+            performed_task = TaskPerformance.query.filter_by(user_id=user_id, task_id=task_id, status='pending').first()
             
         if screenshot.filename != '':
             try:
