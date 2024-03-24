@@ -44,7 +44,7 @@ class TaskPerformanceController:
         except PendingTaskError as e:
             return error_response(f'{e}', 409)
         except NoUnassignedTaskError as e:
-            return error_response(f'{e}', 200)
+            return error_response(f'{e}', 204)
         except AttributeError as e:
             logging.exception(f"An exception occurred generating random task:", str(e))
             return error_response(f'{e}', 500)
