@@ -222,11 +222,17 @@ class AuthController:
             if role:
                 new_user.roles.append(role)
             
+            console_log('new_user ID', new_user.id)
             db.session.add_all([new_user, new_user_profile, new_user_address, new_membership, new_user_wallet, new_user_setting])
             db.session.delete(user)
             db.session.commit()
             
+            console_log('new_user', new_user)
+            
+            console_log('new_user ID', new_user.id)
+            
             user_data = new_user.to_dict()
+            console_log('user_data', user_data)
             
             referral = ReferralHistory.query.filter_by(email=email).first()
             if referral:
@@ -239,6 +245,8 @@ class AuthController:
                 'user_data': user_data,
                 'access_token':access_token
             }
+            
+            console_log('access_token', access_token)
             
             # Send Welcome Email
             try:
