@@ -3,7 +3,7 @@ from datetime import timedelta
 from flask import request, jsonify, current_app
 from werkzeug.datastructures import FileStorage
 from sqlalchemy.exc import ( IntegrityError, DataError, DatabaseError, InvalidRequestError, )
-from flask_jwt_extended import create_access_token, decode_token, get_jwt_identity, jwt_required
+from flask_jwt_extended import create_access_token, decode_token, get_jwt_identity, jwt_required, get_jwt, get_jwt_header
 from flask_jwt_extended.exceptions import JWTDecodeError
 
 from ...extensions import db
@@ -43,9 +43,14 @@ class ProfileController:
     @staticmethod
     def edit_profile():
         try:
+            console_log('JWT', get_jwt())
+            console_log('JWT', get_jwt_header())
             current_user_id = int(get_jwt_identity())
             console_log('current_user_id', current_user_id)
+            
             current_user = Trendit3User.query.get(current_user_id)
+            
+            console_log('current_user', current_user)
             if not current_user:
                 return error_response(f"user not found", 404)
             
