@@ -2,17 +2,20 @@ from flask import request
 from flask_jwt_extended import jwt_required
 
 from . import api
-from app.controllers.api import TaskPerformanceController
+from ...controllers.api import TaskPerformanceController
+from ...decorators import membership_required
 
 
 @api.route('/generate-task', methods=['POST'])
 @jwt_required()
+@membership_required()
 def generate_task():
     return TaskPerformanceController.generate_task()
 
 
 @api.route('/perform-task', methods=['POST'])
 @jwt_required()
+@membership_required()
 def perform_task():
     return TaskPerformanceController.perform_task()
 

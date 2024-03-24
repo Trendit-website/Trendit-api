@@ -65,10 +65,8 @@ class TaskPerformanceController:
             data = request.form.to_dict()
             
             task_id_key = data.get('task_id_key', '')
-            console_log('task_id_key', task_id_key)
             
             task = fetch_task(task_id_key)
-            console_log('task', task)
             if task is None:
                 return error_response('Task not found', 404)
             

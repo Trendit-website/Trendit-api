@@ -44,6 +44,7 @@ class ProfileController:
     def edit_profile():
         try:
             current_user_id = int(get_jwt_identity())
+            console_log('current_user_id', current_user_id)
             current_user = Trendit3User.query.get(current_user_id)
             if not current_user:
                 return error_response(f"user not found", 404)
