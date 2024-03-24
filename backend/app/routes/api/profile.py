@@ -14,6 +14,11 @@ def get_user_profile():
 def edit_profile():
     return ProfileController.edit_profile()
 
+@api.route('/profile/update', methods=['POST'])
+@jwt_required()
+def update_profile():
+    return ProfileController.update_profile()
+
 
 @api.route('/profile-pic', methods=['GET'])
 @jwt_required()

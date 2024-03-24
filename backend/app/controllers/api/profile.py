@@ -131,67 +131,90 @@ class ProfileController:
 
     @staticmethod
     def update_profile():
-        error = False
         try:
-            current_user_id = get_jwt_identity()
-            current_user = Trendit3User.query.filter(Trendit3User.id == current_user_id).first()
+            data = request.form.to_dict()
+            current_user_id = data.get('user_id', 0)
+            
+            console_log('current_user_id', current_user_id)
+            
+            current_user = Trendit3User.query.get(current_user_id)
+            
+            console_log('current_user', current_user)
             if not current_user:
                 return error_response(f"user not found", 404)
             
             user_address = current_user.address
             user_profile = current_user.profile
+            user_wallet = current_user.wallet
+            
+            if not user_wallet:
+                user_wallet = Wallet.create_wallet(trendit3_user=current_user)
+            
+            
+            console_log('content_type', request.content_type)
             
             # Get the request data
             data = request.form.to_dict()
+            firstname = data.get('firstname', user_profile.firstname if user_profile else '')
+            lastname = data.get('lastname', user_profile.lastname if user_profile else '')
+            username = data.get('username', current_user.username if current_user else '')
+            gender = data.get('gender', user_profile.gender if current_user else '')
+            country = data.get('country', user_address.country if user_address else '')
+            state = data.get('country', user_address.state if user_address else '')
+            local_government = data.get('local_government', user_address.local_government if user_address else '')
+            birthday = data.get('birthday', user_profile.birthday if user_profile else None)
+            profile_picture = request.files.get('profile_picture', '')
+            console_log('profile_picture', profile_picture)
             
-            # Update optional fields if provided in the request data
-            if 'firstname' in data:
-                user_profile.firstname = data['firstname']
-            if 'lastname' in data:
-                user_profile.lastname = data['lastname']
-            if 'username' in data:
-                username = data['username']
-                if is_username_exist(username, current_user):
-                    return error_response('Username already Taken', 409)
-                current_user.username = username
-            if 'gender' in data:
-                current_user.gender = data['gender']
-            if 'country' in data:
-                user_address.country = data['country']
-            if 'state' in data:
-                user_address.state = data['state']
-            if 'local_government' in data:
-                user_address.local_government = data['local_government']
             
-            # Handle profile picture update
-            profile_picture = request.files.get('profile_picture')
-            if profile_picture and profile_picture.filename != '':
+            currency_info = {}
+            if country != user_address.country:
+                currency_info = get_currency_info(country)
+                
+                if currency_info is None:
+                    return error_response('Error getting the currency of user\'s country', 500)
+            
+            
+            if is_username_exist(username, current_user):
+                return error_response('Username already Taken', 409)
+            
+            
+            if isinstance(profile_picture, FileStorage) and profile_picture.filename != '':
                 try:
-                    profile_picture_id = save_media(profile_picture)
-                    user_profile.profile_picture_id = profile_picture_id
+                    profile_picture_id = save_media(profile_picture) # This saves image file, saves the path in db and return the id of the image
                 except Exception as e:
-                    current_app.logger.error(f"An error occurred while saving profile image: {str(e)}")
+                    current_app.logger.error(f"An error occurred while profile image: {str(e)}")
                     return error_response(f"An error occurred saving profile image: {str(e)}", 400)
+            elif profile_picture == '' and current_user:
+                if user_profile.profile_picture_id:
+                    profile_picture_id = user_profile.profile_picture_id
+                else:
+                    profile_picture_id = None
+            else:
+                profile_picture_id = None
             
-            # Commit changes to the database
-            db.session.commit()
+            # update user details
+            current_user.update(username=username)
+            user_profile.update(firstname=firstname, lastname=lastname, gender=gender, profile_picture_id=profile_picture_id, birthday=birthday)
+            user_wallet.update(currency_name=currency_info.get('name', user_wallet.currency_name), currency_code=currency_info.get('code', user_wallet.currency_code))
+            user_address.update(country=country, state=state, local_government=local_government)
             
-            # Prepare response data
-            user_info = current_user.to_dict()
-            extra_data = {'user_profile': user_info}
-        except Exception as e:
-            error = True
-            msg = f'An error occurred while updating user profile: {e}'
-            status_code = 500
-            logging.exception("\n\n An exception occurred while updating user profile.")
+            
+            extra_data={'user_data': current_user.to_dict()}
+            api_response = success_response('User profile updated successfully', 200, extra_data)
+            
+        except (DataError, DatabaseError) as e:
             db.session.rollback()
+            log_exception('Database error occurred during registration', e)
+            api_response = error_response('Error connecting to the database.', 500)
+        except Exception as e:
+            db.session.rollback()
+            log_exception('An exception occurred updating user profile.', e)
+            api_response = error_response('An error occurred while updating user profile', 500)
         finally:
             db.session.close()
         
-        if error:
-            return error_response(msg, status_code)
-        else:
-            return success_response('User profile updated successfully', 200, extra_data)
+        return api_response
     
 
     @staticmethod
