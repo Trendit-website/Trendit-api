@@ -11,13 +11,6 @@ def generate_task():
     return TaskPerformanceController.generate_task()
 
 
-
-@api.route('/tasks/initiate/<task_id_key>', methods=['GET'])
-@jwt_required()
-def initiate_task(task_id_key):
-    return TaskPerformanceController.initiate_task(task_id_key)
-
-
 @api.route('/perform-task', methods=['POST'])
 @jwt_required()
 def perform_task():

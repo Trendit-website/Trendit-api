@@ -1,14 +1,14 @@
 import logging
-from flask import request, jsonify
+from flask import request
 from sqlalchemy import not_
 from flask_jwt_extended import get_jwt_identity
 
 from ...extensions import db
 from ...models import Trendit3User
 from ...models.task import TaskPerformance
-from ...utils.helpers.task_helpers import save_performed_task, fetch_task, generate_random_task, fetch_performed_task
+from ...utils.helpers.task_helpers import save_performed_task, fetch_task, generate_random_task, initiate_task, fetch_performed_task
 from ...utils.helpers.response_helpers import error_response, success_response
-from ...utils.helpers.basic_helpers import console_log
+from ...utils.helpers.basic_helpers import console_log, log_exception
 from ...exceptions import PendingTaskError, NoUnassignedTaskError
 
 
@@ -28,7 +28,6 @@ class TaskPerformanceController:
             ValueError: If an invalid task type or platform is provided.
             Exception: If an unexpected error occurs during retrieval.
         """
-        error = False
         try:
             data = request.get_json()
             task_type = data.get('task_type')
@@ -36,58 +35,25 @@ class TaskPerformanceController:
             
             random_task = generate_random_task(task_type, filter_value)
             
-            msg = f'An unassigned {task_type.capitalize()} task for {filter_value} retrieved successfully.'
-            status_code = 200
-            extra_data = {'generated_task': random_task}
+            # Initiate task performance
+            Initiated_task = initiate_task(random_task)
             
-            api_response = success_response(msg, status_code, extra_data)
-        except PendingTaskError as e:
-            return error_response(f'{e}', 409)
-        except NoUnassignedTaskError as e:
-            return error_response(f'{e}', 204)
-        except AttributeError as e:
-            logging.exception(f"An exception occurred generating random task:", str(e))
-            return error_response(f'{e}', 500)
-        except Exception as e:
-            logging.exception(f"An exception occurred generating random task for the user:", str(e))
-            return error_response(f'An error occurred generating random task: {e}', 500)
-        
-        return api_response
-    
-    
-    
-    @staticmethod
-    def initiate_task(task_id_key):
-        try:
-            current_user_id = int(get_jwt_identity())
+            msg = f'An {task_type.capitalize()} task for {filter_value} generated successfully.'
+            extra_data = {'generated_task': Initiated_task}
             
-            # Retrieve the specified task.
-            task = fetch_task(task_id_key)
-            if task is None:
-                return error_response('Task not found', 404)
-            
-            # Validate task readiness (adjust criteria as needed)
-            if task.payment_status != 'Complete':
-                raise ValueError("This task is not available for performance")
-            
-            # Create a new TaskPerformance instance
-            task_performance = TaskPerformance(
-                task_id=task.id,
-                task_type=task.task_type,
-                user_id=current_user_id,
-                status='pending'
-            )
-            db.session.add(task_performance)
-            db.session.commit()
-
-            msg = f"Task initiated successfully. Task performance KEY: {task_performance.key}"
-            extra_data = {'task_performance': task_performance.to_dict()}
             api_response = success_response(msg, 200, extra_data)
-            
+        except PendingTaskError as e:
+            api_response = error_response(f'{e}', 409)
+        except NoUnassignedTaskError as e:
+            api_response = error_response(f'{e}', 204)
+        except ValueError as e:
+            api_response = error_response(f'{e}', 400)
+        except AttributeError as e:
+            log_exception("An exception occurred generating random task", e)
+            api_response = error_response(f'{e}', 500)
         except Exception as e:
-            db.session.rollback()
-            logging.exception(f"An exception occurred initiating task:", str(e))
-            return error_response(f'task could not be initiated: {e}', 500)
+            log_exception("An exception occurred generating random task for the user", e)
+            api_response = error_response(f'An error occurred generating random task: {e}', 500)
         
         return api_response
     
@@ -124,10 +90,10 @@ class TaskPerformanceController:
             
             api_response = success_response(msg, 201, extra_data)
         except ValueError as e:
-            logging.exception("An exception occurred trying to create performed tasks:\n", str(e))
+            log_exception("An exception occurred trying to create performed tasks", e)
             return success_response(str(e), 404)
         except Exception as e:
-            logging.exception("An exception occurred trying to create performed tasks:\n", str(e))
+            log_exception("An exception occurred trying to create performed tasks", e)
             return success_response(f'Error performing task: {e}', 500)
         
         return api_response
@@ -165,7 +131,7 @@ class TaskPerformanceController:
             msg = 'All performed tasks fetched successfully'
             api_response = success_response(msg, 200, extra_data)
         except Exception as e:
-            logging.exception("An exception occurred trying to get all performed tasks:\n", str(e))
+            log_exception("An exception occurred trying to get all performed tasks", e)
             return error_response("Error getting all performed tasks", 500)
         
         return api_response
@@ -203,7 +169,7 @@ class TaskPerformanceController:
             api_response = success_response(msg, 200, extra_data)
         except Exception as e:
             msg = f"Error getting all {status} performed tasks"
-            logging.exception(f"An exception occurred trying to get all {status} performed tasks: {str(e)}")
+            log_exception(f"An exception occurred trying to get all {status} performed tasks", e)
             return error_response(msg, 500)
         
         return api_response
@@ -234,7 +200,7 @@ class TaskPerformanceController:
             api_response = success_response(msg, 200, extra_data)
         except Exception as e:
             msg = 'Error getting performed tasks'
-            logging.exception("An exception occurred trying to get performed tasks:\n", str(e))
+            log_exception("An exception occurred trying to get performed tasks", e)
             return error_response(msg, 500)
         
         return api_response
@@ -268,11 +234,11 @@ class TaskPerformanceController:
             api_response = success_response(msg, 200, extra_data)
         except ValueError as e:
             msg = f'error occurred updating performed task: {str(e)}'
-            logging.exception("An exception occurred trying to create performed tasks:", str(e))
+            log_exception("An exception occurred trying to create performed tasks", e)
             return error_response(msg, 500)
         except Exception as e:
             msg = f'Error updating performed task: {e}'
-            logging.exception("An exception occurred trying to update performed tasks:\n", str(e))
+            log_exception("An exception occurred trying to update performed tasks", str(e))
             return error_response(msg, 500)
         
         return api_response
@@ -302,7 +268,7 @@ class TaskPerformanceController:
         except Exception as e:
             db.session.rollback()
             msg = "Error deleting performed tasks"
-            logging.exception(f"An exception occurred trying to delete performed tasks: {str(e)}")
+            log_exception("An exception occurred trying to delete performed tasks", e)
             return error_response(msg, 500)
         
         return api_response
@@ -332,7 +298,7 @@ class TaskPerformanceController:
         except Exception as e:
             db.session.rollback()
             msg = "Error deleting performed tasks"
-            logging.exception(f"An exception occurred trying to delete performed tasks: {str(e)}")
+            log_exception("An exception occurred trying to delete performed tasks", e)
             return error_response(msg, 500)
         
         return api_response

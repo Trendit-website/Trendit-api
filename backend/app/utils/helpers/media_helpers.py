@@ -16,7 +16,6 @@ import cloudinary.uploader
 from app.extensions import db
 from app.models import Media
 from config import Config
-from .basic_helpers import console_log
 
 cloudinary.config( 
     cloud_name = Config.CLOUDINARY_CLOUD_NAME, 

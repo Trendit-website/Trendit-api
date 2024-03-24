@@ -1,11 +1,11 @@
-import sys, logging
+import sys
 from flask import request, jsonify, current_app
 from sqlalchemy import func, or_
 from flask_jwt_extended import get_jwt_identity
 
 from ...extensions import db
 from ...models import Task, AdvertTask, EngagementTask, TaskStatus, TaskPaymentStatus, TaskPerformance
-from ...utils.helpers.basic_helpers import console_log
+from ...utils.helpers.basic_helpers import console_log, log_exception
 from ...utils.helpers.media_helpers import save_media
 from ...exceptions import PendingTaskError, NoUnassignedTaskError
 
@@ -36,6 +36,7 @@ def fetch_task(task_id_key):
         return task
     else:
         return None
+
 
 def get_tasks_dict_grouped_by_field(field, task_type):
     tasks_dict = {}
@@ -97,7 +98,7 @@ def get_aggregated_task_counts_by_field(field, task_type=None):
         raise e
 
 
-def generate_random_task(task_type, filter_value):
+def generate_random_task(task_type, filter_value) -> object:
     """Retrieves a random task of the specified type, filtering by platform or goal, ensuring it's not assigned to another user.
 
         Args:
@@ -105,7 +106,7 @@ def generate_random_task(task_type, filter_value):
             filter_value (str): The value to filter tasks by (platform for adverts, goal for engagements).
 
         Returns:
-            JSON: A JSON object containing the randomly selected task.
+            Object: A DB object of the randomly selected task.
 
         Raises:
             LookupError: If no unassigned task was found
@@ -130,21 +131,48 @@ def generate_random_task(task_type, filter_value):
             getattr(task_model, filter_field) == filter_value,
             task_model.payment_status == TaskPaymentStatus.COMPLETE,
             task_model.status == TaskStatus.APPROVED,
-            getattr(task_model, count_field) > getattr(task_model, 'total_success')
+            getattr(task_model, count_field) > getattr(task_model, 'total_success'),
+            ~TaskPerformance.query.filter_by(user_id=current_user_id).join(Task).filter_by(id=TaskPerformance.task_id).exists()
         ).order_by(func.random()).first()
         
         
         if not unassigned_task:
             raise NoUnassignedTaskError(f"There are no unassigned {task_type} tasks for the {filter_field} '{filter_value}'.")
         
-        # Initiate task performance
-        initiate_task(unassigned_task)
-        
-        return unassigned_task.to_dict()  # Return the generated task
+        return unassigned_task  # Return the generated task
 
     except AttributeError as e:
         raise ValueError(f"Invalid Task Type or Filter: {task_type}/{filter_value}")
     except Exception as e:
+        raise e
+
+
+def initiate_task(task, status='pending') -> dict:
+    try:
+        current_user_id = int(get_jwt_identity())
+        
+        if task is None:
+            raise NoUnassignedTaskError("Task not found.")
+        
+        # Validate task readiness (adjust criteria as needed)
+        if task.payment_status != TaskPaymentStatus.COMPLETE:
+            raise ValueError("This task is not available for performance")
+        
+        
+        # Create a new TaskPerformance instance
+        initiated_task = TaskPerformance.create_task_performance(user_id=current_user_id, task_id=task.id, task_type=task.task_type, reward_money=0.0, proof_screenshot_id=None, account_name='', status=status)
+        
+        # Mark the task as assigned
+        task.total_allocated += 1
+        db.session.add(task)
+        db.session.commit()
+        
+        return initiated_task.to_dict()
+    except ValueError as e:
+        raise e
+    except Exception as e:
+        db.session.rollback()
+        log_exception("An exception occurred trying to initiate task performance", e)
         raise e
 
 
@@ -227,35 +255,11 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
         else:
             return None
     except Exception as e:
-        logging.exception(f"An exception occurred trying to save Task {data.get('task_type')}:\n", str(e))
+        log_exception(f"An exception occurred trying to save Task {data.get('task_type')}", e)
         db.session.rollback()
         console_log('sys excInfo', sys.exc_info())
         return None
 
-
-
-
-def initiate_task(task, status='pending'):
-    try:
-        current_user_id = int(get_jwt_identity())
-        
-        if task is None:
-            raise NoUnassignedTaskError("Task not found.")
-        
-        
-        # Create a new TaskPerformance instance
-        initiated_task = TaskPerformance.create_task_performance(user_id=current_user_id, task_id=task.id, task_type=task.task_type, reward_money=0.0, proof_screenshot_id=None, account_name='', status=status)
-        
-        # Mark the task as assigned
-        task.total_allocated += 1
-        db.session.add(task)
-        db.session.commit()
-        
-        
-    except Exception as e:
-        db.session.rollback()
-        logging.exception("An exception occurred trying to initiate task performance: ==>", str(e))
-        raise e
 
 
 def save_performed_task(data, pt_id=None, status='pending'):
@@ -307,7 +311,7 @@ def save_performed_task(data, pt_id=None, status='pending'):
             
             return new_performed_task
     except Exception as e:
-        logging.exception("An exception occurred trying to save performed task:\n", str(e))
+        log_exception("An exception occurred trying to save performed task", e)
         db.session.rollback()
         raise e
 
