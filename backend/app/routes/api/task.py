@@ -1,5 +1,5 @@
+from flask import current_app, request
 from flask_jwt_extended import jwt_required
-from flask import current_app
 
 from . import api
 from ...controllers.api import TaskController
@@ -15,6 +15,10 @@ def create_task():
 @api.route('/current-user/tasks', methods=['GET'])
 @jwt_required()
 def get_current_user_tasks():
+    status = request.args.get('status', '')
+    if status:
+        return TaskController.get_current_user_tasks_by_status(status.lower())
+    
     return TaskController.get_current_user_tasks()
 
 

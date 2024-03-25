@@ -3,7 +3,7 @@ from flask import request
 from flask_jwt_extended import get_jwt_identity
 
 from config import Config
-from ...models import Task, AdvertTask, EngagementTask, TaskPaymentStatus, TaskStatus
+from ...models import Task, AdvertTask, EngagementTask, TaskPaymentStatus, TaskStatus, Trendit3User
 from ...utils.helpers.task_helpers import save_task, get_tasks_dict_grouped_by_field, fetch_task, get_aggregated_task_counts_by_field
 from ...utils.helpers.response_helpers import error_response, success_response
 from ...utils.helpers.basic_helpers import console_log, log_exception
@@ -81,6 +81,52 @@ class TaskController:
             return error_response(msg, status_code)
         else:
             return success_response(msg, status_code, extra_data)
+    
+    
+    @staticmethod
+    def get_current_user_tasks_by_status(status):
+        try:
+            current_user_id = int(get_jwt_identity())
+            page = request.args.get("page", 1, type=int)
+            tasks_per_page = int(5)
+            
+            # Check if user exists
+            user = Trendit3User.query.get(current_user_id)
+            if user is None:
+                return error_response('User not found', 404)
+            
+            if not status:
+                return error_response('status parameter required', 400)
+            
+            try:
+                # Convert string to enum value (handle potential errors)
+                status_enum = TaskStatus(status)
+            except ValueError:
+                return error_response(f'Invalid status provided: {status}', 400)
+            
+            pagination = Task.query.filter_by(trendit3_user_id=current_user_id, status=status_enum) \
+                .order_by(Task.date_created.desc()) \
+                .paginate(page=page, per_page=tasks_per_page, error_out=False)
+            
+            tasks = pagination.items
+            current_tasks = [task.to_dict() for task in tasks]
+            extra_data = {
+                'total': pagination.total,
+                "all_tasks": current_tasks,
+                "current_page": pagination.page,
+                "total_pages": pagination.pages,
+            }
+            
+            if not tasks:
+                return success_response(f'There are no {status} task.', 200, extra_data)
+            
+            msg = f"All {status} Tasks fetched successfully"
+            api_response = success_response(msg, 200, extra_data)
+        except Exception as e:
+            log_exception(f"An exception occurred trying to get all {status} tasks", e)
+            api_response = error_response(f"Error getting all {status} tasks", 500)
+        
+        return api_response
     
     
     @staticmethod

@@ -138,9 +138,6 @@ def generate_random_task(task_type, filter_value) -> object:
             ).exists()
         ).order_by(func.random()).first()
         
-        console_log('unassigned_task', unassigned_task)
-        
-        
         if not unassigned_task:
             raise NoUnassignedTaskError(f"There are no {task_type} tasks for the {filter_field} '{filter_value}'.")
         
