@@ -11,7 +11,7 @@ def dashboard_data():
 
 
 @bp.route('/create_junior_admin/<int:user_id>', methods=['POST'])
-def create_admin(user_id: int):
+def create_junior_admin(user_id: int):
     return AdminDashboardController.create_admin(user_id=user_id)
 
 
@@ -21,5 +21,5 @@ def create_admin(user_id: int):
 
 
 @bp.route('/create_super_admin/<int:user_id>', methods=['POST'])
-def create_admin(user_id: int):
+def create_super_admin(user_id: int):
     return AdminDashboardController.create_admin(user_id=user_id, type=RoleNames.SUPER_ADMIN)
