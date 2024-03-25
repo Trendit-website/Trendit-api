@@ -132,12 +132,17 @@ def generate_random_task(task_type, filter_value) -> object:
             task_model.payment_status == TaskPaymentStatus.COMPLETE,
             task_model.status == TaskStatus.APPROVED,
             getattr(task_model, count_field) > getattr(task_model, 'total_success'),
-            ~TaskPerformance.query.filter_by(user_id=current_user_id).join(Task).filter_by(id=TaskPerformance.task_id).exists()
+            ~TaskPerformance.query.filter(
+                TaskPerformance.task_id == task_model.id,
+                TaskPerformance.user_id == current_user_id
+            ).exists()
         ).order_by(func.random()).first()
+        
+        console_log('unassigned_task', unassigned_task)
         
         
         if not unassigned_task:
-            raise NoUnassignedTaskError(f"There are no unassigned {task_type} tasks for the {filter_field} '{filter_value}'.")
+            raise NoUnassignedTaskError(f"There are no {task_type} tasks for the {filter_field} '{filter_value}'.")
         
         return unassigned_task  # Return the generated task
 
