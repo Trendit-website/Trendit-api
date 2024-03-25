@@ -45,7 +45,7 @@ class TaskPerformanceController:
         except PendingTaskError as e:
             api_response = error_response(f'{e}', 409)
         except NoUnassignedTaskError as e:
-            api_response = error_response(f'{e}', 204)
+            api_response = error_response(f'{e}', 206)
         except ValueError as e:
             api_response = error_response(f'{e}', 400)
         except AttributeError as e:
