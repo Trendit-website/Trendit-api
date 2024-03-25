@@ -43,14 +43,10 @@ class ProfileController:
     @staticmethod
     def edit_profile():
         try:
-            console_log('JWT', get_jwt())
-            console_log('JWT', get_jwt_header())
             current_user_id = int(get_jwt_identity())
-            console_log('current_user_id', current_user_id)
             
             current_user = Trendit3User.query.get(current_user_id)
             
-            console_log('current_user', current_user)
             if not current_user:
                 return error_response(f"user not found", 404)
             
@@ -61,8 +57,6 @@ class ProfileController:
             if not user_wallet:
                 user_wallet = Wallet.create_wallet(trendit3_user=current_user)
             
-            
-            console_log('content_type', request.content_type)
             
             # Get the request data
             data = request.form.to_dict()
