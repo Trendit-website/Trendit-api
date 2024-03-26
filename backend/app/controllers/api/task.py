@@ -53,7 +53,7 @@ class TaskController:
             current_user_id = int(get_jwt_identity())
             page = request.args.get("page", 1, type=int)
             tasks_per_page = int(Config.TASKS_PER_PAGE)
-            pagination = Task.query.filter_by(trendit3_user_id=current_user_id, payment_status=TaskPaymentStatus.COMPLETE) \
+            pagination = Task.query.filter_by(trendit3_user_id=current_user_id) \
                 .order_by(Task.date_created.desc()) \
                 .paginate(page=page, per_page=tasks_per_page, error_out=False)
             
@@ -544,3 +544,18 @@ class TaskController:
         else:
             return success_response(msg, status_code, extra_data)
 
+
+    @staticmethod
+    def get_task_metrics():
+        try:
+            current_user_id = int(get_jwt_identity())
+            
+            # Check if user exists
+            user = Trendit3User.query.get(current_user_id)
+            if user is None:
+                return error_response('User not found', 404)
+            
+            all_time_total_tasks = user.total_tasks
+            month_start_total_tasks = user.total_tasks
+        except Exception as e:
+            pass
