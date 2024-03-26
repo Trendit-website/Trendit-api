@@ -21,7 +21,7 @@ from jwt import ExpiredSignatureError, DecodeError
 from sqlalchemy import func
 
 from ...extensions import db
-from ...models import Role, TempUser, Trendit3User, Address, Profile, OneTimeToken, ReferralHistory, Membership, Wallet, UserSettings, Transaction, TransactionType
+from ...models import Role, RoleNames, TempUser, Trendit3User, Address, Profile, OneTimeToken, ReferralHistory, Membership, Wallet, UserSettings, Transaction, TransactionType
 from ...utils.helpers.basic_helpers import console_log, log_exception
 from ...utils.helpers.response_helpers import error_response, success_response
 from ...utils.helpers.location_helpers import get_currency_info
@@ -82,20 +82,21 @@ class AdminDashboardController:
         
         
     @staticmethod
-    def create_admin(user_id: int):
+    def create_admin(user_id: int, type: str=RoleNames.JUNIOR_ADMIN):
         try:
             user = Trendit3User.query.get(user_id)
             if user is None:
                 return error_response('User not found', 404)
             
-            #TODO: change name from 'Advertiser' to 'Admin'
             
-            role = Role.query.filter_by(name='Advertiser').first()
+            role = Role.query.filter_by(name=type).first()
             if role:
                 user.roles.append(role)
             
             db.session.commit()
-            return success_response('User is now an Admin', 200)
+            db.session.close()
+            extra_data = {'user_roles': user.roles}
+            return success_response('User is now an Admin', 200, extra_data)
         
         except Exception as e:
             console_log('Create Admin EXCEPTION', str(e))

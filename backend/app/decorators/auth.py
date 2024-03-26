@@ -38,7 +38,7 @@ def roles_required(*required_roles):
             current_user_id = get_jwt_identity()
             user = Trendit3User.query.get(current_user_id)
             
-            if user and any(role.name in required_roles for role in user.roles):
+            if user and any(role.name.value in required_roles for role in user.roles):
                 return fn(*args, **kwargs)
             else:
                 return error_response("Access denied: You do not have the required roles to access this resource", 403)
