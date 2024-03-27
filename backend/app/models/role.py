@@ -42,7 +42,7 @@ def create_roles(clear: bool = False) -> None:
         
         for role_name in RoleNames:
             if not Role.query.filter_by(name=role_name).first():
-                new_role = Role(name=role_name, slug=slugify(str(role_name)))
+                new_role = Role(name=role_name, slug=slugify(role_name.value))
                 db.session.add(new_role)
         db.session.commit()
     

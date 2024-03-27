@@ -525,9 +525,14 @@ class TaskController:
                 status_code = 201
                 msg = 'Task created successfully. Payment made using Trendit³ Wallet.'
                 extra_data = {'task': new_task.to_dict()}
+        except TypeError as e:
+            error = True
+            status_code = 500
+            msg = "TypeError occurred"
+            log_exception(f"A TypeError occurred during creation of Task", e)
         except Exception as e:
             error = True
-            status_code = e.code or 500
+            status_code = 500
             msg = "Error creating new task"
             logging.exception(f"An exception occurred during creation of Task ==> {str(e)}")
         
