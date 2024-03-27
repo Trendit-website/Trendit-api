@@ -80,3 +80,9 @@ def disable_emerge():
 def enable_emerge():
     current_app.config['EMERGENCY_MODE'] = True
     return success_response('Emergency mode has been activated.', 200)
+
+
+@api.route('/tasks/metrics', methods=['GET'])
+@jwt_required()
+def get_task_metrics():
+    return TaskController.get_task_metrics()
