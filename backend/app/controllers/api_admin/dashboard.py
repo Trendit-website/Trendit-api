@@ -25,8 +25,9 @@ from ...models import Role, RoleNames, TempUser, Trendit3User, Address, Profile,
 from ...utils.helpers.basic_helpers import console_log, log_exception
 from ...utils.helpers.response_helpers import error_response, success_response
 from ...utils.helpers.location_helpers import get_currency_info
-from ...utils.helpers.auth_helpers import generate_six_digit_code, send_code_to_email, save_pwd_reset_token, send_2fa_code
+from ...utils.helpers.auth_helpers import generate_six_digit_code, save_pwd_reset_token, send_2fa_code
 from ...utils.helpers.user_helpers import is_user_exist, get_trendit3_user, referral_code_exists
+from ...utils.helpers.mail_helpers import send_other_emails
 
 
 
@@ -96,6 +97,7 @@ class AdminDashboardController:
             db.session.commit()
             db.session.close()
             extra_data = {'user_roles': user.roles}
+            send_other_emails(user.email, code_type='new_admin')
             return success_response('User is now an Admin', 200, extra_data)
         
         except Exception as e:
