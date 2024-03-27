@@ -20,12 +20,13 @@ from flask_jwt_extended.exceptions import JWTDecodeError
 from jwt import ExpiredSignatureError, DecodeError
 
 from ...extensions import db
-from ...models import Role, TempUser, Trendit3User, Address, Profile, OneTimeToken, ReferralHistory, Membership, Wallet, UserSettings
+from ...models import Role, RoleNames, TempUser, Trendit3User, Address, Profile, OneTimeToken, ReferralHistory, Membership, Wallet, UserSettings
 from ...utils.helpers.basic_helpers import console_log, log_exception
 from ...utils.helpers.response_helpers import error_response, success_response
 from ...utils.helpers.location_helpers import get_currency_info
 from ...utils.helpers.auth_helpers import generate_six_digit_code, send_code_to_email, save_pwd_reset_token, send_2fa_code
 from ...utils.helpers.user_helpers import is_user_exist, get_trendit3_user, referral_code_exists
+from ...utils.helpers.mail_helpers import send_other_emails
 
 class AdminAuthController:
 
@@ -44,7 +45,7 @@ class AdminAuthController:
         try:
             data = request.get_json()
             email = data.get('email')
-            required_roles = ['Admin', 'Moderator']
+            required_roles = [RoleNames.SUPER_ADMIN, RoleNames.Admin, RoleNames.JUNIOR_ADMIN]
 
             user = get_trendit3_user(email)
 
@@ -56,7 +57,7 @@ class AdminAuthController:
                 signin_token = OneTimeToken.query.filter(OneTimeToken.trendit3_user_id == user.id).first()
                 if signin_token:
                     signin_token.update(token=token, used=False)
-                    send_code_to_email(email, token)
+                    send_other_emails(email, email_type='new_admin', )
                     return success_response('Login link sent to email', 200)
                 else:
                     new_signin_token = OneTimeToken.create_token(token=token, trendit3_user_id=user.id)
@@ -88,7 +89,7 @@ class AdminAuthController:
             token (str): The token sent to the user's email.
 
         Returns:
-            dict: A dictionary containing the success or error response.
+                dict: A dictionary containing the success or error response.
 
         Raises:
             None
