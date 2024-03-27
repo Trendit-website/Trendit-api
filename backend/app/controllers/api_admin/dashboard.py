@@ -95,9 +95,9 @@ class AdminDashboardController:
                 user.roles.append(role)
             
             db.session.commit()
-            db.session.close()
             extra_data = {'user_roles': user.roles}
             send_other_emails(user.email, code_type='new_admin')
+            db.session.close()
             return success_response('User is now an Admin', 200, extra_data)
         
         except Exception as e:
