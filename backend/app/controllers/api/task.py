@@ -47,8 +47,6 @@ class TaskController:
     
     @staticmethod
     def get_current_user_tasks():
-        error = False
-        
         try:
             current_user_id = int(get_jwt_identity())
             page = request.args.get("page", 1, type=int)
@@ -69,18 +67,12 @@ class TaskController:
             if not tasks:
                 return success_response(f'No task has been created yet', 200, extra_data)
             
-            msg = 'All Tasks created by current user fetched successfully'
-            status_code = 200
-            
+            api_response = success_response('All Tasks fetched successfully', 200, extra_data)
         except Exception as e:
-            error = True
-            msg = 'Error getting all tasks created by current user'
-            status_code = 500
             log_exception("An exception trying to get all Tasks by current user", e)
-        if error:
-            return error_response(msg, status_code)
-        else:
-            return success_response(msg, status_code, extra_data)
+            api_response = error_response('Error getting all tasks', 500)
+        
+        return api_response
     
     
     @staticmethod
@@ -533,9 +525,14 @@ class TaskController:
                 status_code = 201
                 msg = 'Task created successfully. Payment made using Trendit³ Wallet.'
                 extra_data = {'task': new_task.to_dict()}
+        except TypeError as e:
+            error = True
+            status_code = 500
+            msg = "TypeError occurred"
+            log_exception(f"A TypeError occurred during creation of Task", e)
         except Exception as e:
             error = True
-            status_code = e.code or 500
+            status_code = 500
             msg = "Error creating new task"
             logging.exception(f"An exception occurred during creation of Task ==> {str(e)}")
         

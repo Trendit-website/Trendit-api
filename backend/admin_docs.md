@@ -187,5 +187,3 @@ Please note that accessing the admin endpoints requires proper authentication. E
 ---
 
 For any issues or further assistance, please contact the Trendit3 support team.
-```
-This markdown documentation outlines the structure and usage of the Trendit3 Admin API, making it easier for developers to understand and integrate with their applications.

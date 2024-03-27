@@ -61,7 +61,7 @@ def initialize_payment(user_id, data, payment_type=None, meta_data=None):
         
         
         if is_paid(user_id, payment_type):
-            return error_response('Payment cannot be processed because it has already been made by the user', 409)
+            return error_response('Payment cannot be processed because it has already been made.', 409)
         
         
         # Convert amount to kobo (Paystack accepts amounts in kobo)
