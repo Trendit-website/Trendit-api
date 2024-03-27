@@ -78,7 +78,7 @@ def send_code_to_email(user_email, six_digit_code, code_type='verify_email'):
 
 
 # SEND OTHER EMAILS LIKE WELCOME MAIL, CREDIT ALERT, ETC
-def send_async_other_email(app, user_email, email_type, amount=None, admin_login_link=None):
+def send_async_other_email(app, user_email, email_type, amount=None, admin_login_code=None):
     """
     Sends an email asynchronously.
 
@@ -134,7 +134,7 @@ def send_async_other_email(app, user_email, email_type, amount=None, admin_login
 
         elif email_type == 'admin_login':
             subject = 'Admin Login'
-            template = render_template("email/admin_login.html", redirect_link=f'https://admin.trendit3.com/login_code/{admin_login_link}', user_email=user_email)
+            template = render_template("email/admin_login.html", redirect_link=f'https://admin.trendit3.com/login_code/{admin_login_code}', user_email=user_email)
             msg = Message(subject, sender=Config.MAIL_USERNAME, recipients=[user_email], html=template)
 
         

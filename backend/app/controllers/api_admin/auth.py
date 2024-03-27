@@ -76,7 +76,7 @@ class AdminAuthController:
 
 
     @staticmethod
-    def verify_admin_login(token):
+    def verify_admin_login():
         """
         Verify the admin login token.
 
@@ -96,6 +96,9 @@ class AdminAuthController:
 
         """
         try:
+            data = request.get_json()
+            token = data.get('token')
+
             signin_token = OneTimeToken.query.filter(OneTimeToken.token == token).first()
             if signin_token and not signin_token.used:
                 signin_token.update(used=True)
@@ -104,6 +107,7 @@ class AdminAuthController:
                 return success_response('Login successful', 200, extra_data)
             else:
                 return error_response('Token is invalid or has been used', 401)
+            
         except Exception as e:
             console_log('Admin Login Verification EXCEPTION', str(e))
             current_app.logger.error(f"An error occurred verifying the Admin Login token in the database: {str(e)}")
