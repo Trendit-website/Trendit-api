@@ -2,6 +2,7 @@ import sys
 from flask import request, jsonify, current_app
 from sqlalchemy import func, or_
 from flask_jwt_extended import get_jwt_identity
+from datetime import datetime, timedelta
 
 from ...extensions import db
 from ...models import Task, AdvertTask, EngagementTask, TaskStatus, TaskPaymentStatus, TaskPerformance
@@ -368,3 +369,25 @@ def fetch_performed_task(pt_id_key):
         return performed_task
     else:
         return None
+
+
+def get_user_tasks_metrics(user: object) -> dict:
+    
+    try:
+        all_time_total_tasks = user.total_tasks # get total task ever created by the user
+        
+        
+        # Get the beginning of the month
+        month_start = datetime.now().replace(day=1).replace(hour=0, minute=0, second=0, microsecond=0)
+
+        # Build the query
+        tasks_query = Task.query.filter_by(trendit3_user_id=user.id)
+        tasks_query = tasks_query.filter(Task.date_created >= month_start)
+
+        # Count the tasks
+        month_start_total_tasks = tasks_query.count()
+        task_metrics = user
+    except Exception as e:
+        pass
+    
+    

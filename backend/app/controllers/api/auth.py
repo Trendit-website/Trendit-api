@@ -199,6 +199,9 @@ class AuthController:
             if not user_id:
                 return error_response('User ID is required', 400)
             
+            if Trendit3User.query.filter_by(username=username).first():
+                return error_response('Username already taken', 409)
+            
             user = TempUser.query.get(user_id)
             
             if not user:

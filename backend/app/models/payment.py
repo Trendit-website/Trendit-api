@@ -117,7 +117,7 @@ class Transaction(db.Model):
             'id': self.id,
             'key': self.key,
             'amount': self.amount,
-            'transaction_type': self.transaction_type,
+            'transaction_type': str(self.transaction_type.value),
             'description': self.description,
             'status': self.status,
             **user_info,
