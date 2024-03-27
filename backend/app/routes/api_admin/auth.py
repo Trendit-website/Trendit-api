@@ -9,7 +9,7 @@ def admin_login():
     return AdminAuthController.admin_login()
 
 
-@bp.route('/verify-admin-login', methods=['GET'])
+@bp.route('/verify-admin-login', methods=['POST'])
 def verify_admin_login():
     # redirect the user to admin page after this
     return AdminAuthController.verify_admin_login()
