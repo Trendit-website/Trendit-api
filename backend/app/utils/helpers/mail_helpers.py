@@ -135,7 +135,7 @@ def send_async_other_email(app, user_email, email_type, amount=None, admin_login
         elif email_type == 'admin_login':
             subject = 'Admin Login'
             template = render_template("email/admin_login.html", redirect_link=f'https://admin.trendit3.com/verify-login?token={admin_login_code}', user_email=user_email)
-            msg = Message(subject, sender="Trendit³", recipients=[user_email], html=template)
+            msg = Message(subject, sender="Config.MAIL_USERNAME", recipients=[user_email], html=template)
 
         
         try:
