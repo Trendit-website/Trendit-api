@@ -323,7 +323,7 @@ class PaymentController:
             user = Trendit3User.query.get(current_user_id)
             
             data = request.get_json()
-            amount = float(data.get('amount'))
+            amount = float(data.get('amount').replace(',', ''))
             
             if user.wallet_balance < amount:
                 return error_response("Insufficient balance", 400)
