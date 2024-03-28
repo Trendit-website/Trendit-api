@@ -57,11 +57,11 @@ class AdminAuthController:
                 signin_token = OneTimeToken.query.filter(OneTimeToken.trendit3_user_id == user.id).first()
                 if signin_token:
                     signin_token.update(token=token, used=False)
-                    send_other_emails(email, email_type='new_admin', )
+                    send_other_emails(email, email_type='admin_login', admin_login_code=token)
                     return success_response('Login link sent to email', 200)
                 else:
                     new_signin_token = OneTimeToken.create_token(token=token, trendit3_user_id=user.id)
-                    send_code_to_email(email, token)
+                    send_other_emails(email, email_type='admin_login', admin_login_code=token)
                     return success_response('Login link sent to email', 200)
                 
             else:
@@ -76,7 +76,7 @@ class AdminAuthController:
 
 
     @staticmethod
-    def verify_admin_login(token):
+    def verify_admin_login():
         """
         Verify the admin login token.
 
@@ -96,6 +96,9 @@ class AdminAuthController:
 
         """
         try:
+            data = request.get_json()
+            token = data.get('token')
+
             signin_token = OneTimeToken.query.filter(OneTimeToken.token == token).first()
             if signin_token and not signin_token.used:
                 signin_token.update(used=True)
@@ -104,6 +107,7 @@ class AdminAuthController:
                 return success_response('Login successful', 200, extra_data)
             else:
                 return error_response('Token is invalid or has been used', 401)
+            
         except Exception as e:
             console_log('Admin Login Verification EXCEPTION', str(e))
             current_app.logger.error(f"An error occurred verifying the Admin Login token in the database: {str(e)}")

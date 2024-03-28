@@ -83,9 +83,15 @@ class AdminDashboardController:
         
         
     @staticmethod
-    def create_admin(user_id: int, type: str=RoleNames.JUNIOR_ADMIN):
+    def create_admin(type: str=RoleNames.JUNIOR_ADMIN):
         try:
-            user = Trendit3User.query.get(user_id)
+            data = request.get_json()
+            # user_id = data.get('user_id')
+            email = data.get('email')
+
+            # user = Trendit3User.query.get(user_id)
+            user = Trendit3User.query.filter_by(email=email).first()
+
             if user is None:
                 return error_response('User not found', 404)
             
@@ -95,9 +101,9 @@ class AdminDashboardController:
                 user.roles.append(role)
             
             db.session.commit()
+            extra_data = {'user_roles': [role.name.value for role in user.roles]}
+            send_other_emails(user.email, email_type='new_admin')
             db.session.close()
-            extra_data = {'user_roles': user.roles}
-            send_other_emails(user.email, code_type='new_admin')
             return success_response('User is now an Admin', 200, extra_data)
         
         except Exception as e:
