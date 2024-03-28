@@ -489,8 +489,6 @@ class TaskController:
     # CREATE NEW TASK
     @staticmethod
     def create_task():
-        error = False
-    
         try:
             data = request.form.to_dict()
             amount = int(data.get('amount'))
@@ -522,24 +520,18 @@ class TaskController:
                 if new_task is None:
                     return error_response('Error creating new task', 500)
                 
-                status_code = 201
                 msg = 'Task created successfully. Payment made using Trendit³ Wallet.'
                 extra_data = {'task': new_task.to_dict()}
+                
+                api_response = success_response(msg, 201, extra_data)
         except TypeError as e:
-            error = True
-            status_code = 500
-            msg = "TypeError occurred"
             log_exception(f"A TypeError occurred during creation of Task", e)
+            api_response = error_response(f"TypeError occurred: {str(e)}", 400)
         except Exception as e:
-            error = True
-            status_code = 500
-            msg = "Error creating new task"
             logging.exception(f"An exception occurred during creation of Task ==> {str(e)}")
+            api_response = error_response("Error creating new task", 500)
         
-        if error:
-            return error_response(msg, status_code)
-        else:
-            return success_response(msg, status_code, extra_data)
+        return api_response
 
 
     @staticmethod
@@ -554,5 +546,9 @@ class TaskController:
             
             all_time_total_tasks = user.total_tasks
             month_start_total_tasks = user.total_tasks
+            
         except Exception as e:
-            pass
+            log_exception("An exception occurred getting task metrics", e)
+            api_response = error_response("Error getting task metrics", 500)
+        
+        return api_response

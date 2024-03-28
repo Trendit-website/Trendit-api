@@ -47,10 +47,12 @@ class TransactionController:
             if not transactions:
                 return success_response(f'No transactions has been made', 200, extra_data)
             
-            return success_response('Transaction history fetched successfully', 200, extra_data)
+            api_response = success_response('Transaction history fetched successfully', 200, extra_data)
         except Exception as e:
-            logging.exception(f"An exception occurred during fetching transaction history. {str(e)}") # Log the error details for debugging
-            return error_response("An error occurred while processing the request", 500)
+            log_exception(f"An exception occurred fetching transaction history", e)
+            api_response = error_response("An error occurred while processing the request", 500)
+        
+        return api_response
 
     
     @staticmethod
