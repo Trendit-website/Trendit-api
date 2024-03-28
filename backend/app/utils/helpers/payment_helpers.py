@@ -178,7 +178,7 @@ def debit_wallet(user_id, amount, payment_type=None):
         raise e
 
 
-def credit_wallet(user_id, amount):
+def credit_wallet(user_id: int, amount):
     user = Trendit3User.query.get(user_id)
     
     if user is None:
