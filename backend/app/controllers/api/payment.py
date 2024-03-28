@@ -65,7 +65,7 @@ class PaymentController:
                 return error_response(verification_response['message'], 404)
             
             # Extract needed data
-            amount = verification_response['data']['amount'] / 100  # Convert from kobo to naira
+            amount = float(verification_response['data']['amount']) / 100  # Convert from kobo to naira
             payment_status = verification_response['data']['status'].lower()
             
             transaction = Transaction.query.filter_by(key=reference).first()
@@ -199,7 +199,7 @@ class PaymentController:
                 return jsonify({'status': 'error', 'message': 'Invalid signature'}), 400
             
             # Extract needed data
-            amount = data['data']['amount'] / 100  # Convert from kobo to naira
+            amount = float(data['data']['amount']) / 100  # Convert from kobo to naira
             reference = f"{data['data']['reference']}"
             
             transaction = Transaction.query.filter_by(key=reference).first()
@@ -323,7 +323,7 @@ class PaymentController:
             user = Trendit3User.query.get(current_user_id)
             
             data = request.get_json()
-            amount = data.get('amount')
+            amount = float(data.get('amount').replace(',', ''))
             
             if user.wallet_balance < amount:
                 return error_response("Insufficient balance", 400)
@@ -416,7 +416,7 @@ class PaymentController:
                 return error_response(verification_response['message'], 401)
             
             # Extract needed data
-            amount = verification_response['data']['amount']
+            amount = float(verification_response['data']['amount'])
             transfer_status = verification_response['data']['status']
             
             transaction = Transaction.query.filter_by(tx_ref=reference).first()
