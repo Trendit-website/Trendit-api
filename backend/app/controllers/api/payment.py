@@ -92,8 +92,9 @@ class PaymentController:
                 if transaction.status.lower() != 'complete':
                     # Record the payment and transaction in the database
                     with db.session.begin_nested():
-                        transaction.update(status='complete')
-                        payment.update(status='complete')
+                        transaction.status = 'complete'
+                        payment.status = 'complete'
+                        db.session.commit()
                 
                     # Update user's membership status in the database
                     if payment_type == 'membership-fee':

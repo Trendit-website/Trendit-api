@@ -12,7 +12,7 @@ from ...exceptions import PendingTaskError, NoUnassignedTaskError
 
 
 
-def fetch_task(task_id_key):
+def fetch_task(task_id_key: int | str):
     """
     Fetches a task from the database based on either its ID or task_key.
 
