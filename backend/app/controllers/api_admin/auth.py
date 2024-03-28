@@ -56,7 +56,6 @@ class AdminAuthController:
                 token = secrets.token_urlsafe(16)
                 signin_token = OneTimeToken.query.filter(OneTimeToken.trendit3_user_id == user.id).first()
                 if signin_token:
-                    print(signin_token.to_dict())
                     signin_token.update(token=token, used=False)
                     send_other_emails(email, email_type='admin_login', )
                     return success_response('Login link sent to email', 200)
