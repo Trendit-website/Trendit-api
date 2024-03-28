@@ -83,9 +83,15 @@ class AdminDashboardController:
         
         
     @staticmethod
-    def create_admin(user_id: int, type: str=RoleNames.JUNIOR_ADMIN):
+    def create_admin(type: str=RoleNames.JUNIOR_ADMIN):
         try:
-            user = Trendit3User.query.get(user_id)
+            data = request.get_json()
+            # user_id = data.get('user_id')
+            email = data.get('email')
+
+            # user = Trendit3User.query.get(user_id)
+            user = Trendit3User.query.filter_by(email=email).first()
+
             if user is None:
                 return error_response('User not found', 404)
             
