@@ -57,11 +57,11 @@ class AdminAuthController:
                 signin_token = OneTimeToken.query.filter(OneTimeToken.trendit3_user_id == user.id).first()
                 if signin_token:
                     signin_token.update(token=token, used=False)
-                    send_other_emails(email, email_type='admin_login', )
+                    send_other_emails(email, email_type='admin_login', admin_login_code=token)
                     return success_response('Login link sent to email', 200)
                 else:
                     new_signin_token = OneTimeToken.create_token(token=token, trendit3_user_id=user.id)
-                    send_code_to_email(email, token)
+                    send_other_emails(email, email_type='admin_login', admin_login_code=token)
                     return success_response('Login link sent to email', 200)
                 
             else:
