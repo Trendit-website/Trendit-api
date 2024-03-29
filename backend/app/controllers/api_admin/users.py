@@ -17,6 +17,10 @@ class AdminUsersController:
             per_page = request.args.get('per_page', default=10, type=int)
             
             users = Trendit3User.query.paginate(page=page, per_page=per_page)
+            
+            if page > users.pages:
+                return success_response('No content', 204, {'users': []})
+            
             user_list = [user.to_dict() for user in users.items]
             
             extra_data = {
