@@ -77,7 +77,7 @@ class AdminDashboardController:
                 'payouts_per_month': payouts_per_month_dict,
                 'payment_activities_per_month': payment_activities_per_month_dict,
                 'total_advertisers': total_advertiser_users,
-                'total_earner_users': total_earner_users
+                'total_earners': total_earner_users
             }
 
             return success_response('Admin dashboard data', 200, extra_data)
