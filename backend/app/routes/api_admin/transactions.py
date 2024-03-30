@@ -8,3 +8,8 @@ from app.controllers.api_admin.transactions import TransactionController
 @roles_required('Junior Admin')
 def get_all_transactions():
     return TransactionController.get_all_tasks()
+
+@bp.route('/user_transactions', methods=['POST'])
+@roles_required('Junior Admin')
+def get_user_transactions():
+    return TransactionController.get_user_transactions()

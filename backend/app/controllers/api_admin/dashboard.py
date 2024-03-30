@@ -58,6 +58,12 @@ class AdminDashboardController:
             payment_activities_per_month = db.session.query(func.to_char(Transaction.created_at, 'YYYY-MM'),
                                                             func.count(Transaction.id)).group_by(func.to_char(Transaction.created_at, 'YYYY-MM')).all()
 
+            # Calculate total number of users with the role of earner
+            total_earner_users = Trendit3User.query.filter(Trendit3User.roles.any(name=RoleNames.EARNER)).count()
+
+            # Calculate total number of users with the role of advertiser
+            total_advertiser_users = Trendit3User.query.filter(Trendit3User.roles.any(name=RoleNames.ADVERTISER)).count()
+
 
             # Format data for bar chart
             received_payments_per_month_dict = {date: amount for date, amount in received_payments_per_month}
@@ -69,7 +75,9 @@ class AdminDashboardController:
                 'total_payouts': total_payouts,
                 'received_payments_per_month': received_payments_per_month_dict,
                 'payouts_per_month': payouts_per_month_dict,
-                'payment_activities_per_month': payment_activities_per_month_dict
+                'payment_activities_per_month': payment_activities_per_month_dict,
+                'total_advertisers': total_advertiser_users,
+                'total_earner_users': total_earner_users
             }
 
             return success_response('Admin dashboard data', 200, extra_data)
