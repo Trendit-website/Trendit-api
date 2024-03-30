@@ -21,7 +21,7 @@ from jwt import ExpiredSignatureError, DecodeError
 from sqlalchemy import func
 
 from ...extensions import db
-from ...models import Role, RoleNames, TempUser, Trendit3User, Address, Profile, OneTimeToken, ReferralHistory, Membership, Wallet, UserSettings, Transaction, TransactionType
+from ...models import Role, RoleNames, TempUser, Trendit3User, Task, TaskStatus, OneTimeToken, ReferralHistory, Membership, Wallet, UserSettings, Transaction, TransactionType
 from ...utils.helpers.basic_helpers import console_log, log_exception
 from ...utils.helpers.response_helpers import error_response, success_response
 from ...utils.helpers.location_helpers import get_currency_info
@@ -64,6 +64,9 @@ class AdminDashboardController:
             # Calculate total number of users with the role of advertiser
             total_advertiser_users = Trendit3User.query.filter(Trendit3User.roles.any(name=RoleNames.ADVERTISER)).count()
 
+            # Calculate total number of approved tasks
+            total_approved_tasks = Task.query.filter_by(status=TaskStatus.APPROVED).count()
+
 
             # Format data for bar chart
             received_payments_per_month_dict = {date: amount for date, amount in received_payments_per_month}
@@ -77,7 +80,8 @@ class AdminDashboardController:
                 'payouts_per_month': payouts_per_month_dict,
                 'payment_activities_per_month': payment_activities_per_month_dict,
                 'total_advertisers': total_advertiser_users,
-                'total_earners': total_earner_users
+                'total_earners': total_earner_users,
+                'total_approved_tasks': total_approved_tasks
             }
 
             return success_response('Admin dashboard data', 200, extra_data)
