@@ -16,7 +16,7 @@ class AdminUsersController:
             page = request.args.get('page', default=1, type=int)
             per_page = request.args.get('per_page', default=10, type=int)
             
-            users = Trendit3User.query.paginate(page=page, per_page=per_page)
+            users = Trendit3User.query.paginate(page=page, per_page=per_page, error_out=False)
             
             if page > users.pages:
                 return success_response('No content', 204, {'users': []})
