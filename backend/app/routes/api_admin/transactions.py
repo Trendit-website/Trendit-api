@@ -5,6 +5,6 @@ from app.decorators.auth import roles_required
 from app.controllers.api_admin.transactions import TransactionController
 
 @bp.route('/transactions', methods=['POST'])
-@roles_required('junior_admin')
+@roles_required('Junior Admin')
 def get_all_transactions():
     return TransactionController.get_all_tasks()

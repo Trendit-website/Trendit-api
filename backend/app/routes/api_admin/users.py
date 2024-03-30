@@ -6,12 +6,12 @@ from app.controllers.api_admin import AdminUsersController
 
 
 @bp.route('/users', methods=['POST'])
-@roles_required('junior_admin')
+@roles_required('Junior Admin')
 def get_all_users():
     return AdminUsersController.get_all_users()
 
 
 @bp.route('/user/<int:user_id>', methods=['POST'])
-@roles_required('junior_admin')
+@roles_required('Junior Admin')
 def get_user(user_id):
     return AdminUsersController.get_user(user_id)
