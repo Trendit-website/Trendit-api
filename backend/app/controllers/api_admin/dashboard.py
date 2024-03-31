@@ -68,19 +68,15 @@ class AdminDashboardController:
             # Calculate total number of approved tasks
             total_approved_tasks = Task.query.filter_by(status=TaskStatus.APPROVED).count()
 
-
             # Format data for bar chart
-
-            current_month = datetime.datetime.now().strftime('%m')
-            year = datetime.datetime.now().strftime('%Y')
-            current_year_month = datetime.datetime.now().strftime('%Y-%m')
-            received_payments_per_month_dict = {date: amount for date, amount in received_payments_per_month}
-            payouts_per_month_dict = {date: amount for date, amount in payouts_per_month}
-            payment_activities_per_month_dict = {date: count for date, count in payment_activities_per_month}
+            current_month = datetime.datetime.now().strftime('%Y-%m')
+            received_payments_per_month_dict = {date.strftime('%Y-%m'): amount for date, amount in received_payments_per_month}
+            payouts_per_month_dict = {date.strftime('%Y-%m'): amount for date, amount in payouts_per_month}
+            payment_activities_per_month_dict = {date.strftime('%Y-%m'): count for date, count in payment_activities_per_month}
 
             # Add missing months with value 0
             for month in range(int(current_month), int(current_month)-12, -1):
-                month_str = f'{year}-{month:02d}'
+                month_str = f'{month:02d}'
                 if month_str not in received_payments_per_month_dict:
                     received_payments_per_month_dict[month_str] = 0
                 if month_str not in payouts_per_month_dict:
@@ -89,9 +85,9 @@ class AdminDashboardController:
                     payment_activities_per_month_dict[month_str] = 0
 
             # Return only the available months
-            received_payments_per_month_dict = {date: amount for date, amount in received_payments_per_month_dict.items() if datetime.strptime(date, '%Y-%m') <= current_year_month}
-            payouts_per_month_dict = {date: amount for date, amount in payouts_per_month_dict.items() if datetime.strptime(date, '%Y-%m') <= current_year_month}
-            payment_activities_per_month_dict = {date: count for date, count in payment_activities_per_month_dict.items() if datetime.strptime(date, '%Y-%m') <= current_year_month}
+            received_payments_per_month_dict = {date: amount for date, amount in received_payments_per_month_dict.items() if date <= current_month}
+            payouts_per_month_dict = {date: amount for date, amount in payouts_per_month_dict.items() if date <= current_month}
+            payment_activities_per_month_dict = {date: count for date, count in payment_activities_per_month_dict.items() if date <= current_month}
 
 
             extra_data = {
