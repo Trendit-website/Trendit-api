@@ -84,6 +84,11 @@ class AdminDashboardController:
                 if month_str not in payment_activities_per_month_dict:
                     payment_activities_per_month_dict[month_str] = 0
 
+            # Convert date to string before calling strftime
+            received_payments_per_month_dict = {date.strftime('%Y-%m'): amount for date, amount in received_payments_per_month if isinstance(date, datetime.datetime)}
+            payouts_per_month_dict = {date.strftime('%Y-%m'): amount for date, amount in payouts_per_month if isinstance(date, datetime.datetime)}
+            payment_activities_per_month_dict = {date.strftime('%Y-%m'): count for date, count in payment_activities_per_month if isinstance(date, datetime.datetime)}
+
             # Return only the available months
             received_payments_per_month_dict = {date: amount for date, amount in received_payments_per_month_dict.items() if date <= current_month}
             payouts_per_month_dict = {date: amount for date, amount in payouts_per_month_dict.items() if date <= current_month}
