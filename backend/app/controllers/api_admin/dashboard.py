@@ -28,6 +28,7 @@ from ...utils.helpers.location_helpers import get_currency_info
 from ...utils.helpers.auth_helpers import generate_six_digit_code, save_pwd_reset_token, send_2fa_code
 from ...utils.helpers.user_helpers import is_user_exist, get_trendit3_user, referral_code_exists
 from ...utils.helpers.mail_helpers import send_other_emails
+import datetime
 
 
 
@@ -69,9 +70,27 @@ class AdminDashboardController:
 
 
             # Format data for bar chart
+
+            current_month = datetime.datetime.now().strftime('%m')
             received_payments_per_month_dict = {date: amount for date, amount in received_payments_per_month}
             payouts_per_month_dict = {date: amount for date, amount in payouts_per_month}
             payment_activities_per_month_dict = {date: count for date, count in payment_activities_per_month}
+
+            # Add missing months with value 0
+            for month in range(int(current_month), int(current_month)-12, -1):
+                month_str = f'{month:02d}'
+                if month_str not in received_payments_per_month_dict:
+                    received_payments_per_month_dict[month_str] = 0
+                if month_str not in payouts_per_month_dict:
+                    payouts_per_month_dict[month_str] = 0
+                if month_str not in payment_activities_per_month_dict:
+                    payment_activities_per_month_dict[month_str] = 0
+
+            # Return only the available months
+            received_payments_per_month_dict = {date: amount for date, amount in received_payments_per_month_dict.items() if date <= current_month}
+            payouts_per_month_dict = {date: amount for date, amount in payouts_per_month_dict.items() if date <= current_month}
+            payment_activities_per_month_dict = {date: count for date, count in payment_activities_per_month_dict.items() if date <= current_month}
+
 
             extra_data = {
                 'total_received_payments': total_received_payments,
