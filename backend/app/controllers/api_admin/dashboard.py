@@ -35,14 +35,14 @@ from datetime import datetime, timedelta
 def fill_missing_months(data_dict):
     current_date = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     end_date = current_date - timedelta(days=current_date.day)
-    start_date = end_date.replace(day=1)
+    start_date = end_date - timedelta(days=365)
 
     while start_date <= end_date:
         formatted_date = start_date.strftime('%Y-%m')
         if formatted_date not in data_dict:
             data_dict[formatted_date] = 0
         start_date += timedelta(days=31)  # Moving to the next month
-        
+
 
 class AdminDashboardController:
 
