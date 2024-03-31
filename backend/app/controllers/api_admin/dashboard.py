@@ -28,9 +28,21 @@ from ...utils.helpers.location_helpers import get_currency_info
 from ...utils.helpers.auth_helpers import generate_six_digit_code, save_pwd_reset_token, send_2fa_code
 from ...utils.helpers.user_helpers import is_user_exist, get_trendit3_user, referral_code_exists
 from ...utils.helpers.mail_helpers import send_other_emails
-import datetime
+from datetime import datetime, timedelta
 
 
+
+def fill_missing_months(data_dict):
+    current_date = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    end_date = current_date - timedelta(days=current_date.day)
+    start_date = end_date.replace(day=1)
+
+    while start_date <= end_date:
+        formatted_date = start_date.strftime('%Y-%m')
+        if formatted_date not in data_dict:
+            data_dict[formatted_date] = 0
+        start_date += timedelta(days=31)  # Moving to the next month
+        
 
 class AdminDashboardController:
 
@@ -70,27 +82,14 @@ class AdminDashboardController:
 
 
             # Format data for bar chart
-
-            current_month = datetime.datetime.now().strftime('%m')
             received_payments_per_month_dict = {date: amount for date, amount in received_payments_per_month}
             payouts_per_month_dict = {date: amount for date, amount in payouts_per_month}
             payment_activities_per_month_dict = {date: count for date, count in payment_activities_per_month}
 
-            # Add missing months with value 0
-            for month in range(int(current_month), int(current_month)-12, -1):
-                month_str = f'{month:02d}'
-                if month_str not in received_payments_per_month_dict:
-                    received_payments_per_month_dict[month_str] = 0
-                if month_str not in payouts_per_month_dict:
-                    payouts_per_month_dict[month_str] = 0
-                if month_str not in payment_activities_per_month_dict:
-                    payment_activities_per_month_dict[month_str] = 0
-
-            # Return only the available months
-            received_payments_per_month_dict = {date: amount for date, amount in received_payments_per_month_dict.items() if date <= current_month}
-            payouts_per_month_dict = {date: amount for date, amount in payouts_per_month_dict.items() if date <= current_month}
-            payment_activities_per_month_dict = {date: count for date, count in payment_activities_per_month_dict.items() if date <= current_month}
-
+            # Fill missing months with zeros
+            fill_missing_months(received_payments_per_month_dict)
+            fill_missing_months(payouts_per_month_dict)
+            fill_missing_months(payment_activities_per_month_dict)
 
             extra_data = {
                 'total_received_payments': total_received_payments,
@@ -143,3 +142,6 @@ class AdminDashboardController:
             db.session.rollback()
             db.session.close()
             return error_response('An error occurred creating an Admin', 500)
+        
+
+
