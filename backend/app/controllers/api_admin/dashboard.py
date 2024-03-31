@@ -72,13 +72,14 @@ class AdminDashboardController:
             # Format data for bar chart
 
             current_month = datetime.datetime.now().strftime('%m')
+            year = datetime.datetime.now().strftime('%y')
             received_payments_per_month_dict = {date: amount for date, amount in received_payments_per_month}
             payouts_per_month_dict = {date: amount for date, amount in payouts_per_month}
             payment_activities_per_month_dict = {date: count for date, count in payment_activities_per_month}
 
             # Add missing months with value 0
             for month in range(int(current_month), int(current_month)-12, -1):
-                month_str = f'{month:02d}'
+                month_str = f'{year}-{month:02d}'
                 if month_str not in received_payments_per_month_dict:
                     received_payments_per_month_dict[month_str] = 0
                 if month_str not in payouts_per_month_dict:
