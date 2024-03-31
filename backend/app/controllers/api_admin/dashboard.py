@@ -68,11 +68,13 @@ class AdminDashboardController:
             # Calculate total number of approved tasks
             total_approved_tasks = Task.query.filter_by(status=TaskStatus.APPROVED).count()
 
+
             # Format data for bar chart
-            current_month = datetime.datetime.now().strftime('%Y-%m')
-            received_payments_per_month_dict = {date.strftime('%Y-%m'): amount for date, amount in received_payments_per_month}
-            payouts_per_month_dict = {date.strftime('%Y-%m'): amount for date, amount in payouts_per_month}
-            payment_activities_per_month_dict = {date.strftime('%Y-%m'): count for date, count in payment_activities_per_month}
+
+            current_month = datetime.datetime.now().strftime('%m')
+            received_payments_per_month_dict = {date: amount for date, amount in received_payments_per_month}
+            payouts_per_month_dict = {date: amount for date, amount in payouts_per_month}
+            payment_activities_per_month_dict = {date: count for date, count in payment_activities_per_month}
 
             # Add missing months with value 0
             for month in range(int(current_month), int(current_month)-12, -1):
@@ -83,11 +85,6 @@ class AdminDashboardController:
                     payouts_per_month_dict[month_str] = 0
                 if month_str not in payment_activities_per_month_dict:
                     payment_activities_per_month_dict[month_str] = 0
-
-            # Convert date to string before calling strftime
-            received_payments_per_month_dict = {date.strftime('%Y-%m'): amount for date, amount in received_payments_per_month if isinstance(date, datetime.datetime)}
-            payouts_per_month_dict = {date.strftime('%Y-%m'): amount for date, amount in payouts_per_month if isinstance(date, datetime.datetime)}
-            payment_activities_per_month_dict = {date.strftime('%Y-%m'): count for date, count in payment_activities_per_month if isinstance(date, datetime.datetime)}
 
             # Return only the available months
             received_payments_per_month_dict = {date: amount for date, amount in received_payments_per_month_dict.items() if date <= current_month}
