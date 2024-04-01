@@ -33,24 +33,22 @@ from datetime import datetime, timedelta
 
 
 def fill_missing_months(data_dict):
+    # Define the current date and adjust it to the first day of the month
     current_date = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    end_date = current_date - timedelta(days=current_date.day)
-    start_date = end_date - timedelta(days=365)
+    # Calculate the start date as exactly 11 months before the current month
+    start_date = current_date - timedelta(days=365.25/12 * 11)
 
-    while start_date <= end_date:
+    for _ in range(12):  # Iterate exactly 12 times
+        # Format the start_date to "YYYY-MM" format
         formatted_date = start_date.strftime('%Y-%m')
-        if formatted_date not in data_dict:
-            data_dict[formatted_date] = 0
-        start_date += timedelta(days=31)  # Moving to the next month
-
-    # Sort the data_dict by keys
-    sorted_data_dict = dict(sorted(data_dict.items()))
-
-    # Get the last 12 values from the sorted_data_dict
-    last_12_values = dict(list(sorted_data_dict.items())[-12:])
-
-    # Return the last 12 values
-    return last_12_values
+        # If this month isn't in the data dictionary, add it with a 0 value
+        data_dict.setdefault(formatted_date, 0)
+        # Move to the next month
+        # Adjusting month and year as necessary
+        if start_date.month == 12:
+            start_date = start_date.replace(year=start_date.year + 1, month=1)
+        else:
+            start_date = start_date.replace(month=start_date.month + 1)
 
 
 class AdminDashboardController:
