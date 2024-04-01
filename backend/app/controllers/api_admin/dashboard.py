@@ -41,7 +41,16 @@ def fill_missing_months(data_dict):
         formatted_date = start_date.strftime('%Y-%m')
         if formatted_date not in data_dict:
             data_dict[formatted_date] = 0
-        start_date += timedelta(days=30)  # Moving to the next month
+        start_date += timedelta(days=31)  # Moving to the next month
+
+    # Sort the data_dict by keys
+    sorted_data_dict = dict(sorted(data_dict.items()))
+
+    # Get the last 13 values from the sorted_data_dict
+    last_13_values = dict(list(sorted_data_dict.items())[-13:])
+
+    # Return the last 13 values
+    return last_13_values
 
 
 class AdminDashboardController:
