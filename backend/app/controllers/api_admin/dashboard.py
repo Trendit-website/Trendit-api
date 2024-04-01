@@ -89,10 +89,10 @@ class AdminDashboardController:
 
 
             # Calculate total number of new users per month
-            new_users_per_month = db.session.query(func.to_char(Trendit3User.created_at, 'YYYY-MM'),
-                                                   func.count(Trendit3User.id)).group_by(func.to_char(Trendit3User.created_at, 'YYYY-MM')).all()
+            new_users_per_month = db.session.query(func.to_char(Trendit3User.date_joined, 'YYYY-MM'),
+                                                   func.count(Trendit3User.id)).group_by(func.to_char(Trendit3User.date_joined, 'YYYY-MM')).all()
 
-    
+
             # Format data for bar chart
             received_payments_per_month_dict = {date: amount for date, amount in received_payments_per_month}
             payouts_per_month_dict = {date: amount for date, amount in payouts_per_month}
