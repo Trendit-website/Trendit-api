@@ -83,20 +83,27 @@ class AdminDashboardController:
 
             # Calculate total number of users with the role of advertiser
             total_advertiser_users = Trendit3User.query.filter(Trendit3User.roles.any(name=RoleNames.ADVERTISER)).count()
-
+            
             # Calculate total number of approved tasks
             total_approved_tasks = Task.query.filter_by(status=TaskStatus.APPROVED).count()
 
 
+            # Calculate total number of new users per month
+            new_users_per_month = db.session.query(func.to_char(Trendit3User.created_at, 'YYYY-MM'),
+                                                   func.count(Trendit3User.id)).group_by(func.to_char(Trendit3User.created_at, 'YYYY-MM')).all()
+
+    
             # Format data for bar chart
             received_payments_per_month_dict = {date: amount for date, amount in received_payments_per_month}
             payouts_per_month_dict = {date: amount for date, amount in payouts_per_month}
             payment_activities_per_month_dict = {date: count for date, count in payment_activities_per_month}
+            new_users_per_month_dict = {date: count for date, count in new_users_per_month}
 
             # Fill missing months with zeros
             fill_missing_months(received_payments_per_month_dict)
             fill_missing_months(payouts_per_month_dict)
             fill_missing_months(payment_activities_per_month_dict)
+            fill_missing_months(new_users_per_month_dict)
 
             extra_data = {
                 'total_received_payments': total_received_payments,
@@ -104,6 +111,7 @@ class AdminDashboardController:
                 'received_payments_per_month': received_payments_per_month_dict,
                 'payouts_per_month': payouts_per_month_dict,
                 'payment_activities_per_month': payment_activities_per_month_dict,
+                'new_users_per_month': new_users_per_month_dict,
                 'total_advertisers': total_advertiser_users,
                 'total_earners': total_earner_users,
                 'total_approved_tasks': total_approved_tasks
