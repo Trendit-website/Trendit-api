@@ -41,7 +41,7 @@ def fill_missing_months(data_dict):
         formatted_date = start_date.strftime('%Y-%m')
         if formatted_date not in data_dict:
             data_dict[formatted_date] = 0
-        start_date += timedelta(days=31)  # Moving to the next month
+        start_date += timedelta(days=30)  # Moving to the next month
 
 
 class AdminDashboardController:
