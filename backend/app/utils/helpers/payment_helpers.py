@@ -123,7 +123,7 @@ def initialize_payment(user_id, data, payment_type=None, meta_data=None):
         return success_response(msg, status_code, extra_data)
 
 
-def is_paid(user_id, payment_type):
+def is_paid(user_id: int, payment_type: str) -> bool:
     """
     Checks whether a user has paid a specific type of fee.
 
@@ -145,7 +145,7 @@ def is_paid(user_id, payment_type):
     return paid
 
 
-def debit_wallet(user_id, amount, payment_type=None):
+def debit_wallet(user_id: int, amount: int, payment_type=None) -> float:
     user = Trendit3User.query.get(user_id)
     
     if user is None:
@@ -171,14 +171,14 @@ def debit_wallet(user_id, amount, payment_type=None):
         db.session.add(payment, transaction)
         db.session.commit()
         send_other_emails(user.email, email_type='debit', amount=amount) # send debit alert to user's mail
-        return 'Wallet debited successful'
+        return wallet.balance
     except Exception as e:
         # Handle the exception appropriately (rollback, log the error, etc.)
         db.session.rollback()
         raise e
 
 
-def credit_wallet(user_id: int, amount):
+def credit_wallet(user_id: int, amount: int) -> float:
     user = Trendit3User.query.get(user_id)
     
     if user is None:
@@ -194,7 +194,7 @@ def credit_wallet(user_id: int, amount):
         # Credit the wallet
         wallet.balance += amount
         db.session.commit()
-        return 'wallet credited successfully'
+        return wallet.balance
     except Exception as e:
         # Handle the exception appropriately (rollback, log the error, etc.)
         db.session.rollback()
