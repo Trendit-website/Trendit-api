@@ -16,12 +16,19 @@ class AdminTaskController:
     @staticmethod
     def get_all_tasks():
         try:
-            tasks = Task.query.all()
-            task_list = []
-            for task in tasks:
-                task_list.append(task.to_dict())
+            page = request.args.get('page', 1, type=int)
+            per_page = request.args.get('per_page', 15, type=int)
+            
+            tasks = Task.query.paginate(page=page, per_page=per_page, error_out=False)
+            
+            if page > tasks.pages:
+                return success_response('No content', 204, {'tasks': []})
+            
+            task_list = [task.to_dict() for task in tasks.items]
+            
             extra_data = {
-                'total': len(task_list),
+                'total': tasks.total,
+                'pages': tasks.pages,
                 'tasks': task_list
             }
 

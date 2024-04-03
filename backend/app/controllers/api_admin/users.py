@@ -13,12 +13,19 @@ class AdminUsersController:
     @staticmethod
     def get_all_users():
         try:
-            users = Trendit3User.query.all()
-            user_list = []
-            for user in users:
-                user_list.append(user.to_dict())
+            page = request.args.get('page', default=1, type=int)
+            per_page = request.args.get('per_page', default=10, type=int)
+            
+            users = Trendit3User.query.paginate(page=page, per_page=per_page, error_out=False)
+            
+            if page > users.pages:
+                return success_response('No content', 204, {'users': []})
+            
+            user_list = [user.to_dict() for user in users.items]
+            
             extra_data = {
-                'total': len(user_list),
+                'total': users.total,
+                'pages': users.pages,
                 'users': user_list
             }
 
