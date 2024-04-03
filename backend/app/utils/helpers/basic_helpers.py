@@ -177,7 +177,7 @@ def generate_slug(name: str, type: str, existing_obj=None) -> str:
     return slug
 
 
-def console_log(label='Label', data=None):
+def console_log(label: str ='Label', data: any =None) -> None:
     """
     Print a formatted message to the console for visual clarity.
 
@@ -189,7 +189,7 @@ def console_log(label='Label', data=None):
     print(f'\n\n{label:-^50}\n', data, f'\n{"//":-^50}\n\n')
 
 
-def log_exception(label='EXCEPTION', data='Nothing'):
+def log_exception(label: str ='EXCEPTION', data='Nothing') -> None:
     """
     Log an exception with details to a logging handler for debugging.
 

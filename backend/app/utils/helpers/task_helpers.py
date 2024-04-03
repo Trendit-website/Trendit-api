@@ -382,12 +382,16 @@ def get_user_tasks_metrics(user: object) -> dict:
 
         # Build the query
         tasks_query = Task.query.filter_by(trendit3_user_id=user.id)
-        tasks_query = tasks_query.filter(Task.date_created >= month_start)
+        tasks_query = tasks_query.filter(Task.date_created >= month_start) # get task since the beginning of the month
 
         # Count the tasks
-        month_start_total_tasks = tasks_query.count()
-        task_metrics = user
+        month_total_task = tasks_query.count()
+        task_metrics = {
+            'all_time_total_tasks': user.total_tasks,
+            'month_total_task': month_total_task,
+        }
     except Exception as e:
-        pass
+        log_exception('An exception occurred getting getting task metrics', e)
+        raise e
     
     
