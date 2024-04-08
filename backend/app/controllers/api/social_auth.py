@@ -1,6 +1,6 @@
 import logging
 from datetime import timedelta
-from flask import request, make_response
+from flask import request, make_response, current_app
 from sqlalchemy.exc import ( IntegrityError, DataError, DatabaseError, InvalidRequestError, )
 from werkzeug.security import generate_password_hash
 from werkzeug.exceptions import UnsupportedMediaType
@@ -22,6 +22,7 @@ from ...models.membership import Membership
 from ...models.payment import Wallet
 from ...utils.helpers.basic_helpers import console_log, log_exception
 from ...utils.helpers.response_helpers import error_response, success_response
+from ...utils.helpers.user_helpers import get_trendit3_user_by_google_id
 from ...utils.helpers.location_helpers import get_currency_info
 from ...utils.helpers.auth_helpers import generate_six_digit_code, send_code_to_email, save_pwd_reset_token
 from ...utils.helpers.user_helpers import is_user_exist, get_trendit3_user, referral_code_exists
@@ -278,7 +279,7 @@ class SocialAuthController:
 
         # return redirect(authorization_url)
         extra_data = {'authorization_url': authorization_url}
-        print(authorization_url)
+        # print(authorization_url)
         return success_response("Successful: redirect the user to the authorization url", 200, extra_data)
     
 
@@ -294,10 +295,46 @@ class SocialAuthController:
         # Use the token to make a request to the Google API to get user data
         response = google.get(GOOGLE_USER_INFO_URL)
 
-        if response.status_code == 200:
-            user_data = response.json()
-            # Return the user's data (you can customize this response as needed)
-            return jsonify(user_data), 200
-        else:
-            return 'Failed to fetch user data from Google API'
+        try:
 
+            if response.status_code == 200:
+                user_data = response.json()
+                # Return the user's data (you can customize this response as needed)
+                id = user_data['id']
+                email = user_data['email']
+                # user = get_trendit3_user_by_google_id(id)
+                user = get_trendit3_user(email)
+            
+                if not user:
+                    return error_response('Google Account is incorrect or doesn\'t exist', 401)
+                
+                # Check if user has enabled 2FA
+                user_settings = user.user_settings
+                user_security_setting = user_settings.security_setting
+                two_factor_method = user_security_setting.two_factor_method if user_security_setting else None
+                
+                identity = {
+                    'username': user.username,
+                    'email': user.email,
+                    'two_factor_method': two_factor_method
+                }
+
+                access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=1440), additional_claims={'type': 'access'})
+                user_data = user.to_dict()
+                extra_data = {'access_token':access_token, 'user_data':user_data}
+                msg = 'Logged in successfully'
+
+                api_response = success_response(msg, 200, extra_data)
+        
+        except UnsupportedMediaType as e:
+            logging.exception(f"An UnsupportedMediaType exception occurred: {e}")
+            api_response = success_response(f"{str(e)}", 415)
+            
+        except Exception as e:
+            logging.exception(f"An exception occurred trying to login: {e}")
+            api_response = success_response(f'An Unexpected error occurred processing the request.', 500)
+            
+        finally:
+            db.session.close()
+        
+        return api_response
