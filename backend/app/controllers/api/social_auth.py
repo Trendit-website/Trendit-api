@@ -255,18 +255,60 @@ class SocialAuthController:
         # if request.args.get('state') != session.pop('oauth_state', None):
         #     return 'Invalid state'
 
-        google = OAuth2Session(GOOGLE_CLIENT_ID, redirect_uri=GOOGLE_SIGNUP_REDIRECT_URI)
-        token = google.fetch_token(GOOGLE_TOKEN_URL, client_secret=GOOGLE_CLIENT_SECRET, authorization_response=request.url)
+        try:
 
-        # Use the token to make a request to the Google API to get user data
-        response = google.get(GOOGLE_USER_INFO_URL)
+            google = OAuth2Session(GOOGLE_CLIENT_ID, redirect_uri=GOOGLE_SIGNUP_REDIRECT_URI)
+            token = google.fetch_token(GOOGLE_TOKEN_URL, client_secret=GOOGLE_CLIENT_SECRET, authorization_response=request.url)
 
-        if response.status_code == 200:
-            user_data = response.json()
-            # Return the user's data (you can customize this response as needed)
-            return jsonify(user_data), 200
-        else:
-            return 'Failed to fetch user data from Google API'
+            # Use the token to make a request to the Google API to get user data
+            response = google.get(GOOGLE_USER_INFO_URL)
+
+            if response.status_code == 200:
+                user_data = response.json()
+                # Return the user's data (you can customize this response as needed)
+                email = user_data['email']
+                # referral_code = user_data['referral_code']
+                if not email:
+                    return error_response('Email is required', 400)
+
+                if Trendit3User.query.filter_by(email=email).first():
+                    return error_response('Email already taken', 409)
+                
+                # if referral_code and not Trendit3User.query.filter_by(username=referral_code).first():
+                #     return error_response('Referral code is invalid', 404)
+
+                # first check if user is already a temporary user.
+                user = TempUser.query.filter_by(email=email).first()
+                if user:
+                    return success_response('User registered successfully', 201, {'user_data': user.to_dict()})
+                
+                new_user = TempUser(email=email)
+                db.session.add(new_user)
+                db.session.commit()
+                
+                user_data = new_user.to_dict()
+                extra_data = {'user_data': user_data}
+                
+                # TODO: Make asynchronous
+                # if 'referral_code' in user_info:
+                #     referral_code = user_info['referral_code']
+                #     referrer = get_trendit3_user(referral_code)
+                #     referral_history = ReferralHistory.create_referral_history(email=email, status='pending', trendit3_user=referrer, date_joined=new_user.date_joined)
+                
+                return success_response('User registered successfully', 201, extra_data)
+            
+            else:
+                return error_response('Error occurred processing the request.', 500)
+                
+        except Exception as e:
+            db.session.rollback()
+            logging.exception(f"An exception occurred during registration. {e}") # Log the error details for debugging
+            api_response = error_response('Error occurred processing the request.', 500)
+
+        finally:
+            db.session.close()
+
+        # return api_response
 
     
     @staticmethod
@@ -302,8 +344,10 @@ class SocialAuthController:
                 # Return the user's data (you can customize this response as needed)
                 id = user_data['id']
                 email = user_data['email']
+                print(email)
                 # user = get_trendit3_user_by_google_id(id)
                 user = get_trendit3_user(email)
+                print(user)
             
                 if not user:
                     return error_response('Google Account is incorrect or doesn\'t exist', 401)
