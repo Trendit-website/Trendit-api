@@ -285,6 +285,7 @@ class SocialAuthController:
                 new_user = TempUser(email=email)
                 db.session.add(new_user)
                 db.session.commit()
+                db.session.close()
                 
                 user_data = new_user.to_dict()
                 extra_data = {'user_data': user_data}
@@ -302,11 +303,13 @@ class SocialAuthController:
                 
         except Exception as e:
             db.session.rollback()
+            db.session.close()
             logging.exception(f"An exception occurred during registration. {e}") # Log the error details for debugging
             api_response = error_response('Error occurred processing the request.', 500)
+            return api_response
 
-        finally:
-            db.session.close()
+        # finally:
+        #     db.session.close()
 
         # return api_response
 
@@ -344,41 +347,45 @@ class SocialAuthController:
                 # Return the user's data (you can customize this response as needed)
                 id = user_data['id']
                 email = user_data['email']
-                print(email)
                 # user = get_trendit3_user_by_google_id(id)
                 user = get_trendit3_user(email)
-                print(user)
             
                 if not user:
                     return error_response('Google Account is incorrect or doesn\'t exist', 401)
                 
-                # Check if user has enabled 2FA
-                user_settings = user.user_settings
-                user_security_setting = user_settings.security_setting
-                two_factor_method = user_security_setting.two_factor_method if user_security_setting else None
+                # # Check if user has enabled 2FA
+                # user_settings = user.user_settings
+                # user_security_setting = user_settings.security_setting
+                # two_factor_method = user_security_setting.two_factor_method if user_security_setting else None
                 
-                identity = {
-                    'username': user.username,
-                    'email': user.email,
-                    'two_factor_method': two_factor_method
-                }
+                # identity = {
+                #     'username': user.username,
+                #     'email': user.email,
+                #     'two_factor_method': two_factor_method
+                # }
 
                 access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=1440), additional_claims={'type': 'access'})
-                user_data = user.to_dict()
-                extra_data = {'access_token':access_token, 'user_data':user_data}
-                msg = 'Logged in successfully'
+                # user_data = user.to_dict()
+                # extra_data = {'access_token':access_token, 'user_data':user_data}
+                # msg = 'Logged in successfully'
 
-                api_response = success_response(msg, 200, extra_data)
+                # api_response = success_response(msg, 200, extra_data)
+
+                return redirect(f'https://app.trendit3.com/verify-login?access_token={access_token}')
         
         except UnsupportedMediaType as e:
+            db.session.close()
             logging.exception(f"An UnsupportedMediaType exception occurred: {e}")
             api_response = success_response(f"{str(e)}", 415)
+            return api_response
             
         except Exception as e:
+            db.session.close()
             logging.exception(f"An exception occurred trying to login: {e}")
             api_response = success_response(f'An Unexpected error occurred processing the request.', 500)
+            return api_response
             
-        finally:
-            db.session.close()
+        # finally:
+        #     db.session.close()
         
-        return api_response
+        # return api_response
