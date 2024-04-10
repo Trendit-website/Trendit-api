@@ -1,0 +1,30 @@
+{% extends "email/base/base_email.html" %}
+
+{% block title %}Welcome to Trendit³{% endblock %}
+
+{% block bigimg %}
+<div style="position: relative; background-color: #FFD700; border-radius: 10px;">
+    <img src="https://drive.google.com/uc?export=view&id=1xQYciyWSS8T-BM7LJgu-qWDCoMQHo89A" alt="engage" style="display: block; margin: 0 auto; max-width: 100%; border-radius: 10px;">
+    <img src="https://drive.google.com/uc?export=view&id=1A4msfGLEO0lA6BWvBVcFVP-xAzyh0KwY" alt="engage" style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); max-width: 80%; width: auto;">
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="font-medium font-Campton" style="font-size: 24px; margin-bottom: 20px;">Dear {{ username }},</div>
+<div style="font-size: 16px; margin-bottom: 20px;">
+    Welcome to Trendit³! We're excited to have you join our community.
+</div>
+{% endblock %}
+
+{% block button %}
+<div style="text-align: center; margin-bottom: 20px;  width: 290px; display: flex; justify-content: center; align-items: center; margin: 10px auto;">
+    <a href="{{ redirect_link }}" style="background-color: #ff00ff; color: #ffffff; padding: 12px; text-decoration: none; border-radius: 100px; font-size: 16px; width: inherit;">Continue</a>
+</div>
+{% endblock %}
+
+
+{% block more_content %}
+<div style="font-size: 16px;">
+    Please contact us with any questions, we're always happy to help.<br><br>Cheers,<br>The Trendit team
+</div>
+{% endblock %}

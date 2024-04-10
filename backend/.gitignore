@@ -1,0 +1,5 @@
+**/__pycache__/
+.vscode/
+env/
+migrations_local/
+migrations_live/

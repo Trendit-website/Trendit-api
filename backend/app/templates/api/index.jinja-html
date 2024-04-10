@@ -1,0 +1,22 @@
+{% extends 'api/base/base.jinja-html' %}
+{% block title %}Trendit³ - {{ super() }}{% endblock %}
+
+{% block content %}
+
+<div class="content flex flexCenter">
+    <div class="card trendit-box">
+        <div class="logo fitImg">
+            <img src="{{ url_for('static', filename='img/Trendit/Trendit3-Wordmark-Logo_Default.png') }}" alt="Trenit">
+        </div>
+        <h1 class="title"> Trendit³ API </h1>
+        <p> Trendit³ is a dynamic and innovative platform that provides users with an opportunity to earn money while engaging in a
+        variety of daily activities. </p>
+
+        <div class="buttons-box">
+            <a class="btn" href="https://trendit-team.postman.co/documentation/23277777-83cd2a57-448e-4c92-9787-fa331cc83b41"> View Docs </a>
+            <a class="btn" href="https://trendit3.com/"> View Website </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

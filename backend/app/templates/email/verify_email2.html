@@ -1,0 +1,27 @@
+{% extends "email/base/base_email.html" %}
+
+{% block title %}Trendit³ - Verify Email{% endblock %}
+
+{% block content %}
+<div style="width: 100%; text-align: left;">
+    <div style="margin-bottom: 32px;">
+        <div style="font-size: 24px; font-family: Campton; font-weight: 500; color: white;">
+            Thanks for your interest in our platform.
+        </div>
+    </div>
+    <div style="margin-bottom: 24px;">
+        <div style="font-size: 16px; font-family: Campton; font-weight: 400; color: #B1B1B1;">
+            Please use the confirmation code below to confirm your email and get signed up immediately.
+        </div>
+    </div>
+    <div style="margin-bottom: 24px;">
+        <div style="font-size: 16px; font-family: Campton; font-weight: 400; color: #B1B1B1;">
+            Your verification code is:
+        </div>
+    </div>
+    <div style="font-size: 32px; font-family: Campton; font-weight: 700; color: white; letter-spacing: 10.24px;">
+        {{ verification_code }}
+    </div>
+</div>
+
+{% endblock %}

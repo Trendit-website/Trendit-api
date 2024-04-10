@@ -1,0 +1,57 @@
+{% extends 'email/base/base.html' %}
+{% block title %} Email Verification Code {% endblock %}
+
+{% block internalCSS %}
+<style>
+    .container {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .card {
+        max-width: 500px;
+        border-radius: 20px;
+        padding: 40px 30px;
+        position: relative;
+        color: #333;
+        background-color: #f1f2f4de;
+        box-shadow: 0rem 0.125rem 0.25rem #1f21241a, 0rem 0.0625rem 0.375rem #1f21243d;
+        -moz-box-shadow: 0rem 0.125rem 0.25rem #1f21241a, 0rem 0.0625rem 0.375rem #1f21243d;
+        -webkit-box-shadow: 0rem 0.125rem 0.25rem #1f21241a, 0rem 0.0625rem 0.375rem #1f21243d;
+    }
+
+    .card h1 {
+        font-size: 26px;
+        margin: 0px 0px 30px;
+    }
+
+    .card p {
+        font-size: 1.05em;
+        margin: 0px 0px 20px;
+    }
+
+    .card .v-code {
+        font-size: 40px;
+        font-weight: bolder;
+        letter-spacing: 20px;
+    }
+</style>
+{% endblock %}
+
+
+{% block content %}
+
+
+<div class="container">
+    <div class="card">
+        <h1 class="heading">Thanks For your interest in our platform.</h1>
+        <p> Please use the confirmation code below to confirm your email and get signed up immediately. </p>
+
+        <p> Your verification code is: </p>
+        <span class="v-code"> {{ verification_code }} </span>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "email/base/base_email.html" %}
+
+{% block title %}Login to Trendit³ Admin{% endblock %}
+
+
+{% block content %}
+<div class="font-medium font-Campton" style="font-size: 24px; margin-bottom: 20px;">Dear {{ username }},</div>
+<div style="font-size: 16px; margin-bottom: 20px;">
+    Your login link is below. Please click on the link to login to the admin dashboard.<br><br>Thank you for being a part of the Trendit community.<br><br>Best,<br>The Trendit team
+</div>
+{% endblock %}
+
+{% block button %}
+<div style="text-align: center; margin-bottom: 20px;  width: 290px; display: flex; justify-content: center; align-items: center; margin: 10px auto;">
+    <a href="{{ redirect_link }}" style="background-color: #ff00ff; color: #ffffff; padding: 12px; text-decoration: none; border-radius: 100px; font-size: 16px; width: inherit;">Continue</a>
+</div>
+{% endblock %}
+
+
+{% block more_content %}
+<div style="font-size: 16px;">
+    Please contact us with any questions, we're always happy to help.<br><br>Cheers,<br>The Trendit team
+</div>
+{% endblock %}
