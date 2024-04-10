@@ -156,7 +156,7 @@ def initialize_paystack_payment(amount: int, payload: dict, payment_type: str, u
     
     return status, extra_data
 
-def initialize_payment(data, payment_type=None, meta_data=None):
+def initialize_payment(user_id, data, payment_type=None, meta_data=None):
     """
         Initialize payment for a user.
 
@@ -183,7 +183,7 @@ def initialize_payment(data, payment_type=None, meta_data=None):
         
         callback_url = data.get('callback_url')
         meta = {
-            "user_id": current_user_id,
+            "user_id": user_id,
             "email": current_user.email,
             "username": current_user.username,
             "payment_type": payment_type,
@@ -192,7 +192,7 @@ def initialize_payment(data, payment_type=None, meta_data=None):
             meta.update(meta_data)
         
         
-        if is_paid(current_user_id, payment_type):
+        if is_paid(user_id, payment_type):
             return error_response('Payment cannot be processed because it has already been made.', 409)
         
         payload = construct_payload(amount=amount, callback_url=callback_url, meta=meta, user=current_user)

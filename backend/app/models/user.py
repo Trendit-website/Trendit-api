@@ -74,6 +74,10 @@ class Trendit3User(db.Model):
         return check_password_hash(self.thePassword, password)
     
     @property
+    def full_name(self):
+        return f"{self.profile.firstname} {self.profile.lastname}"
+    
+    @property
     def is_2fa_enabled(self):
         return self.user_settings.is_2fa_enabled
     
