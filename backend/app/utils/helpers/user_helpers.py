@@ -105,6 +105,56 @@ def get_trendit3_user(email_username):
     return Trendit3User.query.filter(Trendit3User.username == email_username).first()
 
 
+def get_trendit3_user_by_google_id(google_id):
+    """
+    Retrieves a Trendit3User object from the database based on social ID.
+
+    Args:
+        social_id: The social ID to search for.
+
+    Returns:
+        The Trendit3User object if found, or None if not found.
+    """
+    return Trendit3User.query.filter(Trendit3User.social_ids.google_id == google_id).first()
+
+
+def get_trendit3_user_by_facebook_id(facebook_id):
+    """
+    Retrieves a Trendit3User object from the database based on social ID.
+
+    Args:
+        social_id: The social ID to search for.
+
+    Returns:
+        The Trendit3User object if found, or None if not found.
+    """
+    return Trendit3User.query.filter(Trendit3User.social_ids.facebook_id == facebook_id).first()
+
+
+def get_trendit3_user_by_x_id(x_id):
+    """
+    Retrieves a Trendit3User object from the database based on social ID.
+
+    Args:
+        social_id: The social ID to search for.
+
+    Returns:
+        The Trendit3User object if found, or None if not found.
+    """
+    return Trendit3User.query.filter(Trendit3User.social_ids.x_id == x_id).first()
+
+
+def get_trendit3_user_by_tiktok_id(tiktok_id):
+    """
+    Retrieves a Trendit3User object from the database based on social ID.
+
+    Args:
+        social_id: The social ID to search for.
+
+    Returns:
+        The Trendit3User object if found, or None if not found.
+    """
+    return Trendit3User.query.filter(Trendit3User.social_ids.tiktok_id == tiktok_id).first()
 
 def generate_referral_code(length=6):
     while True:
