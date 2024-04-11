@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    {% block CSSandJS_Links %}{% endblock %}
+    {% block styles_script %}{% endblock %}
+
+</head>
+
+<body>
+    <!--
+    <header class="flex">
+        <div class="logo flex">
+            <h1>Trendit³</h1>
+        </div>
+    </header>
+    -->
+
+    <div class="wrapper">
+        <div class="alertBox">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert fade {{ category }} visible">
+                <div class="alertTxt">
+                    {{ message }} {% if category == 'info login' %} Go to <a href="{{ url_for('ctrlPanel.login') }}"> login
+                        page</a> {% endif %}
+                </div>
+                <a class="close" data-dismiss="alert">&times;</a>
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+        </div>
+
+        {% block content %}{% endblock %}
+    </div>
+
+    
+    {% block scripts %}
+    {% endblock %}
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    <style>
+        @import url('https://fonts.cdnfonts.com/css/campton');
+    </style>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Campton', Arial, sans-serif; background-color: #000000;">
+    <div style="max-width: 666px; margin: auto; padding: 20px;">
+        <div style="background-color: #000000; border-radius: 20px; padding: 20px;">
+            <div style="margin-bottom: 20px;">
+                <img src="https://drive.google.com/uc?export=view&id=1kxXGeFWoQtEkVCxIyX2le-KL1cObF57k" alt="logo" style="display: block; margin: 0 auto;">
+            </div>
+            {% block bigimg %}{% endblock %}
+            <div style="color: #ffffff;">
+                {% block content %}{% endblock %}
+                {% block button %}{% endblock %}
+                {% block morecontent %}{% endblock %}
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 20px;">
+            <div style="font-size: 12px; color: #b1b1b1;">Privacy Policy • Contact us • Read our Blog</div>
+            <div style="font-size: 12px; color: #b1b1b1;">Copyright 2024 Atlassian Pty Ltd. All rights reserved. We are located at<br>341 George Street, Sydney, NSW, 2000, Australia</div>
+        </div>
+
+        <!-- social media icons -->
+        <div style="margin-top: 20px; text-align: center;">
+            <div style="display: inline-flex; justify-content: center; align-items: center; gap: 9px;">
+                <div style="width: 18px; height: 18px; display: flex; justify-content: center; align-items: center;">
+                    <img src="https://drive.google.com/uc?export=view&id=1uAAyPyms-0gmvXacICEa584Ir8ap-kC6" alt="fb icon" style="width: 100%;">
+                </div>
+                <div style="width: 18px; height: 18px; display: flex; justify-content: center; align-items: center;">
+                    <img src="https://drive.google.com/uc?export=view&id=1v4YikD7lYTgLMNeSr7Ge4WiapD3KSmiT" alt="insta icon" style="width: 100%;">
+                </div>
+                <div style="width: 18px; height: 18px; display: flex; justify-content: center; align-items: center;">
+                    <img src="https://drive.google.com/uc?export=view&id=1hS-KQYkHm-5gcGxUVfbucCJ150_03t1y" alt="yt icon" style="width: 100%;">
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
