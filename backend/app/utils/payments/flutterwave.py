@@ -173,6 +173,7 @@ def verify_flutterwave_payment(data):
         else:
             msg = 'An error occurred verifying payment: Contact the admin'
             status = False
+            removed_message = response_data.pop('message')
             extra_data = response_data
         
         console_log('extra_data', extra_data)
