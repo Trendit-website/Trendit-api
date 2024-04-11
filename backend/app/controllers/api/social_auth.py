@@ -371,7 +371,7 @@ class SocialAuthController:
 
                 # api_response = success_response(msg, 200, extra_data)
 
-                return redirect(f'https://app.trendit3.com/verify-login?access_token={access_token}')
+                return redirect(f'https://app.trendit3.com/login?access_token={access_token}')
         
         except UnsupportedMediaType as e:
             db.session.close()
