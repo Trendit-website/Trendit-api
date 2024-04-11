@@ -349,6 +349,7 @@ class SocialAuthController:
                 email = user_data['email']
                 # user = get_trendit3_user_by_google_id(id)
                 user = get_trendit3_user(email)
+                print(user)
             
                 if not user:
                     return error_response('Google Account is incorrect or doesn\'t exist', 401)
