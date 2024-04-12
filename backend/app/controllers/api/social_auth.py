@@ -17,15 +17,16 @@ import app
 
 from ...extensions import db
 from ...models.role import Role
-from ...models.user import TempUser, Trendit3User, Address, Profile, OneTimeToken, ReferralHistory
+from ...models import Role, RoleNames, TempUser, Trendit3User, Address, Profile, OneTimeToken, ReferralHistory, Membership, Wallet, UserSettings
 from ...models.membership import Membership
 from ...models.payment import Wallet
-from ...utils.helpers.basic_helpers import console_log, log_exception
+from ...utils.helpers.basic_helpers import console_log, log_exception, generate_random_string
 from ...utils.helpers.response_helpers import error_response, success_response
 from ...utils.helpers.user_helpers import get_trendit3_user_by_google_id
 from ...utils.helpers.location_helpers import get_currency_info
 from ...utils.helpers.auth_helpers import generate_six_digit_code, send_code_to_email, save_pwd_reset_token
 from ...utils.helpers.user_helpers import is_user_exist, get_trendit3_user, referral_code_exists
+from ...utils.helpers.mail_helpers import send_other_emails, send_code_to_email
 
 
 
@@ -264,9 +265,9 @@ class SocialAuthController:
             response = google.get(GOOGLE_USER_INFO_URL)
 
             if response.status_code == 200:
-                user_data = response.json()
+                user_google_data = response.json()
                 # Return the user's data (you can customize this response as needed)
-                email = user_data['email']
+                email = user_google_data['email']
                 # referral_code = user_data['referral_code']
                 if not email:
                     return error_response('Email is required', 400)
@@ -278,17 +279,56 @@ class SocialAuthController:
                 #     return error_response('Referral code is invalid', 404)
 
                 # first check if user is already a temporary user.
-                user = TempUser.query.filter_by(email=email).first()
-                if user:
-                    return success_response('User registered successfully', 201, {'user_data': user.to_dict()})
+                # user = TempUser.query.filter_by(email=email).first()
+                # if user:
+                #     return success_response('User registered successfully', 201, {'user_data': user.to_dict()})
                 
-                new_user = TempUser(email=email)
-                db.session.add(new_user)
+                # temp_user = TempUser(email=email)
+                # user_data = temp_user.to_dict()
+                # user_google_id = user_google_data['user_id']
+                firstname = user_google_data['given_name']
+                lastname = user_google_data['family_name']
+                username = generate_random_string(12)
+
+                while (Trendit3User.query.filter_by(username=username).first()):
+                    username = generate_random_string(12)
+
+                new_user = Trendit3User(email=email, username=username)
+                new_user_profile = Profile(trendit3_user=new_user, firstname=firstname, lastname=lastname)
+                new_user_address = Address(trendit3_user=new_user)
+                new_membership = Membership(trendit3_user=new_user)
+                new_user_wallet = Wallet(trendit3_user=new_user)
+                new_user_setting = UserSettings(trendit3_user=new_user)
+                role = Role.query.filter_by(name=RoleNames.CUSTOMER).first()
+                if role:
+                    new_user.roles.append(role)
+
+                
+                db.session.add_all([new_user, new_user_profile, new_user_address, new_membership, new_user_wallet, new_user_setting])
+                # db.session.delete(temp_user)
+                
                 db.session.commit()
-                db.session.close()
-                
+
                 user_data = new_user.to_dict()
-                extra_data = {'user_data': user_data}
+            
+                referral = ReferralHistory.query.filter_by(email=email).first()
+                if referral:
+                    referral.update(username=username, status='registered', date_joined=new_user.date_joined)
+                
+                # create access token.
+                access_token = create_access_token(identity=new_user.id, expires_delta=timedelta(minutes=1440), additional_claims={'type': 'access'})
+                
+            
+                
+                # Send Welcome Email
+                try:
+                    send_other_emails(email, email_type='welcome') # send Welcome message to user's email
+                except Exception as e:
+                    logging.exception(f"Error sending Email: {str(e)}")
+                    return error_response(f'An error occurred while sending the verification email: {str(e)}', 500)
+
+
+                db.session.close()
                 
                 # TODO: Make asynchronous
                 # if 'referral_code' in user_info:
@@ -296,22 +336,26 @@ class SocialAuthController:
                 #     referrer = get_trendit3_user(referral_code)
                 #     referral_history = ReferralHistory.create_referral_history(email=email, status='pending', trendit3_user=referrer, date_joined=new_user.date_joined)
                 
-                return success_response('User registered successfully', 201, extra_data)
+                return redirect(f'https://app.trendit3.com/?access_token={access_token}')
             
             else:
-                return error_response('Error occurred processing the request.', 500)
+                return error_response('Error occurred processing the request. Response from google was not ok', 500)
                 
+        except IntegrityError as e:
+            db.session.rollback()
+            log_exception('Integrity Error:', e)
+            return error_response(f'User already exists: {str(e)}', 409)
+        except (DataError, DatabaseError) as e:
+            db.session.rollback()
+            log_exception('Database error occurred during registration', e)
+            return error_response('Error interacting to the database.', 500)
         except Exception as e:
             db.session.rollback()
+            log_exception('An error occurred during registration', e)
+            return error_response(f'An error occurred while processing the request: {str(e)}', 500)
+        finally:
             db.session.close()
-            logging.exception(f"An exception occurred during registration. {e}") # Log the error details for debugging
-            api_response = error_response('Error occurred processing the request.', 500)
-            return api_response
 
-        # finally:
-        #     db.session.close()
-
-        # return api_response
 
     
     @staticmethod
@@ -366,6 +410,8 @@ class SocialAuthController:
                 # }
 
                 access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=1440), additional_claims={'type': 'access'})
+
+                db.session.close()
                 # user_data = user.to_dict()
                 # extra_data = {'access_token':access_token, 'user_data':user_data}
                 # msg = 'Logged in successfully'
