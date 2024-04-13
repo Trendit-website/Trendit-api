@@ -271,7 +271,7 @@ class SocialAuthController:
                 user_google_data = response.json()
                 print(user_google_data)
                 # Return the user's data (you can customize this response as needed)
-                email = user_google_data['email']
+                email = user_google_data['email'] # not using .get() here beause this compulsorily has to work
                 # referral_code = user_data['referral_code']
                 if not email:
                     return error_response('Email is required', 400)
@@ -290,8 +290,8 @@ class SocialAuthController:
                 # temp_user = TempUser(email=email)
                 # user_data = temp_user.to_dict()
                 # user_google_id = user_google_data['user_id']
-                firstname = user_google_data['given_name']
-                lastname = user_google_data['family_name']
+                firstname = user_google_data.get('given_name', '')
+                lastname = user_google_data.get('family_name', '')
                 username = generate_random_string(12)
 
                 while (Trendit3User.query.filter_by(username=username).first()):
