@@ -198,3 +198,7 @@ def verify_flutterwave_payment(data):
         raise e
     
     return result
+
+
+def flutterwave_webhook():
+    pass

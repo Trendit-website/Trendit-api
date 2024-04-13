@@ -4,8 +4,8 @@
 @package: Trendit³
 """
 
-import requests
-from flask import json
+import requests, hmac, hashlib
+from flask import json, request, jsonify
 from sqlalchemy.exc import ( DataError, DatabaseError )
 
 from ...extensions import db
@@ -194,4 +194,22 @@ def verify_paystack_payment(data):
         raise e
     
     return result
+
+
+def paystack_webhook():
+    signature = request.headers.get('X-Paystack-Signature') # Get the signature from the request headers
+    secret_key = Config.PAYSTACK_SECRET_KEY # Get Paystack secret key
+    
+    data = json.loads(request.data) # Get the data from the request
+    console_log('DATA', data)
+    
+    # Create hash using the secret key and the data
+    hash = hmac.new(secret_key.encode(), msg=request.data, digestmod=hashlib.sha512)
+    
+    if not signature:
+        return jsonify({'status': 'error', 'message': 'No signature in headers'}), 403
+    
+    # Verify the signature
+    if not hmac.compare_digest(hash.hexdigest(), signature):
+        return jsonify({'status': 'error', 'message': 'Invalid signature'}), 400
 

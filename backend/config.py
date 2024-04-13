@@ -40,7 +40,7 @@ class Config:
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=30)
     
     
-    PAYMENT_GATEWAY = 'Flutterwave'
+    PAYMENT_GATEWAY = os.environ.get('PAYMENT_GATEWAY') or "Flutterwave"
     # Paystack Configurations
     PAYSTACK_API_URL = os.environ.get('PAYSTACK_API_URL') or "https://api.paystack.co"
     PAYSTACK_INITIALIZE_URL = os.environ.get('PAYSTACK_INITIALIZE_URL') or "https://api.paystack.co/transaction/initialize"
