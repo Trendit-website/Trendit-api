@@ -51,3 +51,20 @@ class AdminUsersController:
         except Exception as e:
             logging.exception("An exception occurred trying to get user:\n", str(e))
             return error_response('Error getting user', 500)
+        
+    @staticmethod
+    def delete_user(user_id: int):
+        try:
+            user = Trendit3User.query.get(user_id)
+            if user is None:
+                return error_response('User not found', 404)
+            db.session.delete(user)
+            db.session.commit()
+            db.session.close()
+            return success_response('User deleted successfully', 202)
+        
+        except Exception as e:
+            db.session.rollback()
+            db.session.close()
+            logging.exception("An exception occurred trying to delete user:\n", str(e))
+            return error_response('Error deleting user', 500)
