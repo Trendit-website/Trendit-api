@@ -269,6 +269,7 @@ class SocialAuthController:
 
             if response.status_code == 200:
                 user_google_data = response.json()
+                print(user_google_data)
                 # Return the user's data (you can customize this response as needed)
                 email = user_google_data['email']
                 # referral_code = user_data['referral_code']
