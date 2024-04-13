@@ -343,20 +343,27 @@ class SocialAuthController:
                 return redirect(f'https://app.trendit3.com/?access_token={access_token}')
             
             else:
-                return error_response('Error occurred processing the request. Response from google was not ok', 500)
+                error_response('Error occurred processing the request. Response from google was not ok', 500)
+                return redirect(f'https://app.trendit3.com/?error=Error_occurred_processing_the_request')
                 
         except IntegrityError as e:
             db.session.rollback()
             log_exception('Integrity Error:', e)
-            return error_response(f'User already exists: {str(e)}', 409)
+            error_response(f'User already exists: {str(e)}', 409)
+            return redirect(f'https://app.trendit3.com/?error=User_already_exists')
+        
         except (DataError, DatabaseError) as e:
             db.session.rollback()
             log_exception('Database error occurred during registration', e)
-            return error_response('Error interacting to the database.', 500)
+            error_response('Error interacting with the database.', 500)
+            return redirect(f'https://app.trendit3.com/?error=Error_interacting_with_the_database')
+            
         except Exception as e:
             db.session.rollback()
             log_exception('An error occurred during registration', e)
-            return error_response(f'An error occurred while processing the request: {str(e)}', 500)
+            error_response(f'An error occurred while processing the request: {str(e)}', 500)
+            return redirect(f'https://app.trendit3.com/?error=An_error_occurred_while_processing_the_request')
+            
         finally:
             db.session.close()
 
@@ -400,7 +407,8 @@ class SocialAuthController:
                 print(user)
             
                 if not user:
-                    return error_response('Google Account is incorrect or doesn\'t exist', 401)
+                    error_response('Google Account is incorrect or doesn\'t exist', 401)
+                    return redirect(f'https://app.trendit3.com/login?error=Google_Account_is_incorrect_or_doesnt_exist')
                 
                 # # Check if user has enabled 2FA
                 # user_settings = user.user_settings
@@ -415,28 +423,23 @@ class SocialAuthController:
 
                 access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=1440), additional_claims={'type': 'access'})
 
-                db.session.close()
-                # user_data = user.to_dict()
-                # extra_data = {'access_token':access_token, 'user_data':user_data}
-                # msg = 'Logged in successfully'
+                db.session.close() # close the session
+                msg = 'Logged in successfully'
 
-                # api_response = success_response(msg, 200, extra_data)
+                success_response(msg, 200)
 
                 return redirect(f'https://app.trendit3.com/login?access_token={access_token}')
         
         except UnsupportedMediaType as e:
             db.session.close()
             logging.exception(f"An UnsupportedMediaType exception occurred: {e}")
-            api_response = success_response(f"{str(e)}", 415)
-            return api_response
+            error_response(f"{str(e)}", 415)
+            
+            return redirect(f'https://app.trendit3.com/login?error=UnsupportedMediaType')
             
         except Exception as e:
             db.session.close()
             logging.exception(f"An exception occurred trying to login: {e}")
-            api_response = success_response(f'An Unexpected error occurred processing the request.', 500)
-            return api_response
+            error_response(f'An Unexpected error occurred processing the request.', 500)
             
-        # finally:
-        #     db.session.close()
-        
-        # return api_response
+            return redirect(f'https://app.trendit3.com/login?error=An_Unexpected_error_occurred_processing_the_request')
