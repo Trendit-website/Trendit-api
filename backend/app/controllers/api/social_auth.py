@@ -248,7 +248,10 @@ class SocialAuthController:
         # Save the state to compare it in the callback
         session['oauth_state'] = state
 
-        return redirect(authorization_url)
+        # return redirect(authorization_url)
+        extra_data = {'authorization_url': authorization_url}
+        # print(authorization_url)
+        return success_response("Successful: redirect the user to the authorization url", 200, extra_data)
 
     @staticmethod
     def google_signup_callback():
