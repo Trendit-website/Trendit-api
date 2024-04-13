@@ -45,7 +45,7 @@ def initialize_payment(user_id, data, payment_type=None, meta_data=None):
             return error_response('User not found', 404)
         
         # get payment info
-        amount = float(data.get('amount').replace(',', ''))
+        amount = float(str(data.get('amount')).replace(',', ''))
         payment_type = payment_type or data.get('payment_type')
         if payment_type not in Config.PAYMENT_TYPES:
             return error_response('payment type not supported on trendit, Please reach out to the admin', 406)
