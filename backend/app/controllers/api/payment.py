@@ -7,10 +7,12 @@ from ...extensions import db
 from ...models import (Trendit3User, BankAccount, Recipient, Payment, Transaction, Withdrawal, TaskPaymentStatus)
 from ...utils.helpers.response_helpers import error_response, success_response
 from ...utils.helpers.basic_helpers import console_log, log_exception
-from ...utils.helpers.payment_helpers import initialize_payment, credit_wallet, initiate_transfer
 from ...utils.helpers.bank_helpers import get_bank_code
 from ...utils.helpers.task_helpers import get_task_by_key
 from ...utils.helpers.mail_helpers import send_other_emails
+
+# import payment modules
+from ...utils.payments.utils import initialize_payment, credit_wallet, initiate_transfer
 from ...utils.payments.flutterwave import verify_flutterwave_payment
 from ...utils.payments.paystack import verify_paystack_payment
 from ...utils.payments.exceptions import TransactionMissingError, CreditWalletError
@@ -62,13 +64,14 @@ class PaymentController:
                 result = verify_paystack_payment(data)
             elif gateway == "flutterwave":
                 result = verify_flutterwave_payment(data)
-                
+            
+            msg = result['msg']
             extra_data = result['extra_data']
             
-            if result['status']:
-                api_response = success_response(result['msg'], 200, extra_data)
+            if result['success']:
+                api_response = success_response(msg, 200, extra_data)
             else:
-                api_response = error_response(result['msg'], 500, extra_data)
+                api_response = error_response(msg, 500, extra_data)
             
         except (DataError, DatabaseError) as e:
             db.session.rollback()

@@ -20,7 +20,7 @@ from config import Config
 
 
 auth_headers ={
-    "Authorization": "Bearer {}".format(Config.PAYSTACK_SECRET_KEY),
+    "Authorization": "Bearer {}".format(Config.FLW_SECRET_KEY ),
     "Content-Type": "application/json"
 }
 
@@ -38,13 +38,14 @@ def initialize_flutterwave_payment(amount: int, payload: dict, payment_type: str
         if 'status' in response_data:
             if response_data['status'] == 'success':
                 tx_ref=payload['tx_ref'] # transaction reference
-                transaction = Transaction(key=tx_ref, amount=amount, transaction_type=TransactionType.PAYMENT, description=f'{payment_type}payment', status='pending', trendit3_user=user)
+                transaction = Transaction(key=tx_ref, amount=amount, transaction_type=TransactionType.PAYMENT, description=f'{payment_type} payment', status='pending', trendit3_user=user)
                 payment = Payment(key=tx_ref, amount=amount, payment_type=payment_type, payment_method=Config.PAYMENT_GATEWAY.lower(),status='pending', trendit3_user=user)
                 db.session.add_all([transaction, payment])
                 db.session.commit()
                 
                 authorization_url = response_data['data']['link'] # Get authorization URL from response
-                status = True
+                msg = 'Payment initialized'
+                success = True
                 extra_data = {
                     'authorization_url': authorization_url,
                     'payment_type': payment_type,
@@ -52,22 +53,28 @@ def initialize_flutterwave_payment(amount: int, payload: dict, payment_type: str
                     "status_code": status_code
                 }
             else:
-                status = False
+                msg = 'Payment initialization failed'
+                success = False
                 response_data.update({"metadata": payload['meta'], "status_code": status_code})
                 extra_data = response_data
         else:
-            status = False
-            response_data.update({"status_code": status_code})
+            msg = 'Payment initialization failed'
+            success = False
+            removed_message = response_data.pop('message') if 'message' in response_data else ''
             extra_data = response_data
+        
+        console_log('extra_data', extra_data)
+        result = {
+            'msg': msg,
+            'success': success,
+            'extra_data': extra_data
+        }
     except (DataError, DatabaseError) as e:
-        db.session.rollback()
-        status = False
         raise e
     except Exception as e:
-        status = False
         raise e
     
-    return status, extra_data
+    return result
 
 
 
@@ -152,14 +159,15 @@ def verify_flutterwave_payment(data):
                     elif payment_type == 'credit-wallet':
                         msg = 'Payment Completed and Wallet already credited'
                 
-                status = True
-            elif response_data['status'] and response_data['data']['status'].lower() == 'abandoned':
+                success = True
+            elif response_data['status'] and payment_status == 'abandoned':
                 # Payment was not completed
                 if transaction.status.lower() != 'abandoned':
                     transaction.update(status='abandoned') # update the status
                     payment.update(status='abandoned') # update the status
                     
                 msg = f"Abandoned: {response_data['data']['gateway_response']}"
+                success = False
                     
             else:
                 # Payment was not successful
@@ -168,18 +176,19 @@ def verify_flutterwave_payment(data):
                     payment.update(status='failed') # update the status
                         
                 msg = 'Payment verification failed: ' + response_data['message']
+                success = False
             
             extra_data.update({'user_data': trendit3_user.to_dict(), 'status_code': status_code})
         else:
             msg = 'An error occurred verifying payment: Contact the admin'
-            status = False
-            removed_message = response_data.pop('message')
+            success = False
+            removed_message = response_data.pop('message') if 'message' in response_data else ''
             extra_data = response_data
         
         console_log('extra_data', extra_data)
         result = {
             'msg': msg,
-            'status': status,
+            'status': success,
             'extra_data': extra_data
         }
         console_log('result', result)

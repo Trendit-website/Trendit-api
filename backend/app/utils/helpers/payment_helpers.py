@@ -59,103 +59,6 @@ def construct_payload(amount: int, callback_url: str, meta: dict, user: Trendit3
     
     return payload
 
-def initialize_flutterwave_payment(amount: int, payload: dict, payment_type: str, user: Trendit3User):
-    try:
-        auth_headers ={
-            "Authorization": "Bearer {}".format(Config.FLW_SECRET_KEY),
-            "Content-Type": "application/json"
-        }
-        
-        response = requests.post(Config.FLW_INITIALIZE_URL, headers=auth_headers, json=payload)
-        status_code = int(response.status_code)
-        console_log('response', response)
-        
-        response_data = response.json()
-        console_log('response_data', response_data)
-        console_log('ref', payload['tx_ref'])
-        
-        if 'status' in response_data:
-            if response_data['status'] == 'success':
-                tx_ref=payload['tx_ref'] # transaction reference
-                transaction = Transaction(key=tx_ref, amount=amount, transaction_type=TransactionType.PAYMENT, description=f'{payment_type}payment', status='pending', trendit3_user=user)
-                payment = Payment(key=tx_ref, amount=amount, payment_type=payment_type, payment_method=Config.PAYMENT_GATEWAY.lower(),status='pending', trendit3_user=user)
-                db.session.add_all([transaction, payment])
-                db.session.commit()
-                
-                authorization_url = response_data['data']['link'] # Get authorization URL from response
-                status = True
-                extra_data = {
-                    'authorization_url': authorization_url,
-                    'payment_type': payment_type,
-                    "metadata": payload['meta'],
-                    "status_code": status_code
-                }
-            else:
-                status = False
-                response_data.update({"metadata": payload['meta'], "status_code": status_code})
-                extra_data = response_data
-        else:
-            status = False
-            response_data.update({"status_code": status_code})
-            extra_data = response_data
-    except (DataError, DatabaseError) as e:
-        db.session.rollback()
-        status = False
-        raise e
-    except Exception as e:
-        status = False
-        raise e
-    
-    return status, extra_data
-
-def initialize_paystack_payment(amount: int, payload: dict, payment_type: str, user: Trendit3User) -> tuple[bool, dict]:
-    try:
-        auth_headers ={
-            "Authorization": "Bearer {}".format(Config.PAYSTACK_SECRET_KEY),
-            "Content-Type": "application/json"
-        }
-        
-        response = requests.post(Config.PAYSTACK_INITIALIZE_URL, headers=auth_headers, data=json.dumps(payload))
-        status_code = int(response.status_code)
-        console_log('response', response)
-        
-        response_data = response.json()
-        console_log('response_data', response_data)
-        
-        if 'status' in response_data:
-            if response_data['status']:
-                tx_ref=response_data['data']['reference'] # transaction reference
-                transaction = Transaction(key=tx_ref, amount=amount, transaction_type=TransactionType.PAYMENT, description=f'{payment_type}payment', status='pending', trendit3_user=user)
-                payment = Payment(key=tx_ref, amount=amount, payment_type=payment_type, payment_method=Config.PAYMENT_GATEWAY.lower(),status='pending', trendit3_user=user)
-                db.session.add_all([transaction, payment])
-                db.session.commit()
-                
-                authorization_url = response_data['data']['authorization_url'] # Get authorization URL from response
-                status = True
-                extra_data = {
-                    'authorization_url': authorization_url,
-                    'payment_type': payment_type,
-                    "metadata": payload['metadata'],
-                    "status_code": status_code
-                }
-            else:
-                status = False
-                response_data.update({"metadata": payload['metadata'], "status_code": status_code})
-                extra_data = response_data
-        else:
-            status = False
-            response_data.update({"status_code": status_code})
-            extra_data = response_data
-    except (DataError, DatabaseError) as e:
-        db.session.rollback()
-        status = False
-        raise e
-    except Exception as e:
-        status = False
-        raise e
-    
-    return status, extra_data
-
 def initialize_payment(data, payment_type=None, meta_data=None):
     """
         Initialize payment for a user.
@@ -200,14 +103,17 @@ def initialize_payment(data, payment_type=None, meta_data=None):
         
         # Initialize the payment
         if gateway == "paystack":
-            status, extra_data = initialize_paystack_payment(amount=amount, payload=payload, payment_type=payment_type, user=current_user)
+            result = initialize_paystack_payment(amount=amount, payload=payload, payment_type=payment_type, user=current_user)
         elif gateway == "flutterwave":
-            status, extra_data = initialize_flutterwave_payment(amount=amount, payload=payload, payment_type=payment_type, user=current_user)
+            result = initialize_flutterwave_payment(amount=amount, payload=payload, payment_type=payment_type, user=current_user)
         
-        if status:
-            api_response = success_response('Payment initialized', extra_data['status_code'], extra_data)
+        extra_data = result['extra_data']
+        msg = result['msg']
+        
+        if result['success']:
+            api_response = success_response(msg, 200, extra_data)
         else:
-            api_response = error_response('Payment initialization failed', extra_data['status_code'], extra_data)
+            api_response = error_response(msg, 500, extra_data)
     except (DataError, DatabaseError) as e:
         db.session.rollback()
         log_exception(f"Error connecting to the database", e)
