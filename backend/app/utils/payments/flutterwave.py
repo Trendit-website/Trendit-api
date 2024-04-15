@@ -106,6 +106,7 @@ def verify_flutterwave_payment(data):
             user_id = transaction.trendit3_user_id
             trendit3_user = transaction.trendit3_user
             payment_type = payment.payment_type
+            extra_data.update({'payment_type': payment_type})
             
             # if verification was successful and payment was successful
             if response_data['status'] == 'success' and payment_status == 'successful':
