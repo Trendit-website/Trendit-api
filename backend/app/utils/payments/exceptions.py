@@ -19,3 +19,11 @@ class CreditWalletError(Exception):
         super().__init__(message)
         self.status_code = status_code
         self.message = message
+
+class SignatureError(Exception):
+    """Exception raised when a crediting user's waller."""
+
+    def __init__(self, message="Invalid Signature", status_code=500):
+        super().__init__(message)
+        self.status_code = status_code
+        self.message = message

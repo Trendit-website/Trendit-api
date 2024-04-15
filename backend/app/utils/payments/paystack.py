@@ -14,7 +14,8 @@ from ...utils.helpers.payment_helpers import initialize_payment, credit_wallet, 
 from ...utils.helpers.basic_helpers import console_log, log_exception, generate_random_string
 from ...utils.helpers.response_helpers import error_response, success_response
 from ...utils.helpers.task_helpers import get_task_by_key
-from .exceptions import TransactionMissingError, CreditWalletError
+from ...utils.helpers.mail_helpers import send_other_emails
+from .exceptions import TransactionMissingError, CreditWalletError, SignatureError
 from config import Config
 
 
@@ -197,19 +198,104 @@ def verify_paystack_payment(data):
 
 
 def paystack_webhook():
-    signature = request.headers.get('X-Paystack-Signature') # Get the signature from the request headers
-    secret_key = Config.PAYSTACK_SECRET_KEY # Get Paystack secret key
+    try:
+        signature = request.headers.get('X-Paystack-Signature') # Get the signature from the request headers
+        secret_key = Config.PAYSTACK_SECRET_KEY # Get Paystack secret key
+        
+        data = json.loads(request.data) # Get the data from the request
+        console_log('DATA', data)
+        
+        # Create hash using the secret key and the data
+        hash = hmac.new(secret_key.encode(), msg=request.data, digestmod=hashlib.sha512)
+        
+        if not signature:
+            raise SignatureError(f'No signature in headers')
+        
+        # Verify the signature
+        if not hmac.compare_digest(hash.hexdigest(), signature):
+            raise SignatureError(f'Invalid signature')
+        
+        # Extract needed data
+        amount = float(data['data']['amount']) / 100  # Convert from kobo to naira
+        reference = f"{data['data']['reference']}"
+        
+        transaction = Transaction.query.filter_by(key=reference).first()
+        payment = Payment.query.filter_by(key=reference).first()
+        if transaction:
+            user_id = transaction.trendit3_user_id
+            payment_type = payment.payment_type
+            trendit3_user = transaction.trendit3_user
+
+            # Check if this is a successful payment event
+            if data['event'] == 'charge.success':
+                
+                if transaction.status.lower() != 'complete':
+                    # Record the payment and transaction in the database
+                    transaction.update(status='complete')
+                    payment.update(status='complete')
+                
+                    # Update user's membership status in the database
+                    if payment_type == 'membership-fee':
+                        trendit3_user.membership_fee(paid=True)
+                        try:
+                            send_other_emails(trendit3_user.email, amount=amount) # send email
+                        except Exception as e:
+                            raise Exception('Error occurred sending Email')
+                    
+                    elif payment_type == 'task-creation':
+                        task_key = data['data']['metadata']['task_key']
+                        task = get_task_by_key(task_key)
+                        task.update(payment_status=TaskPaymentStatus.COMPLETE)
+                    
+                    elif payment_type == 'credit-wallet':
+                        # Credit user's wallet
+                        try:
+                            credit_wallet(user_id, amount)
+                            send_other_emails(trendit3_user.email, email_type='credit', amount=amount) # send credit alert to user's email
+                        except ValueError as e:
+                            raise ValueError(f'Error crediting wallet: {e}')
+                        except Exception as e:
+                            raise Exception(f'Error occurred sending Email or crediting wallet: {e}')
+                
+                result = {
+                    "success": True,
+                    "status_code": 200
+                }
+                
+            elif data['event'] == 'charge.abandoned':
+                # Payment was not completed
+                if transaction.status.lower() != 'abandoned':
+                    transaction.update(status='abandoned') # update the status
+                    payment.update(status='abandoned') # update the status
+                
+                result = {
+                    "success": False,
+                    "status_code": 200
+                }
+            else:
+                # Payment was not successful
+                if transaction.status.lower() != 'failed':
+                    transaction.update(status='failed') # update the status
+                    payment.update(status='failed') # update the status
+                
+                result = {
+                    "success": False,
+                    "status_code": 200
+                }
+        else:
+            result = {
+                "success": False,
+                "status_code": 404
+            }
+    except SignatureError as e:
+        fund_wallet = credit_wallet(user_id, amount) if data['event'] == 'charge.success' else False
+        raise e
+    except (DataError, DatabaseError) as e:
+        fund_wallet = credit_wallet(user_id, amount) if data['event'] == 'charge.success' else False
+        raise e
+    except Exception as e:
+        fund_wallet = credit_wallet(user_id, amount) if data['event'] == 'charge.success' else False
+        raise e
     
-    data = json.loads(request.data) # Get the data from the request
-    console_log('DATA', data)
-    
-    # Create hash using the secret key and the data
-    hash = hmac.new(secret_key.encode(), msg=request.data, digestmod=hashlib.sha512)
-    
-    if not signature:
-        return jsonify({'status': 'error', 'message': 'No signature in headers'}), 403
-    
-    # Verify the signature
-    if not hmac.compare_digest(hash.hexdigest(), signature):
-        return jsonify({'status': 'error', 'message': 'Invalid signature'}), 400
+    return result
 

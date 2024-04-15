@@ -12,10 +12,10 @@ from ...utils.helpers.task_helpers import get_task_by_key
 from ...utils.helpers.mail_helpers import send_other_emails
 
 # import payment modules
-from ...utils.payments.utils import initialize_payment, credit_wallet, initiate_transfer
-from ...utils.payments.flutterwave import verify_flutterwave_payment
-from ...utils.payments.paystack import verify_paystack_payment
-from ...utils.payments.exceptions import TransactionMissingError, CreditWalletError
+from ...utils.payments.utils import initialize_payment, initiate_transfer
+from ...utils.payments.flutterwave import verify_flutterwave_payment, flutterwave_webhook
+from ...utils.payments.paystack import verify_paystack_payment, paystack_webhook
+from ...utils.payments.exceptions import TransactionMissingError, CreditWalletError, SignatureError
 from config import Config
 
 class PaymentController:
@@ -104,87 +104,31 @@ class PaymentController:
             json, int: A JSON object containing the status of the webhook handling, and an HTTP status code.
         """
         try:
-            signature = request.headers.get('X-Paystack-Signature') # Get the signature from the request headers
-            secret_key = Config.PAYSTACK_SECRET_KEY # Get Paystack secret key
+            gateway = Config.PAYMENT_GATEWAY.lower()
             
-            data = json.loads(request.data) # Get the data from the request
-            console_log('DATA', data)
             
-            # Create hash using the secret key and the data
-            hash = hmac.new(secret_key.encode(), msg=request.data, digestmod=hashlib.sha512)
+            if gateway == "paystack":
+                result = flutterwave_webhook()
+            elif gateway == "flutterwave":
+                result = paystack_webhook()
             
-            if not signature:
-                return jsonify({'status': 'error', 'message': 'No signature in headers'}), 403
-            
-            # Verify the signature
-            if not hmac.compare_digest(hash.hexdigest(), signature):
-                return jsonify({'status': 'error', 'message': 'Invalid signature'}), 400
-            
-            # Extract needed data
-            amount = float(data['data']['amount']) / 100  # Convert from kobo to naira
-            reference = f"{data['data']['reference']}"
-            
-            transaction = Transaction.query.filter_by(key=reference).first()
-            payment = Payment.query.filter_by(key=reference).first()
-            if transaction:
-                user_id = transaction.trendit3_user_id
-                payment_type = payment.payment_type
-                trendit3_user = transaction.trendit3_user
-
-                # Check if this is a successful payment event
-                if data['event'] == 'charge.success':
-                    
-                    if transaction.status.lower() != 'complete':
-                        # Record the payment and transaction in the database
-                        transaction.update(status='complete')
-                        payment.update(status='complete')
-                    
-                        # Update user's membership status in the database
-                        if payment_type == 'membership-fee':
-                            trendit3_user.membership_fee(paid=True)
-                            try:
-                                send_other_emails(trendit3_user.email, amount=amount) # send email
-                            except Exception as e:
-                                return error_response('Error occurred sending Email', 500)
-                        
-                        elif payment_type == 'task-creation':
-                            task_key = data['data']['metadata']['task_key']
-                            task = get_task_by_key(task_key)
-                            task.update(payment_status=TaskPaymentStatus.COMPLETE)
-                        elif payment_type == 'credit-wallet':
-                            # Credit user's wallet
-                            try:
-                                credit_wallet(user_id, amount)
-                                send_other_emails(trendit3_user.email, email_type='credit', amount=amount) # send credit alert to user's email
-                            except ValueError as e:
-                                return error_response('Error crediting wallet.', 400)
-                            except Exception as e:
-                                logging.exception(f"Error occurred either sending Email or crediting wallet: {str(e)}")
-                                return error_response('Error occurred sending Email or crediting wallet', 500)
-                    
-                    return jsonify({'status': 'success'}), 200
-                elif data['event'] == 'charge.abandoned':
-                    # Payment was not completed
-                    if transaction.status.lower() != 'abandoned':
-                        transaction.update(status='abandoned') # update the status
-                        payment.update(status='abandoned') # update the status
-                        
-                    return jsonify({'status': 'failed'}), 200
-                else:
-                    # Payment was not successful
-                    if transaction.status.lower() != 'failed':
-                        transaction.update(status='failed') # update the status
-                        payment.update(status='failed') # update the status
-                    return jsonify({'status': 'failed'}), 200
+            if result['success']:
+                return jsonify({'status': 'success'}), result['status_code']
             else:
-                return jsonify({'status': 'failed'}), 404
+                return jsonify({'status': 'failed'}), result['status_code']
+        except SignatureError as e:
+            db.session.rollback()
+            log_exception(f"An exception occurred Handling webhook", e)
+        except ValueError as e:
+            db.session.rollback()
+            log_exception(f"An exception occurred", e)
+        except (DataError, DatabaseError) as e:
+            db.session.rollback()
+            log_exception(f"error connecting to the database", e)
         except Exception as e:
             db.session.rollback()
-            fund_wallet = credit_wallet(user_id, amount) if data['event'] == 'charge.success' else False
-            logging.exception(f"An exception occurred Handling webhook. {str(e)}") # Log the error details for debugging
-            return jsonify({
-                'status': 'failed'
-            }), 500
+            log_exception("An exception occurred Handling webhook", e)
+            return jsonify({'status': 'failed'}), 500
 
 
     @staticmethod

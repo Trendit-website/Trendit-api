@@ -5,16 +5,17 @@
 """
 
 import requests
+from flask import json, request, jsonify
 from sqlalchemy.exc import ( DataError, DatabaseError )
-from flask_jwt_extended import get_jwt_identity
 
 from ...extensions import db
-from .exceptions import TransactionMissingError, CreditWalletError
 from ...models import Payment, Transaction, TransactionType, Withdrawal, Trendit3User, TaskPaymentStatus
 from ...utils.helpers.payment_helpers import credit_wallet, initiate_transfer
 from ...utils.helpers.basic_helpers import console_log, log_exception, generate_random_string
 from ...utils.helpers.response_helpers import error_response, success_response
 from ...utils.helpers.task_helpers import get_task_by_key
+from ...utils.helpers.mail_helpers import send_other_emails
+from .exceptions import TransactionMissingError, CreditWalletError, SignatureError
 from config import Config
 
 
@@ -77,7 +78,6 @@ def initialize_flutterwave_payment(amount: int, payload: dict, payment_type: str
     return result
 
 
-
 def verify_flutterwave_payment(data):
     """ Verify payment with flutterwave"""
     
@@ -128,7 +128,7 @@ def verify_flutterwave_payment(data):
                         extra_data.update({'membership_fee_paid': membership_fee_paid})
                         
                     elif payment_type == 'task-creation':
-                        task_key = response_data['data']['metadata']['task_key']
+                        task_key = response_data['data']['meta']['task_key']
                         task = get_task_by_key(task_key)
                         task.update(payment_status=TaskPaymentStatus.COMPLETE)
                         task_dict = task.to_dict()
@@ -150,7 +150,7 @@ def verify_flutterwave_payment(data):
                         extra_data.update({'membership_fee_paid': trendit3_user.membership.membership_fee_paid,})
                             
                     elif payment_type == 'task-creation':
-                        task_key = response_data['data']['metadata']['task_key']
+                        task_key = response_data['data']['meta']['task_key']
                         task = get_task_by_key(task_key)
                         task_dict = task.to_dict()
                         msg = 'Payment Completed and Task has already been created successfully'
@@ -188,7 +188,7 @@ def verify_flutterwave_payment(data):
         console_log('extra_data', extra_data)
         result = {
             'msg': msg,
-            'status': success,
+            'success': success,
             'extra_data': extra_data
         }
         console_log('result', result)
@@ -201,4 +201,96 @@ def verify_flutterwave_payment(data):
 
 
 def flutterwave_webhook():
-    pass
+    try:
+        secret_key = Config.FLW_SECRET_KEY # Get Flutterwave secret key
+        signature = request.headers.get('verifi-hash') # Get the signature from the request headers
+        
+        data = json.loads(request.data) # Get the data from the request
+        console_log('DATA', data)
+        
+        if signature == None or (signature != secret_key):
+            # This request isn't from Flutterwave; discard
+            raise SignatureError(f'No signature in headers')
+        
+        # Extract needed data
+        amount = float(data['data']['amount'])
+        reference = data['data']['tx_ref']
+        
+        transaction = Transaction.query.filter_by(key=reference).first()
+        payment = Payment.query.filter_by(key=reference).first()
+        
+        if transaction:
+            user_id = transaction.trendit3_user_id
+            payment_type = payment.payment_type
+            trendit3_user = transaction.trendit3_user
+            
+            # Check if this is a successful payment event
+            if data['event'] == 'charge.completed':
+                if transaction.status.lower() != 'complete':
+                    # Record the payment and transaction in the database
+                    transaction.update(status='complete')
+                    payment.update(status='complete')
+                    
+                    # Update user's membership status in the database
+                    if payment_type == 'membership-fee':
+                        trendit3_user.membership_fee(paid=True)
+                        try:
+                            send_other_emails(trendit3_user.email, amount=amount) # send email
+                        except Exception as e:
+                            raise Exception('Error occurred sending Email')
+                    
+                    elif payment_type == 'task-creation':
+                        task_key = data['data']['meta']['task_key']
+                        task = get_task_by_key(task_key)
+                        task.update(payment_status=TaskPaymentStatus.COMPLETE)
+                    
+                    elif payment_type == 'credit-wallet':
+                        # Credit user's wallet
+                        try:
+                            credit_wallet(user_id, amount)
+                            send_other_emails(trendit3_user.email, email_type='credit', amount=amount) # send credit alert to user's email
+                        except ValueError as e:
+                            raise ValueError(f'Error crediting wallet: {e}')
+                        except Exception as e:
+                            raise Exception(f'Error occurred sending Email or crediting wallet: {e}')
+                
+                result = {
+                    "success": True,
+                    "status_code": 200
+                }
+                
+            elif data['event'] == 'charge.abandoned':
+                # Payment was not completed
+                if transaction.status.lower() != 'abandoned':
+                    transaction.update(status='abandoned') # update the status
+                    payment.update(status='abandoned') # update the status
+                            
+                result = {
+                    "success": False,
+                    "status_code": 200
+                }
+            else:
+                # Payment was not successful
+                if transaction.status.lower() != 'failed':
+                    transaction.update(status='failed') # update the status
+                    payment.update(status='failed') # update the status
+                result = {
+                    "success": False,
+                    "status_code": 200
+                }
+        else:
+            result = {
+                "success": False,
+                "status_code": 404
+            }
+    except SignatureError as e:
+        fund_wallet = credit_wallet(user_id, amount) if data['event'] == 'charge.completed' else False
+        raise e
+    except (DataError, DatabaseError) as e:
+        fund_wallet = credit_wallet(user_id, amount) if data['event'] == 'charge.completed' else False
+        raise e
+    except Exception as e:
+        fund_wallet = credit_wallet(user_id, amount) if data['event'] == 'charge.completed' else False
+        raise e
+    
+    return result
