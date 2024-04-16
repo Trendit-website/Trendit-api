@@ -274,10 +274,12 @@ class SocialAuthController:
                 email = user_google_data['email'] # not using .get() here beause this compulsorily has to work
                 # referral_code = user_data['referral_code']
                 if not email:
-                    return error_response('Email is required', 400)
+                    error_response('Email is required', 400)
+                    return redirect(f'https://app.trendit3.com/?error=Email_is_required')
 
                 if Trendit3User.query.filter_by(email=email).first():
-                    return error_response('Email already taken', 409)
+                    error_response('Email already taken', 409)
+                    return redirect(f'https://app.trendit3.com/?error=User_already_exists')
                 
                 # if referral_code and not Trendit3User.query.filter_by(username=referral_code).first():
                 #     return error_response('Referral code is invalid', 404)
