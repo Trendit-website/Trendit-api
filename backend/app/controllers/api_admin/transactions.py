@@ -14,6 +14,8 @@ class TransactionController:
 
     @staticmethod
     def get_all_transactions():
+        """Get all transactions in the system"""
+
         try:
             page = request.args.get('page', default=1, type=int)
             per_page = request.args.get('per_page', default=20, type=int)
@@ -37,6 +39,8 @@ class TransactionController:
         
     @staticmethod
     def get_user_transactions():
+        """Get all transactions for a user"""
+
         try:
             data = request.get_json()
             user_id = data.get('userId')
@@ -57,4 +61,38 @@ class TransactionController:
         
         except Exception as e:
             logging.exception("An exception occurred trying to get user transactions:\n", str(e))
+            return error_response('Error getting user transactions', 500)
+        
+    
+    @staticmethod
+    def get_user_transaction_by_type():
+        """Get user transactions by type (credit, debit, payment, withdrawal)"""
+
+        try:
+            data = request.get_json()
+            user_id = data.get('userId')
+            transaction_map = {
+                "credit": TransactionType.CREDIT,
+                "debit": TransactionType.DEBIT,
+                "payment": TransactionType.PAYMENT,
+                "withdrawal": TransactionType.WITHDRAWAL
+            }
+            transaction_type = data.get('transactionType')
+            page = request.args.get('page', default=1, type=int)
+            per_page = request.args.get('per_page', default=20, type=int)
+            
+            transactions = Transaction.query.filter_by(user_id=user_id, transaction_type=transaction_map[transaction_type]).paginate(page=page, per_page=per_page, error_out=False)
+            transaction_list = [transaction.to_dict() for transaction in transactions.items]
+            
+            extra_data = {
+                'total': transactions.total,
+                'pages': transactions.pages,
+                'current_page': transactions.page,
+                'transactions': transaction_list
+            }
+
+            return success_response('User transactions fetched successfully', 200, extra_data)
+        
+        except Exception as e:
+            logging.exception("An exception occurred trying to get user transactions by type:\n", str(e))
             return error_response('Error getting user transactions', 500)
