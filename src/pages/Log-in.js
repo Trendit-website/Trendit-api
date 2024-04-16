@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Container, Grid, Image, Heading, Box } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
-import { loginSuccess } from "../Redux-files/slices/authSlice";
+import { loginSuccess } from "../services/slices/authSlice";
 import { useDispatch, useSelector } from "react-redux";
 
 import {
@@ -24,14 +24,15 @@ import {
 } from "@chakra-ui/icons";
 import Loader from "../Loader";
 
-import Onboard from "assets/images/onboard.png";
-import Footer from "components/Footer";
+import Onboard from "../assets/images/onboard.png";
+import Footer from "../components/Footer";
+import { useLoginMutation } from "../services/routes/authRoute";
 
 const LoginPage = () => {
+  const [login, { isLoading }] = useLoginMutation();
   const [emailaddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
   const [isEmailAddressVerified, setIsEmailAddressVerified] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [isLoginError, setIsLoginError] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -62,8 +63,8 @@ const LoginPage = () => {
     setShowPassword(!showPassword);
   };
 
-  const handleSubmit = () => {
-    if (emailaddress.trim() === "" || password.trim() === "") {
+  const handleSubmit = async () => {
+    if (!emailaddress.trim() || !password.trim()) {
       toast({
         title: "Error",
         description: "Please fill in both email address and password.",
@@ -71,47 +72,49 @@ const LoginPage = () => {
         duration: 5000,
         isClosable: true,
       });
-      setIsLoading(false); // Stop loading
       return; // Stop further execution
-    }
-    // Handle form submission here
-    setIsLoading(true); // Start loading
-
-    // Simulate loading for 2 seconds
-    setTimeout(() => {
-      if (emailaddress === "Trendit3@gmail.com" && password === "Trendit3") {
-        // Successful login
-        console.log("Login successful!");
-
-        // Dispatch the loginSuccess action with mock user data
-        const mockUserData = {
-          id: 1,
-          username: "Trendit3",
-          Profile_picture:
-            "https://usuploads.s3.amazonaws.com/itlearn360/uploads/2018/12/dummy-profile-pic-300x300.jpg",
-          Balance: "1000",
-          referral_link: "www.trendit3.com/signup/dezfoodz",
-          password: "Trendit3",
-          email: "Trendit3@gmail.com",
-
-          // Other properties...
+    } else {
+      try {
+        const body = {
+          email_username: emailaddress,
+          password: password,
         };
-
-        dispatch(loginSuccess(mockUserData));
+        const res = await login(body).unwrap();
+        console.log(res);
+        const isAuthenticated = true;
+        dispatch(loginSuccess(isAuthenticated));
         navigate("/homepage");
-      } else {
-        // Incorrect username or password
+      } catch (error) {
         toast({
           title: "Error",
-          description: "Invalid username or password.",
+          description: `${error?.data?.message || error?.error}`,
           status: "error",
           duration: 5000,
           isClosable: true,
         });
-        setIsLoading(false); // Stop loading on error
-        setIsLoginError("Username or password does not match any account"); // Set login error state
       }
-    }, 2000);
+    }
+
+    // setTimeout(() => {
+    //   if (emailaddress === "Trendit3@gmail.com" && password === "Trendit3") {
+    //     // Successful login
+    //     console.log("Login successful!");
+
+    //     // Dispatch the loginSuccess action with mock user data
+
+    //     // 
+    //     
+    //   } else {
+    //     // Incorrect username or password
+    //     toast({
+    //       title: "Error",
+    //       description: "Invalid username or password.",
+    //       status: "error",
+    //       duration: 5000,
+    //       isClosable: true,
+    //     });
+    //   }
+    // }, 2000);
   };
 
   return (

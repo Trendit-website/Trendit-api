@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Goback } from "../../Earn/Earnhome";
-import IG from "assets/SocialMediaLogo/IG.png";
+import IG from "../../../assets/SocialMediaLogo/IG.png";
 import {
   Container,
   Text,
@@ -22,7 +22,7 @@ import { Link } from "react-router-dom";
 import { ArrowForwardIcon } from "@chakra-ui/icons";
 import { useFetch } from "../../../React-query-hook/hook";
 import Loader from "../../../Loader";
-import ScrollToTop from "components/scrolltop";
+import ScrollToTop from "../../../components/scrolltop";
 
 function Pagination({ totalPages, currentPage, onPageChange }) {
   const maxPageButtons = 5; // Adjust this value as needed

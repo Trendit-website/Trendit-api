@@ -7,7 +7,7 @@ import Hero from "../Homepage/Hero";
 import Testimonial from '../Homepage/Testimonial'
 
 import Conditional from "../Homepage/Conditional";
-import Footer from "components/Footer";
+import Footer from "../../components/Footer";
 
 
 const Homepage = () => {

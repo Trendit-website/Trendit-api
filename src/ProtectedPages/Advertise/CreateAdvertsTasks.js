@@ -1,11 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Box, Flex, Heading, Image, Text, Divider } from '@chakra-ui/react';
-import IG from 'assets/SocialMediaLogo/IG.png';
-import Fb from "assets/SocialMediaLogo/Fb.png";
-import Tiktok from "assets/SocialMediaLogo/Tiktok.png";
-import Whatsapp from "assets/SocialMediaLogo/Whatsapp.png";
-import Twitter from "assets/SocialMediaLogo/Twitter.png";
+import IG from '../../assets/SocialMediaLogo/IG.png';
+import Fb from "../../assets/SocialMediaLogo/Fb.png";
+import Tiktok from "../../assets/SocialMediaLogo/Tiktok.png";
+import Whatsapp from "../../assets/SocialMediaLogo/Whatsapp.png";
+import Twitter from "../../assets/SocialMediaLogo/Twitter.png";
 
 
 

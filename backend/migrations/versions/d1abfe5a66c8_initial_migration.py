@@ -1,8 +1,8 @@
-"""initial Migration
+"""initial migration
 
-Revision ID: 6d9a7cd450b6
+Revision ID: d1abfe5a66c8
 Revises: 
-Create Date: 2024-03-20 12:43:42.201014
+Create Date: 2024-04-11 10:06:22.203929
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '6d9a7cd450b6'
+revision = 'd1abfe5a66c8'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -336,9 +336,9 @@ def upgrade():
     sa.Column('status', sa.String(length=80), nullable=True),
     sa.Column('started_at', sa.DateTime(), nullable=False),
     sa.Column('date_completed', sa.DateTime(), nullable=True),
+    sa.Column('proof_screenshot_id', sa.Integer(), nullable=True),
     sa.Column('task_id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=False),
-    sa.Column('proof_screenshot_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['proof_screenshot_id'], ['media.id'], ),
     sa.ForeignKeyConstraint(['task_id'], ['task.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['trendit3_user.id'], ),

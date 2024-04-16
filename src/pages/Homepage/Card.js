@@ -7,23 +7,23 @@ const cardContent = [
     icon: "solar:hand-money-bold",
     header: "Earners",
     content:
-      "Our platform features a variety of income-generating strategies for users by having them carry out simple social media activities.",
+      "Monetize Your Influence! Earn by Posting Ads on Your Social Media Earn daily income by posting adverts and performing social tasks for individuals, businesses and top brands on your social media account",
     anim: "zoom-in-up",
   },
   {
     icon: "healthicons:money-bag",
-    header: "Businesses",
+    header: "Advertisers",
     content:
-      "We connect you to real people that will help you achieve your business goals in a way that is both effective and cost-efficient.",
+      "Get real people to post your ads on their social media account Boost your reach! Get real people with 500+ followers to post or share your ads on their social media",
     anim: "zoom-in-down",
   },
-  {
-    icon: "ion:person-sharp",
-    header: "Individuals",
-    content:
-      "We connect you to real people that will help you grow and achieve other goals on your social media platforms.",
-    anim: "zoom-in-left",
-  },
+  // {
+  //   icon: "ion:person-sharp",
+  //   header: "Individuals",
+  //   content:
+  //     "We connect you to real people that will help you grow and achieve other goals on your social media platforms.",
+  //   anim: "zoom-in-left",
+  // },
 ];
 
 const Card = ({ icon, header, content, anim }) => {
@@ -34,7 +34,7 @@ const Card = ({ icon, header, content, anim }) => {
       shadow="md"
       borderRadius="md"
       width={{ base: "80%", md: "335px" }}
-      height="250px"
+      height="300px"
       mx={4}
       my={4}
       data-aos={anim}

@@ -1,7 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
+@font-face{
+  font-family: 'Clashmd';
+  src: local('Clashmd'), url(./fonts/ClashGrotesk-Medium.otf) format('truetype')
+}
 
-body,
+@font-face{
+  font-family: 'Clashbd';
+  src: local('Clashbd'), url(./fonts/ClashGrotesk-Bold.otf) format('truetype')
+}
+
+@font-face{
+  font-family: 'Clashlt';
+  src: local('Clashlt'), url(./fonts/ClashGrotesk-Light.otf) format('truetype')
+}
+
+.overlay_bg{
+  background-color: rgba(0,0,0,0.90);
+}
+
+.side::-webkit-scrollbar{
+  display:none;
+}
+
+.clashmd{
+  font-family: 'Clashmd';
+}
+.clashbd{
+  font-family: 'Clashbd';
+}
+.clashlt{
+  font-family: 'Clashlt';
+}
+
+.input_label{
+  color: rgba(255, 255, 255, 0.70);
+}
 html{
+  height: 100%;
+}
+body{
      
     font-family: 'Clash Grotesk';
     outline: none;

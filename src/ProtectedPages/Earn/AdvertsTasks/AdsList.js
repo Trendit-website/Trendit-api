@@ -1,13 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Box, Flex, Heading, Image, Text, Divider } from '@chakra-ui/react';
-import {colors} from 'components/colors'
-import IG from 'assets/SocialMediaLogo/IG.png';
-import Fb from "assets/SocialMediaLogo/Fb.png";
-import Tiktok from "assets/SocialMediaLogo/Tiktok.png";
-import Whatsapp from "assets/SocialMediaLogo/Whatsapp.png";
-import Twitter from "assets/SocialMediaLogo/Twitter.png";
+import {colors} from '../../../components/colors'
+import Insta from '../../../assets/SocialMediaLogo/IG.png';
+import Fb from "../../../assets/SocialMediaLogo/Fb.png";
+import Tiktok from "../../../assets/SocialMediaLogo/Tiktok.png";
+import Whatsapp from "../../../assets/SocialMediaLogo/Whatsapp.png";
+import Twitter from "../../../assets/SocialMediaLogo/Twitter.png";
 import { useSelector } from "react-redux"
+import { useGetAdvertTasksQuery } from '../../../services/routes/taskRoute';
 
 
 
@@ -15,7 +16,7 @@ import { useSelector } from "react-redux"
 export const contentArray = [
   {
     id: 1,
-    imageSrc: IG,
+    // imageSrc: IG,
     headerText: 'Post adverts on Instagram || Earn <span class="dollar-amount"> $10 </span> per advert post',
     taskCount: 100, 
     description1: 'You will need to have at least 1000 active followers on Instagram to perform this task.',
@@ -67,56 +68,88 @@ export const contentArray = [
 ];
 
 
+const image = (platform)=> {
+  if(platform === 'Twitter'){
+    return Twitter
+  }else if (platform === 'Instagram'){
+    return Insta
+  }else if(platform === 'Facebook'){
+    return Fb
+  } else if (platform === 'Tiktok'){
+    return Tiktok
+  }
+}
+
 
 
 
 function Adlist() {
-  const isLinked = useSelector((state) => state.linked.isLinked);
+  const isLinked = true;
+  const {data, isLoading, isSuccess} = useGetAdvertTasksQuery();
+  console.log(data)
+  const count = data?.Total;
+  const ads = data?.all_task;
  
 
   return (
     <Box  mb={10}>
-      {contentArray.map((content, index) => (
-        <div key={content.id} >
-          <Link to={isLinked ? content.route : "/earn/link-account"} >
-            <Flex justifyContent="space-between" alignItems="flex-start" width={{ base: '100%', md: '100%', lg: '80%' }} mt={3} >
-              {/* First Container */}
-              <Box display="flex">
-                <Image src={content.imageSrc} alt="Image Alt Text" width={{ base: '30px', md: '30px' }} height={{ base: '30px', md: '30px' }} mr={{ base: '2', md: '5' }} />
-                <Box>
-                  <Heading color="white" fontFamily="clash grotesk" fontWeight="500" textAlign="left" fontSize={{ base: '14px', md: '20px' }} lineHeight={1.5}>
-                  <span dangerouslySetInnerHTML={{ __html: content.headerText }} />
-                  </Heading>
-                </Box>
-              </Box>
-
-              {/* Second Container */}
-              <Box pl={{ base: '3', md: '0' }}>
-                <Box
-                  bg={content.taskCount === 0 ? '#808080' : '#3A9800'} // Change the color to yellow when taskCount is 0
-                  color="white"
-                  rounded="full"
-                  px={2}
-                  py={1}
-                  width={{ base: '120px', md: '150px' }}
-                  textAlign="center"
-                >
-                  <Text fontSize="12px">{content.taskCount} Tasks Available</Text>
-                </Box>
-              </Box>
-            </Flex>
-            <Box ml={10} mt={{ base: '2', md: '2', lg: '0' }}>
-              <Text fontSize="sm" color={colors.primaryText} lineHeight={1.5} textAlign="left">
-                {content.description1}
-              </Text>
-              <Text fontSize="sm" color={colors.primaryText} textAlign="left">
-                {content.description2}
-              </Text>
-            </Box>
-          </Link>
-          {index < contentArray.length - 1 && <Divider borderColor={colors.primaryText} mt={4} />}
+      {
+        isLoading && (
+          <Text fontSize='20px' textAlign='center' mt='20px'>Loading...</Text>
+        )
+      }
+    {
+      isSuccess && (
+        <div>
+        {count > 0 ? (
+           ads.map(({id, caption, platform}, index) => (
+             <div key={id} >
+               {/* <Link to={isLinked ? content.route : "/earn/link-account"} > */}
+                 <Flex justifyContent="space-between" alignItems="flex-start" width={{ base: '100%', md: '100%', lg: '80%' }} mt={3} >
+                   {/* First Container */}
+                   <Box display="flex">
+                     <Image src={image(platform)} alt="Image Alt Text" width={{ base: '30px', md: '30px' }} height={{ base: '30px', md: '30px' }} mr={{ base: '2', md: '5' }} />
+                     <Box>
+                       <Heading color="white" fontFamily="clash grotesk" fontWeight="500" textAlign="left" fontSize={{ base: '14px', md: '20px' }} lineHeight={1.5}>
+                       <span dangerouslySetInnerHTML={{ __html: caption }} />
+                       </Heading>
+                     </Box>
+                   </Box>
+     
+                   {/* Second Container */}
+                   <Box pl={{ base: '3', md: '0' }}>
+                     <Box
+                       // bg={content.taskCount === 0 ? '#808080' : '#3A9800'} // Change the color to yellow when taskCount is 0
+                       color="white"
+                       rounded="full"
+                       px={2}
+                       py={1}
+                       width={{ base: '120px', md: '150px' }}
+                       textAlign="center"
+                     >
+                       {/* <Text fontSize="12px">{content.taskCount} Tasks Available</Text> */}
+                     </Box>
+                   </Box>
+                 </Flex>
+                 <Box ml={10} mt={{ base: '2', md: '2', lg: '0' }}>
+                   <Text fontSize="sm" color={colors.primaryText} lineHeight={1.5} textAlign="left">
+                     {caption}
+                   </Text>
+                   <Text fontSize="sm" color={colors.primaryText} textAlign="left">
+                     {/* {content.description2} */}
+                   </Text>
+                 </Box>
+               {/* </Link> */}
+               {index < ads.length - 1 && <Divider borderColor={colors.primaryText} mt={4} />}
+             </div>
+           ))
+         ) : (
+           <Text fontSize='20px' color="white" textAlign='center' mt='20px'>No Advert tasks yet</Text>
+         )}
         </div>
-      ))}
+      )
+    }
+      
     </Box>
   );
 }

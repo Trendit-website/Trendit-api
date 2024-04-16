@@ -7,7 +7,7 @@ import Individuals from "../Homepage/Individuals";
 import Hero from "../About/Hero";
 
 
-import Footer from "components/Footer";
+import Footer from "../../components/Footer";
 
 const Homepage = () => {
   return (
@@ -41,7 +41,7 @@ const Homepage = () => {
         <Business />
       </Box>
 
-      <Box pt={7} px={{ base: "10", md: "6" }} mt={-6}>
+      {/* <Box pt={7} px={{ base: "10", md: "6" }} mt={-6}>
         <Heading
           textAlign="center"
           color="white"
@@ -52,7 +52,7 @@ const Homepage = () => {
           Our offers <span style={{ color: "#CB29BE" }}>for Individuals</span>
         </Heading>
         <Individuals />
-      </Box>
+      </Box> */}
 
       <Footer />
     </Container>

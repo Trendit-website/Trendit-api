@@ -1,5 +1,5 @@
 import { Box, Flex, Heading, Text, Image } from "@chakra-ui/react";
-import BannerJPG from 'assets/images/banner.png'
+import BannerJPG from '../../assets/images/banner.png'
 
 
 

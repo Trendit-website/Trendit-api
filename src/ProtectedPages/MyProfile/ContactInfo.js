@@ -12,15 +12,18 @@ import UpdatePassword from './UpdatePassword'
 import { useSelector } from "react-redux";
 import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
 import React, { useState } from "react";
+import { useGetProfileQuery } from "../../services/routes/profileRoute";
 
 const ContactInfo = () => {
+  const {data} = useGetProfileQuery();
+  console.log(data)
   const [showPassword1, setShowPassword1] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false); // Define isModalOpen state
 
   const handleTogglePassword1 = () => {
     setShowPassword1(!showPassword1);
   };
-  const user = useSelector((state) => state.auth.user);
+  // const user = useSelector((state) => state.auth.user);
 
   // Define openModal function
   const openModal = () => {
@@ -44,7 +47,7 @@ const ContactInfo = () => {
           borderRadius="12px"
           placeholder="E.g Dezfoods"
           fontFamily="clash grotesk"
-          value={user.username}
+          // value={user.username}
           readOnly="true"
         />
       </FormControl>
@@ -59,7 +62,7 @@ const ContactInfo = () => {
             color="white"
             bg="#121212"
             placeholder="Enter your password"
-            value={user.password}
+            // value={user.password}
             readOnly="true"
           />
           <InputRightElement width="4.5rem">
@@ -99,7 +102,7 @@ const ContactInfo = () => {
           borderColor="#808080"
           borderRadius="12px"
           color="white"
-          value={user.email}
+          // value={user.email}
           readOnly="true"
         />
       </FormControl>

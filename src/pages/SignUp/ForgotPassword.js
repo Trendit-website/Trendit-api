@@ -14,7 +14,7 @@ import {
   InputGroup,
   InputRightElement,
 } from "@chakra-ui/react";
-import Footer from "components/Footer";
+import Footer from "../../components/Footer";
 import { Center, HStack } from "@chakra-ui/react";
 import { Spinner } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
@@ -23,18 +23,21 @@ import { ArrowBackIcon } from "@chakra-ui/icons";
 
 import Loader from "../../Loader";
 
-import Onboard from "assets/images/onboard.png";
+import Onboard from "../../assets/images/onboard.png";
+import {
+  useForgotPasswordMutation,
+  useResetPasswordMutation,
+} from "../../services/routes/authRoute";
 
 const ForgotPasswordPage = () => {
+  const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
+  const [resetPassword, { isLoading: loading }] = useResetPasswordMutation();
   const [currentStep, setCurrentStep] = useState(1);
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
-
+  const [token, setToken] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
-
-  const RegisteredMail = "Trendit3@gmail.com"; //relace with actual function to check if mail exist in database
 
 
   const isValidEmail = (email) => {
@@ -43,33 +46,37 @@ const ForgotPasswordPage = () => {
     return emailPattern.test(email);
   };
 
-  const handleSendCode = () => {
-    const enteredMail = email
-    setIsLoading(true);
-
-    if (!email ) {
-      setIsLoading(false);
-      setEmailError(!email ? "Please fill in this field." : "")
+  const handleSendCode = async () => {
+    if (!email) {
+      setEmailError(!email ? "Please fill in this field." : "");
       return;
-    }
-    else if (!isValidEmail(email)) {
+    } else if (!isValidEmail(email)) {
       console.log("Invalid email.");
-      setIsLoading(false);
-      setEmailError("Invalid email address.")
-      return;;
-     
-    } 
-    setTimeout(() => {
-      if (enteredMail === RegisteredMail) {
-        setIsLoading(false); // Deactivate the loading spinner
+      setEmailError("Invalid email address.");
+      return;
+    } else {
+      try {
+        const res = await forgotPassword({ email_username: email }).unwrap();
+        setToken(res.reset_token);
         setCurrentStep(currentStep + 1);
-      } else {
-        setIsLoading(false); // Deactivate the loading spinner
-        setEmailError("This Email is not registered. Kindly provide your registered email address");
-        return;
-       
+      } catch (error) {
+        setEmailError(
+          error?.data?.message || error?.message || "An error occured"
+        );
       }
-    }, 2000);
+      //
+    }
+    // setTimeout(() => {
+    //   if (enteredMail === RegisteredMail) {
+    //     setIsLoading(false); // Deactivate the loading spinner
+    //     setCurrentStep(currentStep + 1);
+    //   } else {
+    //     setIsLoading(false); // Deactivate the loading spinner
+    //     setEmailError("This Email is not registered. Kindly provide your registered email address");
+    //     return;
+
+    //   }
+    // }, 2000);
   };
 
   const handlePreviousStep = () => {
@@ -80,7 +87,6 @@ const ForgotPasswordPage = () => {
 
   const [pin, setPin] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
 
@@ -138,24 +144,27 @@ const ForgotPasswordPage = () => {
   }, [resendSuccess]);
 
   // Define the specific six-digit PIN that should be matched
-  const correctPin = "123456"; // Replace with your specific PIN
 
   // Function to check if the pin matches before verying users
-  const handleVerifyButton = () => {
-    const enteredPin = pin.join(""); // Combine the array into a string
-    setError(""); // Clear any previous error
-    setIsLoading(true); // Set isLoading to true
+  const handleVerifyButton = async () => {
+    // Combine the array into a string
+    setError("");
+    setCurrentStep(currentStep + 1);
+    // Clear any previous error
+    // try {
+    //   const res = await resetPassword({token, enteredPin}).unwrap();
+    //   console.log(res)
+    // } catch (error) {
 
+    // }
     // Simulate some asynchronous operation (e.g., API call)
-    setTimeout(() => {
-      if (enteredPin === correctPin) {
-        setIsLoading(false); // Deactivate the loading spinner
-        setCurrentStep(currentStep + 1);
-      } else {
-        setError("Incorrect PIN. Verification failed");
-        setIsLoading(false); // Deactivate the loading spinner
-      }
-    }, 2000); // Simulate a 2-second delay
+    // setTimeout(() => {
+    //   if (enteredPin === correctPin) {
+    //     setCurrentStep(currentStep + 1);
+    //   } else {
+    //     setError("Incorrect PIN. Verification failed");
+    //   }
+    // }, 2000); // Simulate a 2-second delay
   };
 
   const [showPassword1, setShowPassword1] = useState(false);
@@ -169,19 +178,16 @@ const ForgotPasswordPage = () => {
     setShowPassword2(!showPassword2);
   };
 
-  
-
   const [passwordValidationError, setPasswordValidationError] = useState("");
 
-  const handleSubmit = () => {
+  const handleSubmit = async() => {
+    const enteredPin = pin.join("");
+    // Check if newPassword and confirmPassword are empty
+    if (!newPassword || !confirmPassword) {
+      setPasswordValidationError("Password fields cannot be empty.");
+      return;
+    }
 
-     // Check if newPassword and confirmPassword are empty
-  if (!newPassword || !confirmPassword) {
-    setPasswordValidationError("Password fields cannot be empty.");
-    setIsLoading(false); // Disable loading state immediately
-    return;
-  }
-   
     const passwordRegex = /^(?=.*\d)(?=.*[@#$%^&+=!])(?=.*[a-zA-Z]).{8,}$/;
     const isValidPassword = passwordRegex.test(newPassword);
 
@@ -190,17 +196,29 @@ const ForgotPasswordPage = () => {
         "Password must contain at least one digit and one special character."
       );
       return;
-    }
-    // Check if passwords match
-    if (newPassword !== confirmPassword) {
+    } else if (newPassword !== confirmPassword) {
       setPasswordValidationError("Passwords do not match.");
       return; // Prevent form submission if validation fails
+    } else {
+      try {
+        const data = {
+          reset_token: token,
+          new_password: newPassword,
+          entered_code: enteredPin,
+        }
+        console.log(data)
+        const res = await resetPassword(data).unwrap();
+        console.log(res)
+        
+        setCurrentStep(currentStep + 1);
+      } catch (error) {
+        console.log(error)
+      }
     }
-    setIsLoading(true); 
-    setTimeout(() => {
-      setIsLoading(false); // Disable loading state after the delay
-      setCurrentStep(currentStep + 1);
-    }, 2000); // Simulate a 2-second delay
+
+    // setTimeout(() => {
+    //   setCurrentStep(currentStep + 1);
+    // }, 2000); // Simulate a 2-second delay
   };
 
   return (
@@ -225,9 +243,8 @@ const ForgotPasswordPage = () => {
           width={{ base: "80%", md: "600px" }}
           borderRadius="md"
           boxShadow="lg"
-          mt='100'
-         
-          height='100vh'
+          mt="100"
+          height="100vh"
           fontFamily="clash grotesk"
         >
           {currentStep === 1 && (
@@ -258,9 +275,9 @@ const ForgotPasswordPage = () => {
               </FormControl>
 
               <Text color="#CB29BE" fontSize="14px">
-                  {emailError}
-                </Text>
-                
+                {emailError}
+              </Text>
+
               <Button
                 mt={10}
                 bg="#CB29BE"
@@ -274,13 +291,13 @@ const ForgotPasswordPage = () => {
                 {isLoading ? (
                   <>
                     <Loader />
-                   Sending code ...
+                    Sending code ...
                   </>
                 ) : (
                   "Send code"
                 )}
               </Button>
-              
+
               <Text
                 textAlign="center"
                 color="white"
@@ -303,7 +320,11 @@ const ForgotPasswordPage = () => {
           {currentStep === 2 && (
             <>
               {" "}
-              <Heading fontSize="30px" fontWeight="500"  fontFamily="clash grotesk"> 
+              <Heading
+                fontSize="30px"
+                fontWeight="500"
+                fontFamily="clash grotesk"
+              >
                 Verify your account to reset your password
               </Heading>
               <FormControl>
@@ -316,7 +337,7 @@ const ForgotPasswordPage = () => {
                   We've sent an email with your account activation code to
                   <span style={{ color: "#CB29BE" }}> {email}</span>
                 </Text>
-                <Center  fontFamily="clash grotesk">
+                <Center fontFamily="clash grotesk">
                   <HStack spacing={2}>
                     {[0, 1, 2, 3, 4, 5].map((index) => (
                       <Input
@@ -361,7 +382,7 @@ const ForgotPasswordPage = () => {
                 </Text>
               </FormControl>
               {resendSuccess && (
-                <Text color="#cb29be"  fontFamily="clash grotesk">
+                <Text color="#cb29be" fontFamily="clash grotesk">
                   New code sent to your email. Please Check
                 </Text>
               )}
@@ -403,7 +424,12 @@ const ForgotPasswordPage = () => {
           )}
           {currentStep === 3 && (
             <>
-              <Heading fontSize="30px" textAlign="center" fontWeight="500"  fontFamily="clash grotesk"> 
+              <Heading
+                fontSize="30px"
+                textAlign="center"
+                fontWeight="500"
+                fontFamily="clash grotesk"
+              >
                 Reset password
               </Heading>
               <Text
@@ -414,7 +440,7 @@ const ForgotPasswordPage = () => {
               >
                 Kindly use a password you will remember
               </Text>
-              <FormControl  fontFamily="clash grotesk">
+              <FormControl fontFamily="clash grotesk">
                 <FormLabel>New Password</FormLabel>
                 <InputGroup>
                   <Input
@@ -440,7 +466,7 @@ const ForgotPasswordPage = () => {
                 </InputGroup>
               </FormControl>
 
-              <FormControl mt={4}> 
+              <FormControl mt={4}>
                 <FormLabel>Confirm Password</FormLabel>
                 <InputGroup>
                   <Input
@@ -455,7 +481,6 @@ const ForgotPasswordPage = () => {
                     <Button
                       h="1.75rem"
                       size="sm"
-                    
                       onClick={handleTogglePassword2}
                       bg="black"
                       _hover={{ bg: "inherit" }}
@@ -468,8 +493,8 @@ const ForgotPasswordPage = () => {
               </FormControl>
 
               {passwordValidationError && (
-  <div style={{ color: "red" }}>{passwordValidationError}</div>
-)}
+                <div style={{ color: "red" }}>{passwordValidationError}</div>
+              )}
 
               <Button
                 mt={6}
@@ -478,10 +503,10 @@ const ForgotPasswordPage = () => {
                 _hover={{ bg: "#CB29BE", opacity: "0.9" }}
                 rounded="25px"
                 width="full"
-                fontWeight='400'
+                fontWeight="400"
                 fontFamily="clash grotesk"
               >
-                {isLoading ? (
+                {loading ? (
                   <>
                     <Loader />
                     Updating new password....
@@ -503,27 +528,32 @@ const ForgotPasswordPage = () => {
           )}
           {currentStep === 4 && (
             <>
-
-              <iconify-icon icon="mdi:password-check"  style={{ color: "#CB29BE" }}
-            width="120"></iconify-icon>
-              <Heading fontSize="xl" mb={4} fontWeight='400'  fontFamily="clash grotesk">
+              <iconify-icon
+                icon="mdi:password-check"
+                style={{ color: "#CB29BE" }}
+                width="120"
+              ></iconify-icon>
+              <Heading
+                fontSize="xl"
+                mb={4}
+                fontWeight="400"
+                fontFamily="clash grotesk"
+              >
                 Password Changed
               </Heading>
-             <Text color='#808080'>Your password was changed succesfully</Text>
-             <Button
+              <Text color="#808080">Your password was changed succesfully</Text>
+              <Button
                 mt={6}
                 bg="#CB29BE"
                 onClick={handleSubmit}
                 _hover={{ bg: "#CB29BE", opacity: "0.9" }}
                 rounded="25px"
                 width="full"
-                fontWeight='400'
+                fontWeight="400"
                 as={Link}
-                to='/log-in'
+                to="/log-in"
               >
-               
-                  Back to login
-               
+                Back to login
               </Button>
             </>
           )}
@@ -535,7 +565,7 @@ const ForgotPasswordPage = () => {
           />
         </Box>
       </Grid>
-       <Footer />
+      <Footer />
     </Container>
   );
 };

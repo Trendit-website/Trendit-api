@@ -1,17 +1,17 @@
 import React from "react";
 import { Box, Flex, Image, Text, Heading } from "@chakra-ui/react";
 
-import Audio from 'assets/SocialMediaLogo/Audiomack.png'
-import Discord from "assets/SocialMediaLogo/Discord.jpg";
-import Fb from "assets/SocialMediaLogo/Fb.png";
-import Googleplay from "assets/SocialMediaLogo/Googleplay.png";
-import IG from "assets/SocialMediaLogo/IG.png";
-import Telegram from "assets/SocialMediaLogo/Telegram.png";
-import Tiktok from "assets/SocialMediaLogo/Tiktok.png";
-import Whatsapp from "assets/SocialMediaLogo/Whatsapp.png";
-import Youtube from "assets/SocialMediaLogo/Youtube.png";
-import Appstore from "assets/SocialMediaLogo/Appstore.png";
-import Twitter from "assets/SocialMediaLogo/Twitter.png";
+import Audio from '../../assets/SocialMediaLogo/Audiomack.png'
+import Discord from "../../assets/SocialMediaLogo/Discord.jpg";
+import Fb from "../../assets/SocialMediaLogo/Fb.png";
+import Googleplay from "../../assets/SocialMediaLogo/Googleplay.png";
+import IG from "../../assets/SocialMediaLogo/IG.png";
+import Telegram from "../../assets/SocialMediaLogo/Telegram.png";
+import Tiktok from "../../assets/SocialMediaLogo/Tiktok.png";
+import Whatsapp from "../../assets/SocialMediaLogo/Whatsapp.png";
+import Youtube from "../../assets/SocialMediaLogo/Youtube.png";
+import Appstore from "../../assets/SocialMediaLogo/Appstore.png";
+import Twitter from "../../assets/SocialMediaLogo/Twitter.png";
 const logos = [
   {
     name: "Facebook",

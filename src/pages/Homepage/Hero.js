@@ -8,8 +8,8 @@ import {
 } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
 import { EmailIcon } from "@chakra-ui/icons";
-import Dashboard from "assets/dashboard.png";
-import Sparkle from "assets/images/highlights.png";
+import Dashboard from "../../assets/dashboard.png";
+import Sparkle from "../../assets/images/highlights.png";
 
 const Hero = () => {
   return (
@@ -42,13 +42,12 @@ const Hero = () => {
           textAlign={{ base: "center", md: "left" }}
           color="white"
         >
-          Earn money by <Text color="#CB29BE">connecting businesses </Text> to
-          their potential customers
+          Turn Daily Social Tasks into Paychecks! Get Paid for your engagements.
+          
         </Heading>
 
         <Text textAlign={{ base: "center", md: "left" }} my={6} color="#808080">
-          Our platform offer a variety of opportunities for users to earn while
-          carrying out simple social media tasks for businesses and individuals
+        Earn Daily Income for Posting Ads and Completing Simple Social Tasks for Individuals, Businesses, and Brands on Your Social Media Account.
         </Text>
         <Box  display='flex'  px={0} mx={0}>
           <Image

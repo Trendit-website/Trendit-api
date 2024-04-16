@@ -5,7 +5,7 @@ import { IconButton } from "@chakra-ui/react";
 import { Box, Flex, Text, Heading, Button, Container } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { ArrowForwardIcon } from "@chakra-ui/icons";
-import {colors} from "components/colors"
+import {colors} from "../../components/colors"
 
 const cardContent = [
   {

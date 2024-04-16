@@ -1,4 +1,4 @@
-import IG from "assets/SocialMediaLogo/Twitter.png";
+import IG from "../../../assets/SocialMediaLogo/Twitter.png";
 import {
   Flex,
   Box,

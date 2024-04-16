@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Goback } from "../Earnhome";
-import Gele from 'assets/Markets/Gele.png'
+import Gele from '../../../assets/Markets/Gele.png'
 import {
   Container,
   Text,
@@ -19,12 +19,12 @@ import {
   ModalCloseButton,
 } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
-import Pagination from "components/Pagination";
+import Pagination from "../../../components/Pagination";
 import { ArrowForwardIcon } from "@chakra-ui/icons";
 import { useFetch } from "../../../React-query-hook/hook";
 import Loader from "../../../Loader";
-import ScrollToTop from "components/scrolltop";
-import {colors} from "components/colors"
+import ScrollToTop from "../../../components/scrolltop";
+import {colors} from "../../../components/colors"
 
 
 

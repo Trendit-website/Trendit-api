@@ -37,6 +37,80 @@ class AdminTaskController:
             logging.exception("An exception occurred trying to get all tasks:\n", str(e))
             return error_response('Error getting all tasks', 500)
         
+    @staticmethod
+    def get_all_failed_tasks():
+        try:
+            page = request.args.get('page', 1, type=int)
+            per_page = request.args.get('per_page', 15, type=int)
+            
+            tasks = Task.query.filter_by(status=TaskStatus.DECLINED).paginate(page=page, per_page=per_page, error_out=False)
+            
+            if page > tasks.pages:
+                return success_response('No content', 204, {'tasks': []})
+            
+            task_list = [task.to_dict() for task in tasks.items]
+            
+            extra_data = {
+                'total': tasks.total,
+                'pages': tasks.pages,
+                'tasks': task_list
+            }
+
+            return success_response('All failed tasks fetched successfully', 200, extra_data)
+        except Exception as e:
+            logging.exception("An exception occurred trying to get all failed tasks:\n", str(e))
+            return error_response('Error getting all failed tasks', 500)
+
+
+    @staticmethod
+    def get_all_approved_tasks():
+        try:
+            page = request.args.get('page', 1, type=int)
+            per_page = request.args.get('per_page', 15, type=int)
+            
+            tasks = Task.query.filter_by(status=TaskStatus.APPROVED).paginate(page=page, per_page=per_page, error_out=False)
+            
+            if page > tasks.pages:
+                return success_response('No content', 204, {'tasks': []})
+            
+            task_list = [task.to_dict() for task in tasks.items]
+            
+            extra_data = {
+                'total': tasks.total,
+                'pages': tasks.pages,
+                'tasks': task_list
+            }
+
+            return success_response('All approved tasks fetched successfully', 200, extra_data)
+        except Exception as e:
+            logging.exception("An exception occurred trying to get all approved tasks:\n", str(e))
+            return error_response('Error getting all approved tasks', 500)
+        
+
+    @staticmethod
+    def get_all_pending_tasks():
+        try:
+            page = request.args.get('page', 1, type=int)
+            per_page = request.args.get('per_page', 15, type=int)
+            
+            tasks = Task.query.filter_by(status=TaskStatus.PENDING).paginate(page=page, per_page=per_page, error_out=False)
+            
+            if page > tasks.pages:
+                return success_response('No content', 204, {'tasks': []})
+            
+            task_list = [task.to_dict() for task in tasks.items]
+            
+            extra_data = {
+                'total': tasks.total,
+                'pages': tasks.pages,
+                'tasks': task_list
+            }
+
+            return success_response('All pending tasks fetched successfully', 200, extra_data)
+        except Exception as e:
+            logging.exception("An exception occurred trying to get all pending tasks:\n", str(e))
+            return error_response('Error getting all pending tasks', 500)
+
 
     @staticmethod
     def approve_task(task_id: int):

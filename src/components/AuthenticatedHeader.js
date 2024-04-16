@@ -1,5 +1,4 @@
-
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import {
   Box,
@@ -23,8 +22,15 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { FiMenu, FiBell, FiChevronDown, FiSearch } from "react-icons/fi";
-import { NavLink, useLocation, useMatch, Outlet } from "react-router-dom";
+import {
+  NavLink,
+  useLocation,
+  useMatch,
+  Outlet,
+  useNavigate,
+} from "react-router-dom";
 import Logo from "../../src/assets/images/logo.png";
+import { logout } from "../services/slices/authSlice";
 
 const LinkItems = [
   { name: "Home", icon: "solar:cart-4-bold", path: "/homepage" },
@@ -53,6 +59,12 @@ const LinkItems = [
 ];
 
 const SidebarContent = ({ onClose, ...rest }) => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/log-in");
+  };
   return (
     <Box
       transition="3s ease"
@@ -73,7 +85,7 @@ const SidebarContent = ({ onClose, ...rest }) => {
           color="white"
         />
       </Flex>
-      <Box mt="30px" pb={20} maxH="100vh" overflowY='auto'>
+      <Box mt="10px" pb={20} maxH="100vh" overflowY="auto">
         {LinkItems.map((link) => (
           <NavItem
             key={link.name}
@@ -85,7 +97,16 @@ const SidebarContent = ({ onClose, ...rest }) => {
             {link.name}
           </NavItem>
         ))}
+        <Box
+        fontFamily="clash grotesk"
+        p="10px 15px"
+        color="white"
+        onClick={handleLogout}
+      >
+        Log out
       </Box>
+      </Box>
+      
     </Box>
   );
 };
@@ -106,6 +127,8 @@ const NavItem = ({ icon, children, path, onClose, ...rest }) => {
       location.pathname === path || location.pathname.startsWith(path + "/")
     );
   };
+
+
 
   return (
     <Box>
@@ -156,126 +179,162 @@ const NavItem = ({ icon, children, path, onClose, ...rest }) => {
 };
 
 const MobileNav = ({ onOpen, ...rest }) => {
-  const user = useSelector((state) => state.auth.user);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/log-in");
+  };
 
   return (
     <Container
-    maxW={{ xl: "100%", '2xl': '75%' }}
-    bg='#121212'
-      py='5'
-    color="white"
-    fontFamily="Clash Grotesk"
-    className="mobile-header"
-    justifyContent='space-between'
-    display='flex'
-    pos='fixed'
-    mb='10'
-  >
-
-<Flex  alignItems="center" mx="8" justifyContent="space-between" >
+      maxW={{ xl: "100%", "2xl": "75%" }}
+      bg="#121212"
+      py="5"
+      color="white"
+      fontFamily="Clash Grotesk"
+      className="mobile-header"
+      justifyContent="space-between"
+      display="flex"
+      pos="fixed"
+      mb="10"
+    >
+      <Flex alignItems="center" mx="8" justifyContent="space-between">
         <Image src={Logo} />
-        
       </Flex>
-     
-        <Box
-          display={{ base: "none", md: "flex" }}
-          alignItems="center"
-          border="1px solid #808080"
-          borderRadius="15px"
-          transition="border-color 0.3s ease"
-          ml="4%"
-        >
-          <IconButton
-            size="lg"
-            variant="ghost"
-            _hover={{ bg: "black", opacity: "0.9" }}
-            aria-label="search"
-            icon={<FiSearch color="white" />}
-          />
-          <Input
-            type="text"
-            placeholder="Search"
-            bg="transparent"
-            border="none"
-            fontFamily="clash grotesk"
-            outline="none"
-            color="white"
-            ml="-0"
-            _focus={{
-              borderColor: "transparent",
-              boxShadow: "0 0 5px rgba(0, 0, 0, 0.2)",
-            }}
-          />
-        </Box>
 
-       
+      <Box
+        display={{ base: "none", md: "flex" }}
+        alignItems="center"
+        border="1px solid #808080"
+        borderRadius="15px"
+        transition="border-color 0.3s ease"
+        ml="4%"
+      >
+        <IconButton
+          size="lg"
+          variant="ghost"
+          _hover={{ bg: "black", opacity: "0.9" }}
+          aria-label="search"
+          icon={<FiSearch color="white" />}
+        />
+        <Input
+          type="text"
+          placeholder="Search"
+          bg="transparent"
+          border="none"
+          fontFamily="clash grotesk"
+          outline="none"
+          color="white"
+          ml="-0"
+          _focus={{
+            borderColor: "transparent",
+            boxShadow: "0 0 5px rgba(0, 0, 0, 0.2)",
+          }}
+        />
+      </Box>
 
-        <HStack spacing={{ base: "0", md: "6" }}>
-          <IconButton
-            size="lg"
-            variant="ghost"
-            mx="4"
-            _hover={{ bg: "black", opacity: "0.9" }}
-            aria-label="open menu"
-            icon={<FiBell color="white" bg="#121212" />}
-          />
+      <HStack spacing={{ base: "0", md: "6" }}>
+        <IconButton
+          size="lg"
+          variant="ghost"
+          mx="4"
+          _hover={{ bg: "black", opacity: "0.9" }}
+          aria-label="open menu"
+          icon={<FiBell color="white" bg="#121212" />}
+        />
 
-          <Flex alignItems={"center"}>
-            <Menu>
-              <MenuButton
-                py={2}
-                transition="all 0.3s"
-                _focus={{ boxShadow: "none" }}
-                mr="6"
-              >
-                <HStack>
-                  <Avatar size={"sm"} src={user.Profile_picture} />
-                  <VStack
-                    display={{ base: "none", md: "flex" }}
-                    alignItems="flex-start"
-                    spacing="1px"
-                    ml="2"
-                  >
-                    <Text
-                      fontSize="sm"
-                      fontFamily="clash grotesk"
-                      color="white"
-                    >
-                      {user.username}
-                    </Text>
-                  </VStack>
-                  <Box display={{ base: "none", md: "flex" }}>
-                    <FiChevronDown color="white" />
-                  </Box>
-                </HStack>
-              </MenuButton>
-              <MenuList
+        <Flex alignItems={"center"}>
+          <Menu>
+            <MenuButton
+              py={2}
+              transition="all 0.3s"
+              _focus={{ boxShadow: "none" }}
+              mr="6"
+            >
+              <HStack>
+                {/* <Avatar size={"sm"} src={user.profile_picture} /> */}
+                <VStack
+                  display={{ base: "none", md: "flex" }}
+                  alignItems="flex-start"
+                  spacing="1px"
+                  ml="2"
+                >
+                  <Text fontSize="sm" fontFamily="clash grotesk" color="white">
+                    {/* {user.username} */}
+                  </Text>
+                </VStack>
+                <Box display={{ base: "none", md: "flex" }}>
+                  <FiChevronDown color="white" />
+                </Box>
+              </HStack>
+            </MenuButton>
+            <MenuList
+              bg="black"
+              p="0"
+              fontFamily="clash grotesk"
+              borderColor={useColorModeValue("gray.200", "gray.700")}
+            >
+              <MenuItem
+                _hover={{
+                  bg: "white",
+                  color: "black",
+                }}
                 bg="black"
-                fontFamily="clash grotesk"
-                borderColor={useColorModeValue("gray.200", "gray.700")}
+                p="10px 15px"
+                borderTopRadius="5px"
+                color="white"
               >
-                <MenuItem>Change Profile pics</MenuItem>
-                <MenuItem>Change password</MenuItem>
-                <MenuItem>Log out</MenuItem>
-              </MenuList>
-            </Menu>
-          </Flex>
+                Change Profile pics
+              </MenuItem>
+              <MenuItem
+                _hover={{
+                  bg: "white",
+                  color: "black",
+                }}
+                bg="black"
+                p="10px 15px"
+                color="white"
+              >
+                Change password
+              </MenuItem>
+              <MenuItem
+                _hover={{
+                  bg: "white",
+                  color: "black",
+                }}
+                bg="black"
+                p="10px 15px"
+                color="white"
+                borderBottomRadius="5px"
+                onClick={handleLogout}
+              >
+                Log out
+              </MenuItem>
+            </MenuList>
+          </Menu>
+        </Flex>
 
-          <IconButton
-            display={{ base: "flex", md: "none" }}
-            onClick={onOpen}
-            _hover={{ bg: "black", opacity: "0.9" }}
-            variant="outline"
-            aria-label="open menu"
-            icon={<FiMenu color="white" />}
-          />
-        </HStack>
-     
+        <IconButton
+          display={{ base: "flex", md: "none" }}
+          onClick={onOpen}
+          _hover={{ bg: "black", opacity: "0.9" }}
+          variant="outline"
+          aria-label="open menu"
+          icon={<FiMenu color="white" />}
+        />
+      </HStack>
     </Container>
   );
 };
 
 const SidebarWithHeader = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/log-in");
+  };
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   return (

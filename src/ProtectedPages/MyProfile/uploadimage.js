@@ -3,7 +3,7 @@ import { useState } from "react"; // Import useState
 import { useSelector } from "react-redux";
 
 const UploadImage = () => {
-  const user = useSelector((state) => state.auth.user);
+  // const user = useSelector((state) => state.auth.user);
   const [selectedImage, setSelectedImage] = useState(null);
 
   const handleImageUpload = (event) => {
@@ -45,7 +45,8 @@ const UploadImage = () => {
             />
           ) : (
             <Image
-              src={user.Profile_picture}
+            src=""
+              // src={user.Profile_picture}
               rounded="full"
               height="65px"
               width="65px"

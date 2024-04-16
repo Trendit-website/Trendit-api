@@ -81,19 +81,19 @@ const Earners = () => {
     {
       header: "Repost adverts",
       content:
-        "With just few clicks you can help businesses owners reach a wider audience and make more profit by simply reposting their ads",
+        "With just few clicks you can help individuals and brands reach a wider audience and earn by simply reposting their ads.",
       icon: "bi:phone-vibrate-fill",
     },
     {
       header: "Engage",
       content:
-        "Help accounts grow by following, liking, commenting, re-sharing their posts, subscribing to their channels and so much more!",
+        "Interact actively! Boost account growth by following, liking, commenting, resharing their posts, subscribing to their channels, and engaging in numerous other supportive activities!",
       icon: "fluent:people-20-filled",
     },
     {
       header: "Resell",
       content:
-        "Help businesses resell their products and start earning with every successful sale you make. Sell more, earn more!",
+        "Unlock earning potential by aiding businesses in reselling their products. Every successful sale you generate adds to your income. Embrace the mantra: Sell more, earn more! Start your journey to lucrative reselling today!",
 
       icon: "ic:round-sell",
     },
@@ -101,18 +101,18 @@ const Earners = () => {
     {
       header: "Reviews & feedback",
       content:
-        "Help businesses gain credibility and customer trust by giving valuable feedback on their products and services.!",
+        "Your opinion matters! Leave a review and provide feedback to businesses about your experience with their products and services. Your valuable insights help them improve and build trust with future customers.",
 
       icon: "mdi:chat-alert",
     },
 
-    {
-      header: "Take surveys",
-      content:
-        "Help businesses transform their ideas into reality by completing surveys to help them make more informed decisions.",
+    // {
+    //   header: "Take surveys",
+    //   content:
+    //     "Help businesses transform their ideas into reality by completing surveys to help them make more informed decisions.",
 
-      icon: "mdi:note-edit",
-    },
+    //   icon: "mdi:note-edit",
+    // },
   ];
 
   const [isMobile] = useMediaQuery("(max-width: 767px)");

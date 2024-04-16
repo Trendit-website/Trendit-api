@@ -1,62 +1,17 @@
-
-import { Container, Button, Heading, Text, Center } from "@chakra-ui/react";
-import { useSelector } from 'react-redux';
-import { useDispatch } from 'react-redux';
-import { logout } from '../Redux-files/slices/authSlice'; // Import your logout action
-import { Navigate } from 'react-router-dom';
-
-
-
+import React from "react";
+import Homeside from "../components/Homeside";
 
 const Home = () => {
-  const dispatch = useDispatch();
-  const handleLogout = () => {
-  
-    // Dispatch the logout action
-    dispatch(logout());
-    // Redirect to the login page
-    return <Navigate to="/log-in" />;
-  };
-
-
-  const user = useSelector((state) => state.auth.user);
-  const isLoading = useSelector((state) => state.auth.isLoading);
   return (
-    <Container
-     maxW={{base: '100%', md: '75%'}}
-      px={0}
-      fontFamily="clash grotesk"
-      bg="black"
-      height="200vh"
-      ml={{ base: 0, md: '25%'}}
-    >
-      <Heading
-        textAlign="left"
-        fontFamily="clash grotesk"
-        color="white"
-        fontSize="20px"
-        fontWeight="400"
-        px={10}
-        pt={20}
-       
-      >
-      {isLoading ? (
-        <Text>Loading user data...</Text>
-      ) : user ? (
-        <p>Welcome, {user.username}!</p>
-      ) : (
-        <p>User data not available.</p>
-      )}
-      </Heading>
-
-      <Text color="white" px={10}>
-        This page is under development. Check back later{" "}
-      </Text>
-
-    <Center>  <Button onClick={handleLogout} py='5'>
-      Logout
-    </Button></Center>
-    </Container>
+    <div className="side min-h-[100vh] md:flex w-full px-10">
+      {/* second side */}
+      <div className="w-full px-[0px] md:flex md:justify-center md:px-[20px] md:relative md:left-[295px] lg:left-[295px] md:w-[calc(100%-295px)] lg:w-[calc(100%-295px)]">
+        <div className="w-full pb-[20px] md:pt-[20px] md:pb-[20px]">
+          <Homeside />
+        </div>
+      </div>
+      {/* :)) empty */}
+    </div>
   );
 };
 

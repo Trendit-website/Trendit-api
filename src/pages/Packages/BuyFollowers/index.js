@@ -2,7 +2,7 @@ import InstagramBtn from "./Instagrambtn";
 import Tiktok from "./Tiktok";
 import Twitter from "./Twitter";
 import YoutubeBtn from "./YoutubeBtn";
-import Footer from "components/Footer";
+import Footer from "../../../components/Footer";
 import { Box, Container, Heading, Text } from "@chakra-ui/react";
 
 const BuyFollowers = () => {

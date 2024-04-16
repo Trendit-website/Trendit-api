@@ -19,7 +19,8 @@ import {
   Button,
   FormControl,
 } from "@chakra-ui/react";
-import { LogoJPG } from "constants/image_assets";
+import { LogoJPG } from "../constants/image_assets";
+import { FaXTwitter } from "react-icons/fa6";
 
 
 const Footer =() =>{
@@ -35,47 +36,50 @@ return (
         <Box>
           <img src={LogoJPG} alt="" width="100px" />
           <Text>
-            A dynamic and innovative social finance platform for users and
-            businesses
+          Trendit³ is an online freelance platform that remunerates its users (Earners) for performing simple everyday tasks on their social media accounts.
           </Text>
         </Box>
 
         <Flex mt={8} gap='5'>
-          <Link href="#" >
+          <a href="https://www.facebook.com/TrenditHQ/" target="_blank" rel="noreferrer" >
             <iconify-icon
               icon="basil:facebook-solid"
               style={{ color: "white" }}
               width="25"
             ></iconify-icon>
-          </Link>
-          <Link href="#">
+          </a>
+          <a href="https://www.instagram.com/trendithq/" target="_blank" rel="noreferrer">
             <iconify-icon
               icon="basil:instagram-outline"
               style={{ color: "white" }}
               width="25"
             ></iconify-icon>
-          </Link>
-          <Link href="#" >
+          </a>
+          <a href="https://twitter.com/trendithq" target="_blank" rel="noreferrer" >
+          <FaXTwitter className="text-white text-[25px]" />
+
+          </a>
+          <a href="https://www.youtube.com/@Trendithq" target="_blank" rel="noreferrer">
             <iconify-icon
-              icon="basil:twitter-solid"
+              icon="mdi:youtube"
               style={{ color: "white" }}
               width="25"
             ></iconify-icon>
-          </Link>
-          <Link href="#">
+          </a>
+          <a href="https://www.tiktok.com/@trendithq" target="_blank" rel="noreferrer">
             <iconify-icon
-              icon="basil:linkedin-solid"
+              icon="ic:baseline-tiktok"
               style={{ color: "white" }}
               width="25"
             ></iconify-icon>
-          </Link>
+          </a>
         </Flex>
       </Box>
 
       <Box mb={5}>
         <Box fontFamily="Clash Grotesk">
           <Heading color="white" fontSize="18px" fontWeight={400} mb={2}>
-            For Businesses
+            For Advertisers
           </Heading>
           <Link>
             {" "}

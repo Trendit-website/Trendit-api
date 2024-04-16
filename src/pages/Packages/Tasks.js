@@ -1,6 +1,6 @@
 import { Box, Heading, Button, Text, Container } from "@chakra-ui/react";
 import Logos from "./SocialMediaCards";
-import Footer from "components/Footer";
+import Footer from "../../components/Footer";
 import { ArrowForwardIcon } from "@chakra-ui/icons";
 
 const Tasks = () => {

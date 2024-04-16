@@ -17,7 +17,7 @@ import {
 } from "@chakra-ui/react";
 import { Link, NavLink } from "react-router-dom";
 import { ChevronDownIcon, HamburgerIcon, CloseIcon } from "@chakra-ui/icons";
-import { LogoJPG } from "constants/image_assets";
+import { LogoJPG } from "../constants/image_assets";
 
 const NAV_ITEMS = [
   {
@@ -27,6 +27,10 @@ const NAV_ITEMS = [
   {
     label: "About",
     href: "/about",
+  },
+  {
+    label: "Pricing",
+    href: "/pricing",
   },
   {
     label: "Our packages",
@@ -49,6 +53,10 @@ const NAV_ITEMS = [
   {
     label: "Marketplace",
     href: "/market-place",
+  },
+  {
+    label: "FAQs",
+    href: "/faq",
   },
 ];
 
@@ -102,10 +110,11 @@ const DesktopNav = () => {
         <Button
           variant="ghost"
           _hover={{
-            color: "#CB29BE",
+            color: "white",
             transition: "color 0.3s ease-in-out",
             opacity: "0.9",
           }}
+          color="white"
           fontWeight="400"
           as={Link}
           to="/log-in"

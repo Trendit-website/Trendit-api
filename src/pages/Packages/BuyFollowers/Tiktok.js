@@ -1,4 +1,4 @@
-import IG from "assets/SocialMediaLogo/Tiktok.png";
+import IG from "../../../assets/SocialMediaLogo/Tiktok.png";
 import {
   Flex,
   Box,

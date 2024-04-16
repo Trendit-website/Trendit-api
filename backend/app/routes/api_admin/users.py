@@ -15,3 +15,9 @@ def get_all_users():
 @roles_required('Junior Admin')
 def get_user(user_id):
     return AdminUsersController.get_user(user_id)
+
+
+@bp.route('/delete-user/<int:user_id>', methods=['DELETE'])
+@roles_required('Admin')
+def delete_user(user_id):
+    return AdminUsersController.delete_user(user_id)

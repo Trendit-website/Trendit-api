@@ -1,7 +1,7 @@
 import Navbar from "./navbar";
 import Filter from "./Filterpanel";
 import Products from "./Products";
-import Footer from "components/Footer";
+import Footer from "../../components/Footer";
 import { Container, Box, Heading, Text, Button } from "@chakra-ui/react";
 import { useSelector } from 'react-redux';
 import {Link} from 'react-router-dom'

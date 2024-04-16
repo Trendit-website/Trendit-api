@@ -1,5 +1,5 @@
 import { Container, Box, Text } from "@chakra-ui/react";
-import {colors} from 'components/colors'
+import {colors} from '../../components/colors'
 import Cards from "./cards";
 
 const ProtectedFAQS = () => {
