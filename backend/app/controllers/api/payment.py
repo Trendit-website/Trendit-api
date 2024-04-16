@@ -84,6 +84,7 @@ class PaymentController:
             status_code = 200
             msg = ""
             extra_data = {'payment_status': payment_status}
+            extra_data.update({'payment_type': payment_type})
             
             # if verification was successful
             if verification_response['status'] and payment_status == 'success':
