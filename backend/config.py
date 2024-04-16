@@ -88,7 +88,6 @@ class Config:
     # Facebook config
     FB_CLIENT_ID = os.environ.get('FB_CLIENT_ID')
     FB_CLIENT_SECRET = os.environ.get('FB_CLIENT_SECRET')
-    FB_REDIRECT_URI = os.environ.get('FB_REDIRECT_URI')
 
     # TikTok config
 
