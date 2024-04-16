@@ -33,11 +33,12 @@ from ...utils.helpers.mail_helpers import send_other_emails, send_code_to_email
 # Facebook OAuth configuration
 FB_CLIENT_ID = app.Config.FB_CLIENT_ID
 FB_CLIENT_SECRET = app.Config.FB_CLIENT_SECRET
-FB_REDIRECT_URI = app.Config.FB_REDIRECT_URI
 
 # Facebook OAuth endpoints
 FB_AUTHORIZATION_BASE_URL = os.environ.get('FB_AUTHORIZATION_BASE_URL')
 FB_TOKEN_URL = os.environ.get('FB_TOKEN_URL')
+FB_LOGIN_REDIRECT_URI = 'https://api.trendit3.com/api/fb_login_callback'
+FB_SIGNUP_REDIRECT_URI = 'https://api.trendit3.com/api/fb_signup_callback'
 
 
 # Google OAuth configuration
@@ -58,7 +59,7 @@ class SocialAuthController:
     def fb_signup():
 
         try:
-            facebook = OAuth2Session(FB_CLIENT_ID, redirect_uri=FB_REDIRECT_URI)
+            facebook = OAuth2Session(FB_CLIENT_ID, redirect_uri=FB_SIGNUP_REDIRECT_URI)
             facebook = facebook_compliance_fix(facebook)
             authorization_url, state = facebook.authorization_url(FB_AUTHORIZATION_BASE_URL)
 
@@ -80,7 +81,7 @@ class SocialAuthController:
         #     print('here')
         #     return 'Invalid state'
         try:
-            facebook = OAuth2Session(FB_CLIENT_ID, redirect_uri=FB_REDIRECT_URI)
+            facebook = OAuth2Session(FB_CLIENT_ID, redirect_uri=FB_SIGNUP_REDIRECT_URI)
             token = facebook.fetch_token(FB_TOKEN_URL, client_secret=FB_CLIENT_SECRET, authorization_response=request.url)
 
 
@@ -106,7 +107,7 @@ class SocialAuthController:
     def fb_login():
 
         try:
-            facebook = OAuth2Session(FB_CLIENT_ID, redirect_uri=FB_REDIRECT_URI)
+            facebook = OAuth2Session(FB_CLIENT_ID, redirect_uri=FB_LOGIN_REDIRECT_URI)
             facebook = facebook_compliance_fix(facebook)
             authorization_url, state = facebook.authorization_url(FB_AUTHORIZATION_BASE_URL)
 
@@ -128,7 +129,7 @@ class SocialAuthController:
         #     print('here')
         #     return 'Invalid state'
         try:
-            facebook = OAuth2Session(FB_CLIENT_ID, redirect_uri=FB_REDIRECT_URI)
+            facebook = OAuth2Session(FB_CLIENT_ID, redirect_uri=FB_LOGIN_REDIRECT_URI)
             token = facebook.fetch_token(FB_TOKEN_URL, client_secret=FB_CLIENT_SECRET, authorization_response=request.url)
 
 
