@@ -189,7 +189,7 @@ class PaymentController:
             user = Trendit3User.query.get(current_user_id)
             
             data = request.get_json()
-            amount = float(data.get('amount').replace(',', ''))
+            amount = float(str(data.get('amount')).replace(',', ''))
             
             if user.wallet_balance < amount:
                 return error_response("Insufficient balance", 400)
@@ -234,7 +234,7 @@ class PaymentController:
                     if response['status'] is False:
                         return error_response(response['message'], 401)
                     
-                    recipient = Recipient.create_recipient(trendit3_user=user, name=recipient_name, recipient_code=recipient_code, recipient_id=recipient_id, recipient_type=recipient_type, bank_account=primary_bank)
+                    recipient = Recipient.create_recipient(trendit3_user=user, name=recipient_name, recipient_code=recipient_code, recipient_id=recipient_id, recipient_type=recipient_type, bank_account=bank)
             
             
             # If the withdrawal is successful, deduct the amount from the user's balance.

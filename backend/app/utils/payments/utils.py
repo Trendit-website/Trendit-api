@@ -215,7 +215,6 @@ def payment_recorded(reference):
 
 
 def initiate_transfer(amount, recipient, user):
-    error = False
     try:
         bank_name = recipient.bank_account.bank_name
         account_no = recipient.bank_account.account_no

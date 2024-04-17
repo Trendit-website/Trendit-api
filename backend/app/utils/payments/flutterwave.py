@@ -4,7 +4,7 @@
 @package: Trendit³
 """
 
-import requests
+import requests, hmac, hashlib
 from flask import json, request, jsonify
 from sqlalchemy.exc import ( DataError, DatabaseError )
 
@@ -203,13 +203,13 @@ def verify_flutterwave_payment(data):
 
 def flutterwave_webhook():
     try:
-        secret_key = Config.FLW_SECRET_KEY # Get Flutterwave secret key
-        signature = request.headers.get('verifi-hash') # Get the signature from the request headers
-        
         data = json.loads(request.data) # Get the data from the request
         console_log('DATA', data)
         
-        if signature == None or (signature != secret_key):
+        secret_hash = Config.FLW_SECRET_HASH
+        signature = request.headers.get('verifi-hash') # Get the signature from the request headers
+        
+        if signature == None or (signature != secret_hash):
             # This request isn't from Flutterwave; discard
             raise SignatureError(f'No signature in headers')
         

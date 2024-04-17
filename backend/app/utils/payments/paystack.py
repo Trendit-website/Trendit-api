@@ -103,6 +103,7 @@ def verify_paystack_payment(data):
             user_id = transaction.trendit3_user_id
             trendit3_user = transaction.trendit3_user
             payment_type = payment.payment_type
+            extra_data.update({'payment_type': payment_type})
             
             # if verification was successful
             if response_data['status'] and payment_status == 'success':
@@ -298,4 +299,32 @@ def paystack_webhook():
         raise e
     
     return result
+
+
+def paystack_initiate_withdrawal(data: dict, user: Trendit3User):
+    try:
+        amount = float(str(data.get('amount')).replace(',', ''))
+        
+        name = user.profile.firstname
+        is_primary = data.get('is_primary', True)
+        bank_name = data.get('bank_name')
+        account_no = data.get('account_no')
+        bank_code = get_bank_code(bank_name)
+        currency = user.wallet.currency_code
+        
+        primary_bank = BankAccount.query.filter_by(trendit3_user_id=user.id, is_primary=True).first()
+        recipient = primary_bank.recipient
+    except (DataError, DatabaseError) as e:
+        raise e
+    except Exception as e:
+        pass
+
+
+def paystack_initiate_transfer():
+    try:
+        pass
+    except (DataError, DatabaseError) as e:
+        raise e
+    except Exception as e:
+        pass
 
