@@ -91,7 +91,7 @@ class Transaction(db.Model):
     trendit3_user = db.relationship('Trendit3User', backref=db.backref('transactions', lazy='dynamic'))
     
     def __repr__(self):
-        return f'<ID: {self.id}, Transaction Reference: {self.tx_ref}, Transaction Type: {self.transaction_type}, Status: {self.status}>'
+        return f'<ID: {self.id}, Transaction Reference: {self.key}, Transaction Type: {self.transaction_type}, Status: {self.status}>'
     
     
     @classmethod
