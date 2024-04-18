@@ -295,3 +295,8 @@ def flutterwave_webhook():
         raise e
     
     return result
+
+
+
+def flutterwave_initiate_withdrawal():
+    pass
