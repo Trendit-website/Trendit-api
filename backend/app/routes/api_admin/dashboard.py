@@ -12,7 +12,7 @@ def dashboard_data():
 
 
 @bp.route('/create_junior_admin', methods=['POST'])
-@roles_required('Junior Admin')
+@roles_required('Admin')
 def create_junior_admin():
     return AdminDashboardController.create_admin()
 
