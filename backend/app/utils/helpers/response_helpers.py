@@ -1,4 +1,4 @@
-'''
+"""
 This module defines helper functions for generating HTTP responses in the Trendit³ Flask application.
 
 These functions assist with tasks such as generating success and error responses.
@@ -8,7 +8,7 @@ These functions assist with tasks such as generating success and error responses
 @package: Trendit³
 
 @app/utils/helpers/response_helpers.py
-'''
+"""
 from flask import jsonify
 
 def error_response(msg, status_code, extra_data=None):
