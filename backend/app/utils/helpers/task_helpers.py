@@ -193,6 +193,8 @@ def get_task_by_key(task_key):
 
 def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
     try:
+        console_log('data', data)
+        
         user_id = int(get_jwt_identity())
         task_type = data.get('task_type', '')
         platform = data.get('platform', '').lower()
@@ -208,6 +210,7 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
         hashtags = data.get('hashtags', '')
         media = request.files.get('media', '')
         
+        console_log('platform', platform)
         
         goal = data.get('goal','')
         account_link = data.get('account_link', '')
@@ -215,6 +218,7 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
         engagements_count_str = data.get('engagements_count', '')
         engagements_count = int(engagements_count_str) if engagements_count_str and engagements_count_str.isdigit() else 0
         
+        console_log('posts_count', posts_count)
         
         task = None
         if task_id_key:
@@ -240,9 +244,13 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
             if task:
                 task.update(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee=fee, media_id=media_id, payment_status=payment_status, posts_count=posts_count, target_country=target_country, target_state=target_state, gender=gender, caption=caption, hashtags=hashtags)
                 
+                console_log('task', task)
+                
                 return task
             else:
                 new_task = AdvertTask.create_task(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee=fee, media_id=media_id, payment_status=payment_status, posts_count=posts_count, target_country=target_country, target_state=target_state, gender=gender, caption=caption, hashtags=hashtags)
+                
+                console_log('new_task', new_task)
                 
                 return new_task
             

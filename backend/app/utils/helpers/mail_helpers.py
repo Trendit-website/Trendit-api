@@ -141,6 +141,7 @@ def send_async_other_email(app, user_email, email_type, amount=None, admin_login
         try:
             mail.send(msg)
         except Exception as e:
+            log_exception('EXCEPTION SENDING MAIL', e)
             console_log('EXCEPTION SENDING MAIL', f'An error occurred while sending the {email_type} email type: {str(e)}')
 
 

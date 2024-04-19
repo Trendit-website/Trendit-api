@@ -157,6 +157,7 @@ def debit_wallet(user_id: int, amount: int, payment_type=None) -> float:
         raise ValueError("User does not have a wallet.")
 
     current_balance = wallet.balance
+    console_log('current_balance', current_balance)
     if current_balance < amount:
         raise ValueError("Insufficient balance.")
 
@@ -168,9 +169,13 @@ def debit_wallet(user_id: int, amount: int, payment_type=None) -> float:
         payment = Payment(key=key, amount=amount, payment_type=payment_type, payment_method='wallet', status='complete', trendit3_user=user)
         transaction = Transaction(key=key, amount=amount, transaction_type=TransactionType.DEBIT, status='complete', trendit3_user=user)
         
+        console_log('payment', payment)
+        console_log('transaction', transaction)
+        
         db.session.add(payment, transaction)
         db.session.commit()
         send_other_emails(user.email, email_type='debit', amount=amount) # send debit alert to user's mail
+        console_log('current_balance', wallet.balance)
         return wallet.balance
     except Exception as e:
         # Handle the exception appropriately (rollback, log the error, etc.)

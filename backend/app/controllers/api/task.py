@@ -495,12 +495,15 @@ class TaskController:
             payment_method = request.args.get('payment_method', 'trendit_wallet')
             current_user_id = get_jwt_identity()
             
+            console_log('payment_method', payment_method)
             
             if payment_method == 'payment_gateway':
                 callback_url = request.headers.get('CALLBACK-URL')
                 if not callback_url:
                     return error_response('callback URL not provided in the request headers', 400)
                 data['callback_url'] = callback_url # add callback url to data
+                
+                console_log('callback_url', callback_url)
                 
                 new_task = save_task(data)
                 if new_task is None:
@@ -520,6 +523,8 @@ class TaskController:
                 if new_task is None:
                     return error_response('Error creating new task', 500)
                 
+                console_log('new_task', new_task)
+                
                 msg = 'Task created successfully. Payment made using Trendit³ Wallet.'
                 extra_data = {'task': new_task.to_dict()}
                 
@@ -528,7 +533,7 @@ class TaskController:
             log_exception(f"A TypeError occurred during creation of Task", e)
             api_response = error_response(f"TypeError occurred: {str(e)}", 400)
         except Exception as e:
-            logging.exception(f"An exception occurred during creation of Task ==> {str(e)}")
+            log_exception("An exception occurred creating Task", e)
             api_response = error_response("Error creating new task", 500)
         
         return api_response
