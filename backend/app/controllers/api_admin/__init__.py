@@ -14,3 +14,4 @@ from app.controllers.api_admin.dashboard import AdminDashboardController
 from app.controllers.api_admin.tasks import AdminTaskController
 from app.controllers.api_admin.users import AdminUsersController
 from app.controllers.api_admin.transactions import TransactionController
+from app.controllers.api_admin.earn_appeal import EarnAppealController
