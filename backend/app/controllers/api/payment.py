@@ -58,101 +58,18 @@ class PaymentController:
             # Extract body from request
             data = request.get_json()
             
-            # Verify transaction with Paystack
-            # Extract reference from request body
-            reference = data.get('reference')
-            auth_headers = {
-                "Authorization": "Bearer {}".format(Config.PAYSTACK_SECRET_KEY),
-                "Content-Type": "application/json"
-            }
-            paystack_response = requests.get(f'https://api.paystack.co/transaction/verify/{reference}', headers=auth_headers)
-            verification_response = paystack_response.json()
+            current_user_id = get_jwt_identity()
             
-            if not verification_response['status']:
-                return error_response(verification_response['message'], 404)
+            if gateway == "paystack":
+                result = verify_paystack_payment(data)
+            elif gateway == "flutterwave":
+                result = verify_flutterwave_payment(data)
             
-            # Extract needed data
-            amount = float(verification_response['data']['amount']) / 100  # Convert from kobo to naira
-            payment_status = verification_response['data']['status'].lower()
+            msg = result['msg']
+            extra_data = result['extra_data']
             
-            transaction = Transaction.query.filter_by(key=reference).first()
-            payment = Payment.query.filter_by(key=reference).first()
-            
-            if not transaction:
-                return error_response(f"Transaction not found", 404)
-            
-            user_id = transaction.trendit3_user_id
-            payment_type = payment.payment_type
-            
-            trendit3_user = transaction.trendit3_user
-            if trendit3_user is None:
-                return error_response('User does not exist', 404)
-            
-            status_code = 200
-            msg = ""
-            extra_data = {'payment_status': payment_status}
-            
-            # if verification was successful
-            if verification_response['status'] and payment_status == 'success':
-                msg = f"Payment verified successfully: {verification_response['data']['gateway_response']}"
-                
-                if transaction.status.lower() != 'complete':
-                    # Record the payment and transaction in the database
-                    with db.session.begin_nested():
-                        transaction.status = 'complete'
-                        payment.status = 'complete'
-                        db.session.commit()
-                
-                    # Update user's membership status in the database
-                    if payment_type == 'membership-fee':
-                        trendit3_user.membership_fee(paid=True)
-                        membership_fee_paid = trendit3_user.membership.membership_fee_paid
-                        msg = 'Payment verified successfully and Account has been activated'
-                        extra_data.update({'membership_fee_paid': membership_fee_paid})
-                    
-                    elif payment_type == 'task-creation':
-                        task_key = verification_response['data']['metadata']['task_key']
-                        task = get_task_by_key(task_key)
-                        task.update(payment_status=TaskPaymentStatus.COMPLETE)
-                        task_dict = task.to_dict()
-                        msg = 'Payment verified and Task has been created successfully'
-                        extra_data.update({'task': task_dict})
-                    
-                    elif payment_type == 'credit-wallet':
-                        # Credit user's wallet
-                        try:
-                            credit_wallet(user_id, amount)
-                        except ValueError as e:
-                            msg = f'Error crediting wallet. Please Try To Verify Again: {e}'
-                            return error_response(msg, 400)
-                        
-                        msg = 'Wallet Credited successfully'
-                        extra_data.update({'user': trendit3_user.to_dict()})
-                
-                elif transaction.status.lower() == 'complete':
-                    if payment_type == 'membership-fee':
-                        msg = 'Payment Completed successfully and Account is already activated'
-                        extra_data.update({'membership_fee_paid': trendit3_user.membership.membership_fee_paid,})
-                    
-                    elif payment_type == 'task-creation':
-                        task_key = verification_response['data']['metadata']['task_key']
-                        task = get_task_by_key(task_key)
-                        task_dict = task.to_dict()
-                        msg = 'Payment Completed and Task has already been created successfully'
-                        extra_data.update({'task': task_dict})
-                    
-                    elif payment_type == 'credit-wallet':
-                        msg = 'Payment Completed and Wallet already credited'
-                        extra_data.update({'user': trendit3_user.to_dict()})
-            
-            elif verification_response['status'] and verification_response['data']['status'].lower() == 'abandoned':
-                # Payment was not completed
-                if transaction.status.lower() != 'abandoned':
-                    transaction.update(status='abandoned') # update the status
-                    payment.update(status='abandoned') # update the status
-                    
-                msg = f"Abandoned: {verification_response['data']['gateway_response']}"
-            
+            if result['success']:
+                api_response = success_response(msg, 200, extra_data)
             else:
                 api_response = error_response(msg, 500, extra_data)
             
