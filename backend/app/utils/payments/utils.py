@@ -81,8 +81,6 @@ def initialize_payment(user_id, data, payment_type=None, meta_data=None):
         if current_user is None:
             return error_response('User not found', 404)
         
-        console_log('data', data)
-        
         # get payment info
         amount = float(str(data.get('amount')).replace(',', ''))
         payment_type = payment_type or data.get('payment_type')
