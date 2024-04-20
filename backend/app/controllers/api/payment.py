@@ -38,7 +38,7 @@ class PaymentController:
         
         user_id = int(get_jwt_identity())
 
-        return initialize_payment(data, payment_type)
+        return initialize_payment(user_id, data, payment_type)
 
 
     @staticmethod
