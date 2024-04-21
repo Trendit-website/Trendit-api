@@ -54,6 +54,8 @@ class Config:
     
     # Flutterwave Configurations
     FLW_INITIALIZE_URL = os.environ.get('FLW_INITIALIZE_URL') or "https://api.flutterwave.com/v3/payments"
+    FLW_BANKS_URL = os.environ.get('FLW_BANKS_URL') or "https://api.flutterwave.com/v3/banks"
+    FLW_TRANSFER_URL = os.environ.get('FLW_TRANSFER_URL') or "https://api.flutterwave.com/v3/transfers"
     FLW_SECRET_KEY = os.environ.get('FLW_SECRET_KEY') or "FLWSECK_TEST-42411bcec771ba0d9a6cfbb21c9a3ca1-X"
     FLW_PUBLIC_KEY = os.environ.get('FLW_PUBLIC_KEY') or "FLWPUBK_TEST-0db308be49b1ea25ba4e320ae778f04a-X"
     FLW_SECRET_HASH = os.environ.get('FLW_SECRET_HASH') or "42cf4e6d9d8c728003ae3361d5268c23"

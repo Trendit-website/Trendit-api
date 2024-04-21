@@ -12,9 +12,8 @@ from ...utils.helpers.task_helpers import get_task_by_key
 from ...utils.helpers.mail_helpers import send_other_emails
 
 # import payment modules
-from ...utils.payments.utils import initialize_payment, initiate_transfer
-from ...utils.payments.flutterwave import verify_flutterwave_payment, flutterwave_webhook
-from ...utils.payments.paystack import verify_paystack_payment, paystack_webhook
+from ...utils.payments.utils import initialize_payment
+from ...utils.payments.flutterwave import verify_flutterwave_payment, flutterwave_webhook, flutterwave_initiate_transfer
 from ...utils.payments.exceptions import TransactionMissingError, CreditWalletError, SignatureError
 from config import Config
 
@@ -53,17 +52,12 @@ class PaymentController:
         """
         
         try:
-            gateway = Config.PAYMENT_GATEWAY.lower()
-            
             # Extract body from request
             data = request.get_json()
             
             current_user_id = get_jwt_identity()
             
-            if gateway == "paystack":
-                result = verify_paystack_payment(data)
-            elif gateway == "flutterwave":
-                result = verify_flutterwave_payment(data)
+            result = verify_flutterwave_payment(data)
             
             msg = result['msg']
             extra_data = result['extra_data']
@@ -104,13 +98,7 @@ class PaymentController:
             json, int: A JSON object containing the status of the webhook handling, and an HTTP status code.
         """
         try:
-            gateway = Config.PAYMENT_GATEWAY.lower()
-            
-            
-            if gateway == "paystack":
-                result = flutterwave_webhook()
-            elif gateway == "flutterwave":
-                result = paystack_webhook()
+            result = flutterwave_webhook()
             
             if result['success']:
                 return jsonify({'status': 'success'}), result['status_code']
@@ -183,7 +171,6 @@ class PaymentController:
         Returns:
             json: A JSON object containing the status of the withdrawal, a status code, and a message.
         """
-        error = False
         try:
             current_user_id = int(get_jwt_identity())
             user = Trendit3User.query.get(current_user_id)
@@ -202,59 +189,27 @@ class PaymentController:
             currency = user.wallet.currency_code
             
             if is_primary:
-                primary_bank = BankAccount.query.filter_by(trendit3_user_id=user.id, is_primary=True).first()
-                if not primary_bank:
-                    return error_response("no primary bank account. Go to settings to add your primary bank account", 404)
-                
-                recipient = primary_bank.recipient
-                
+                bank = BankAccount.query.filter_by(trendit3_user_id=user.id, is_primary=True).first()
+                if not bank:
+                    return error_response("You have not added your account details. please update your bank account before placing withdrawals of your funds. Go to settings to add your primary bank account", 404)
             else:
-                bank = BankAccount.add_bank(trendit3_user=user, bank_name=bank_name, bank_code=bank_code, account_no=account_no, is_primary=False)
-                recipient = bank.recipient
-                if not recipient:
-                    
-                    headers = {
-                        "Authorization": "Bearer {}".format(Config.PAYSTACK_SECRET_KEY),
-                        "Content-Type": "application/json"
-                    }
-                    data = {
-                        "type": "nuban",
-                        "name": name,
-                        "account_number": str(account_no),
-                        "bank_code": str(bank_code),
-                    }
-                    request_response = requests.post(Config.PAYSTACK_RECIPIENT_URL, headers=headers, data=json.dumps(data))
-                    response = request_response.json()
-                    recipient_name = response['data']['details']['account_name']
-                    recipient_code = response['data']['recipient_code']
-                    recipient_type = response['data']['type']
-                    recipient_id = response['data']['id']
-                    
-                    
-                    if response['status'] is False:
-                        return error_response(response['message'], 401)
-                    
-                    recipient = Recipient.create_recipient(trendit3_user=user, name=recipient_name, recipient_code=recipient_code, recipient_id=recipient_id, recipient_type=recipient_type, bank_account=bank)
+                bank = BankAccount.add_bank(trendit3_user=user, bank_name=bank_name, bank_code=bank_code, account_no=account_no, is_primary=False, account_name=name)
             
+            transfer_info = flutterwave_initiate_transfer(bank, amount, currency, user)
             
-            # If the withdrawal is successful, deduct the amount from the user's balance.
-            initiate_transfer_response = initiate_transfer(amount, recipient, user) # with the Paystack API
-            msg = f"{amount} {currency} is on it's way to {recipient.name}"
+            msg = f"{amount} {currency} is on it's way to {bank.account_name}"
             extra_data = {
-                "withdrawal_info": {
-                    "amount": amount,
-                    "reference": initiate_transfer_response['data']['reference'],
-                    "currency": initiate_transfer_response['data']['currency'],
-                    "status": initiate_transfer_response['data']['status'],
-                    "created_at": initiate_transfer_response['data']['createdAt']
-                }
+                "withdrawal_info": transfer_info
             }
-            return success_response(msg, 200, extra_data)
+            
+            api_response = success_response(msg, 200, extra_data)
             
         except Exception as e:
-            logging.exception(f"An exception occurred processing the withdrawal request:\n {str(e)}")
+            log_exception("An exception occurred processing the withdrawal request", e)
             db.session.rollback()
-            return error_response(f'An error occurred while processing the withdrawal request: {str(e)}', 500)
+            api_response = error_response(f'Error: {str(e)}', 500)
+        
+        return api_response
 
 
     @staticmethod

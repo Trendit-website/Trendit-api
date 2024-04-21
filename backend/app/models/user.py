@@ -430,8 +430,11 @@ class BankAccount(db.Model):
     
     
     @classmethod
-    def add_bank(cls, trendit3_user, bank_name, bank_code, account_no, account_name, is_primary=False):
-        bank = cls(trendit3_user=trendit3_user, bank_name=bank_name, bank_code=bank_code, account_no=account_no, account_name=account_name, is_primary=is_primary)
+    def add_bank(cls, trendit3_user, bank_name, bank_code, account_no, is_primary=False, **kwargs):
+        bank = cls(trendit3_user=trendit3_user, bank_name=bank_name, bank_code=bank_code, account_no=account_no, is_primary=is_primary)
+        
+        for key, value in kwargs.items():
+            setattr(bank, key, value)
         
         db.session.add(bank)
         db.session.commit()

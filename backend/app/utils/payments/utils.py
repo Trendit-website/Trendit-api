@@ -214,37 +214,6 @@ def payment_recorded(reference):
 
 
 
-def initiate_transfer(amount, recipient, user):
-    try:
-        bank_name = recipient.bank_account.bank_name
-        account_no = recipient.bank_account.account_no
-        reference = generate_random_string(16)
-        headers = {
-            "Authorization": "Bearer {}".format(Config.PAYSTACK_SECRET_KEY),
-            "Content-Type": "application/json"
-        }
-        data = {
-            "source": "balance",
-            "amount": amount,
-            "reference": reference,
-            "recipient": recipient.recipient_code
-        }
-        request_response = requests.post(Config.PAYSTACK_TRANSFER_URL, headers=headers, json=data)
-        response = request_response.json()
-        reference = response['data']['reference']
-        status = response['data']['status']
-        
-        if response['status']:
-            transaction = Transaction.create_transaction(key=reference, amount=amount, transaction_type=TransactionType.WITHDRAWAL, status='pending', trendit3_user=user)
-            withdrawal = Withdrawal.create_withdrawal(reference=reference, amount=amount, bank_name=bank_name, account_no=account_no, status=status, trendit3_user=user)
-            return response
-        else:
-            raise Exception(f"Transfer request not initiated: {response['message']}")
-    except Exception as e:
-        raise e
-
-
-
 # Transaction Helpers
 def get_total_amount_spent(user_id):
     """

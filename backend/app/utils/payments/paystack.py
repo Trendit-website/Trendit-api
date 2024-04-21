@@ -9,7 +9,7 @@ from flask import json, request, jsonify
 from sqlalchemy.exc import ( DataError, DatabaseError )
 
 from ...extensions import db
-from ...models import Payment, Transaction, TransactionType, Withdrawal, Trendit3User, TaskPaymentStatus
+from ...models import Payment, Transaction, TransactionType, Withdrawal, Trendit3User, TaskPaymentStatus, BankAccount, Recipient
 from ...utils.helpers.payment_helpers import initialize_payment, credit_wallet, initiate_transfer
 from ...utils.helpers.basic_helpers import console_log, log_exception, generate_random_string
 from ...utils.helpers.response_helpers import error_response, success_response
@@ -20,7 +20,7 @@ from config import Config
 
 
 
-auth_headers ={
+headers ={
     "Authorization": "Bearer {}".format(Config.PAYSTACK_SECRET_KEY),
     "Content-Type": "application/json"
 }
@@ -28,7 +28,7 @@ auth_headers ={
 def initialize_paystack_payment(amount: int, payload: dict, payment_type: str, user: Trendit3User) -> dict:
     try:
         
-        response = requests.post(Config.PAYSTACK_INITIALIZE_URL, headers=auth_headers, data=json.dumps(payload))
+        response = requests.post(Config.PAYSTACK_INITIALIZE_URL, headers=headers, data=json.dumps(payload))
         status_code = int(response.status_code)
         console_log('response', response)
         
@@ -83,7 +83,7 @@ def verify_paystack_payment(data):
     try:
         reference = data.get('reference') # Extract reference from request body
         
-        paystack_response = requests.get(f'https://api.paystack.co/transaction/verify/{reference}', headers=auth_headers)
+        paystack_response = requests.get(f'https://api.paystack.co/transaction/verify/{reference}', headers=headers)
         status_code = int(paystack_response.status_code)
         response_data = paystack_response.json()
         
@@ -320,11 +320,131 @@ def paystack_initiate_withdrawal(data: dict, user: Trendit3User):
         pass
 
 
-def paystack_initiate_transfer():
+def get_paystack_recipient(bank: BankAccount, amount: float) -> Recipient:
     try:
-        pass
+        recipient = bank.recipient
+        
+        if not recipient:
+            user = bank.trendit3_user
+            data = {
+                "type": "nuban",
+                "name": user.profile.firstname,
+                "account_number": str(bank.account_no),
+                "bank_code": str(bank.bank_code),
+            }
+            response = requests.post(Config.PAYSTACK_RECIPIENT_URL, headers=headers, data=json.dumps(data))
+            response_data = response.json()
+            
+            if 'status' in response_data and response_data['status']:
+                recipient_name = response_data['data']['details']['account_name']
+                recipient_code = response_data['data']['recipient_code']
+                recipient_type = response_data['data']['type']
+                recipient_id = response_data['data']['id']
+                
+                recipient = Recipient.create_recipient(trendit3_user=user, name=recipient_name, recipient_code=recipient_code, recipient_id=recipient_id, recipient_type=recipient_type, bank_account=bank)
+            else:
+                raise Exception(f"Transfer request not initiated: {response_data['message']}")
+        
+        return recipient
+    except Exception as e:
+        raise e
+
+def paystack_initiate_transfer(bank: BankAccount, amount: float, recipient: Recipient, user: Trendit3User) -> dict:
+    try:
+        bank_name = bank.bank_name
+        account_no = bank.account_no
+        reference = generate_random_string(20)
+        recipient = get_paystack_recipient(bank, amount)
+        
+        data = {
+            "source": "balance",
+            "amount": amount,
+            "reference": reference,
+            "recipient": recipient.recipient_code
+        }
+        response = requests.post(Config.PAYSTACK_TRANSFER_URL, headers=headers, json=data)
+        response_data = response.json()
+        
+        if 'status' in response_data and response_data['status']:
+            reference = response_data['data']['reference']
+            status = response_data['data']['status']
+            
+            transaction = Transaction.create_transaction(key=reference, amount=amount, transaction_type=TransactionType.WITHDRAWAL, status='pending', trendit3_user=user)
+            withdrawal = Withdrawal.create_withdrawal(reference=reference, amount=amount, bank_name=bank_name, account_no=account_no, status=status, trendit3_user=user)
+            
+            transfer_info =  {
+                "status": status,
+                "amount": amount,
+                "reference": reference,
+                "currency": response_data['data']['currency'],
+                "created_at": response_data['data']['createdAt']
+            }
+        else:
+            raise Exception(f"Transfer request not initiated: {response_data['message']}")
+        
+        return transfer_info
+        
+        
     except (DataError, DatabaseError) as e:
         raise e
     except Exception as e:
-        pass
+        raise e
+
+
+
+
+
+def get_banks(country:str = None) -> list:
+    try:
+        url = f"{Config.PAYSTACK_BANKS_URL}?country={country}" if country else Config.PAYSTACK_BANKS_URL
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()  # raise an exception if the request failed
+        response_data = response.json()
+        
+        if 'status' in response_data and response_data['status']:
+            supported_banks = response_data['data']
+        else:
+            supported_banks = None
+    
+    except requests.exceptions.RequestException as e:
+        raise e
+    except Exception as e:
+        raise e
+    
+    return supported_banks
+
+
+def create_bank_name_to_code_mapping(country : str =None) -> dict:
+    "This will give you a dictionary mapping bank names to their codes"
+    supported_banks = get_banks(country)
+    mapping = {bank['name']: bank['code'] for bank in supported_banks}
+    
+    return mapping
+
+def get_bank_code(bank_name: str, country: str | None = None):
+    bank_name_to_code_mapping = create_bank_name_to_code_mapping(country)
+    return bank_name_to_code_mapping.get(bank_name)
+
+
+def fetch_supported_countries() -> list:
+    try:
+        # send request
+        response = requests.get(Config.PAYSTACK_COUNTIES_URL, headers=headers)
+        response.raise_for_status()  # raise an exception if the request failed
+        response_data = json.loads(response.text)
+        
+        if 'status' in response_data and response_data['status']:
+            countries = response_data['data']
+            supported_countries = [{'name': country['name'], 'iso_code': country['iso_code'], 'currency_code': country['default_currency_code']} for country in countries]
+        else:
+            supported_countries = None
+        
+    except requests.exceptions.RequestException as e:
+        raise e
+    except Exception as e:
+        raise e
+    
+    return supported_countries
+
+
 

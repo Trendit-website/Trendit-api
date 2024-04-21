@@ -9,7 +9,7 @@ from flask import json, request, jsonify
 from sqlalchemy.exc import ( DataError, DatabaseError )
 
 from ...extensions import db
-from ...models import Payment, Transaction, TransactionType, Withdrawal, Trendit3User, TaskPaymentStatus
+from ...models import Payment, Transaction, TransactionType, Withdrawal, Trendit3User, TaskPaymentStatus, BankAccount
 from ...utils.helpers.payment_helpers import credit_wallet, initiate_transfer
 from ...utils.helpers.basic_helpers import console_log, log_exception, generate_random_string
 from ...utils.helpers.response_helpers import error_response, success_response
@@ -20,7 +20,7 @@ from config import Config
 
 
 
-auth_headers ={
+headers ={
     "Authorization": "Bearer {}".format(Config.FLW_SECRET_KEY ),
     "Content-Type": "application/json"
 }
@@ -28,7 +28,7 @@ auth_headers ={
 def initialize_flutterwave_payment(amount: int, payload: dict, payment_type: str, user: Trendit3User):
     try:
         
-        response = requests.post(Config.FLW_INITIALIZE_URL, headers=auth_headers, json=payload)
+        response = requests.post(Config.FLW_INITIALIZE_URL, headers=headers, json=payload)
         status_code = int(response.status_code)
         console_log('response', response)
         
@@ -85,7 +85,7 @@ def verify_flutterwave_payment(data):
         reference = data.get('reference') # Extract reference from request body
         transaction_id = data.get('transaction_id') # Extract reference from request body
         
-        flutterwave_response = requests.get(f"https://api.flutterwave.com/v3/transactions/{transaction_id}/verify", headers=auth_headers)
+        flutterwave_response = requests.get(f"https://api.flutterwave.com/v3/transactions/{transaction_id}/verify", headers=headers)
         status_code = int(flutterwave_response.status_code)
         response_data = flutterwave_response.json()
         
@@ -300,3 +300,137 @@ def flutterwave_webhook():
 
 def flutterwave_initiate_withdrawal():
     pass
+
+
+def flutterwave_initiate_transfer(bank: BankAccount, amount: float, currency: str, user: Trendit3User) -> dict:
+    try:
+        bank_name = bank.bank_name
+        account_no = bank.account_no
+        reference = generate_random_string(20)
+        
+        data = {
+            "account_bank": bank.bank_code,
+            "account_number": "0690000040",
+            "amount": amount,
+            "narration": f"withdraw from {user.profile.firstname}'s Trendit³ wallet",
+            "currency": currency,
+            "reference": reference,
+        }
+        response = requests.post(Config.FLW_TRANSFER_URL, headers=headers, json=data)
+        response_data = response.json()
+        
+        
+        if 'status' in response_data and response_data['status'] == 'success':
+            reference = response_data['data']['reference']
+            status = response_data['data']['status']
+            
+            transaction = Transaction.create_transaction(key=reference, amount=amount, transaction_type=TransactionType.WITHDRAWAL, status='pending', trendit3_user=user)
+            withdrawal = Withdrawal.create_withdrawal(reference=reference, amount=amount, bank_name=bank_name, account_no=account_no, status=status, trendit3_user=user)
+            
+            transfer_info =  {
+                "status": status,
+                "amount": amount,
+                "reference": reference,
+                "currency": response_data['data']['currency'],
+                "created_at": response_data['data']['created_at']
+            }
+        else:
+            raise Exception(f"Transfer request not initiated: {response_data['message']}")
+        
+        return transfer_info
+        
+        
+    except (DataError, DatabaseError) as e:
+        raise e
+    except Exception as e:
+        raise e
+
+def get_banks(country:str = None) -> list:
+    try:
+        url = f"{Config.FLW_BANKS_URL}/{country}" if country else Config.PAYSTACK_BANKS_URL
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()  # raise an exception if the request failed
+        response_data = response.json()
+        
+        if 'status' in response_data and response_data['status'] == 'success':
+            supported_banks = response_data['data']
+        else:
+            supported_banks = None
+    
+    except requests.exceptions.RequestException as e:
+        raise e
+    except Exception as e:
+        raise e
+    
+    return supported_banks
+
+
+def create_bank_name_to_code_mapping(country : str = None) -> dict:
+    """This will give you a dictionary mapping bank names to their codes"""
+    supported_banks = get_banks(country)
+    mapping = {bank['name']: bank['code'] for bank in supported_banks}
+    
+    return mapping
+
+def get_bank_code(bank_name: str, country: str | None = None):
+    bank_name_to_code_mapping = create_bank_name_to_code_mapping(country)
+    return bank_name_to_code_mapping.get(bank_name)
+
+
+def fetch_supported_countries() -> list:
+    supported_countries = [
+        {'name': 'Nigeria', 'iso_code': 'NG', 'currency_code': 'NGN'},
+        {'name': 'Ghana', 'iso_code': 'GH', 'currency_code': 'GHS'},
+        {'name': 'South Africa', 'iso_code': 'ZA', 'currency_code': 'ZAR'},
+        {'name': 'Kenya', 'iso_code': 'KE', 'currency_code': 'KES'},
+        {'name': 'Malawi', 'iso_code': 'MW', 'currency_code': 'MWK'},
+        {'name': 'Uganda', 'iso_code': 'UG', 'currency_code': 'UGX'},
+        {'name': 'Rwanda', 'iso_code': 'RW', 'currency_code': 'RWF'},
+        {'name': 'Tanzania', 'iso_code': 'TZ', 'currency_code': 'TZS'},
+        
+        # Francophone Africa (Central Africa)
+        {'name': 'Cameroon', 'iso_code': 'CM', 'currency_code': 'XAF'},
+        {'name': 'Central African Republic', 'iso_code': 'CF', 'currency_code': 'XAF'},
+        {'name': 'Chad', 'iso_code': 'TD', 'currency_code': 'XAF'},
+        {'name': 'Republic of the Congo', 'iso_code': 'CG', 'currency_code': 'XAF'},
+        {'name': 'Equatorial Guinea', 'iso_code': 'GQ', 'currency_code': 'XAF'},
+        {'name': 'Gabon', 'iso_code': 'GA', 'currency_code': 'XAF'},
+        
+        # Francophone Africa (West Africa)
+        {'name': 'Benin', 'iso_code': 'BJ', 'currency_code': 'XOF'},
+        {'name': 'Burkina Faso', 'iso_code': 'BF', 'currency_code': 'XOF'},
+        {'name': 'Ivory Coast', 'iso_code': 'CI', 'currency_code': 'XOF'},
+        {'name': 'Guinea-Bissau', 'iso_code': 'GW', 'currency_code': 'XOF'},
+        {'name': 'Mali', 'iso_code': 'ML', 'currency_code': 'XOF'},
+        {'name': 'Niger', 'iso_code': 'NE', 'currency_code': 'XOF'},
+        {'name': 'Senegal', 'iso_code': 'SN', 'currency_code': 'XOF'},
+        {'name': 'Togo', 'iso_code': 'TG', 'currency_code': 'XOF'},
+        
+        {'name': 'United States', 'iso_code': 'US', 'currency_code': 'USD'},
+        {'name': 'Europe', 'iso_code': 'EU', 'currency_code': 'EUR'},
+        {'name': 'United Kingdom', 'iso_code': 'GB', 'currency_code': 'GBP'},
+    ]
+    try:
+        if supported_countries:
+            success = True
+            msg = 'supported countries fetched successfully'
+            extra_data = {
+                'countries': supported_countries,
+                'total': len(supported_countries)
+            }
+        else:
+            msg = 'Failed to get fetch supported countries'
+            success = False
+            extra_data = {}
+        
+        result = {
+            'msg': msg,
+            'success': success,
+            'extra_data': extra_data
+        }
+    except Exception as e:
+        raise e
+    
+    return result
+
+
