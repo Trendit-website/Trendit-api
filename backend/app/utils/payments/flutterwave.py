@@ -297,11 +297,6 @@ def flutterwave_webhook():
     return result
 
 
-
-def flutterwave_initiate_withdrawal():
-    pass
-
-
 def flutterwave_initiate_transfer(bank: BankAccount, amount: float, currency: str, user: Trendit3User) -> dict:
     try:
         bank_name = bank.bank_name
@@ -339,18 +334,22 @@ def flutterwave_initiate_transfer(bank: BankAccount, amount: float, currency: st
         
         return transfer_info
         
-        
+    except requests.exceptions.RequestException as e:
+        raise e
     except (DataError, DatabaseError) as e:
         raise e
     except Exception as e:
         raise e
 
+
 def get_banks(country:str = None) -> list:
     try:
-        url = f"{Config.FLW_BANKS_URL}/{country}" if country else Config.PAYSTACK_BANKS_URL
+        url = f"{Config.FLW_BANKS_URL}/{country}" if country else Config.FLW_BANKS_URL
         response = requests.get(url, headers=headers)
         response.raise_for_status()  # raise an exception if the request failed
         response_data = response.json()
+        
+        console_log('response_data', response_data)
         
         if 'status' in response_data and response_data['status'] == 'success':
             supported_banks = response_data['data']
@@ -364,17 +363,19 @@ def get_banks(country:str = None) -> list:
     
     return supported_banks
 
-
 def create_bank_name_to_code_mapping(country : str = None) -> dict:
     """This will give you a dictionary mapping bank names to their codes"""
     supported_banks = get_banks(country)
     mapping = {bank['name']: bank['code'] for bank in supported_banks}
+    console_log('mapping', mapping)
     
     return mapping
 
 def get_bank_code(bank_name: str, country: str | None = None):
-    bank_name_to_code_mapping = create_bank_name_to_code_mapping(country)
-    return bank_name_to_code_mapping.get(bank_name)
+    bank_name_to_code_mapping = create_bank_name_to_code_mapping('NG')
+    console_log('get_bank_code', bank_name_to_code_mapping.get("FortisMobile"))
+    return bank_name_to_code_mapping.get("FortisMobile")
+
 
 
 def fetch_supported_countries() -> list:
@@ -420,5 +421,32 @@ def fetch_supported_countries() -> list:
         raise e
     
     return supported_countries
+
+
+def flutterwave_verify_bank_account(account_no: str, bank_code: str) -> dict:
+    try:
+        console_log('account_no', account_no)
+        console_log('bank_code', bank_code)
+        data = {
+            "account_number": account_no,
+            "account_bank": bank_code
+        }
+        response = requests.post(Config.FLW_VERIFY_BANK_ACCOUNT_URL, headers=headers, json=data)
+        response_data = response.json()
+        
+        console_log('response_data', response_data)
+        
+        if 'status' in response_data and response_data['status'] == 'success':
+            account_info =  {
+                "account_number": response_data['data']['account_number'],
+                "account_name": response_data['data']['account_name']
+            }
+            return account_info
+        else:
+            raise Exception(f"Account Verification Failed: {response_data['message']}")
+    except requests.exceptions.RequestException as e:
+        raise e
+    except Exception as e:
+        raise e
 
 
