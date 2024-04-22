@@ -6,6 +6,7 @@
 
 import requests, hmac, hashlib
 from flask import json, request, jsonify
+from flask_jwt_extended import get_jwt_identity
 from sqlalchemy.exc import ( DataError, DatabaseError )
 
 from ...extensions import db
@@ -206,8 +207,12 @@ def flutterwave_webhook():
         data = json.loads(request.data) # Get the data from the request
         console_log('DATA', data)
         
+        user_id = get_jwt_identity()
         secret_hash = Config.FLW_SECRET_HASH
         signature = request.headers.get('verifi-hash') # Get the signature from the request headers
+        
+        console_log('secret_hash', secret_hash)
+        console_log('signature', signature)
         
         if signature == None or (signature != secret_hash):
             # This request isn't from Flutterwave; discard
