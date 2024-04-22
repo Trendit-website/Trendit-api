@@ -2,56 +2,37 @@ import requests, logging
 from flask import json, request
 
 from config import Config
-from app.utils import AppJSON
-from app.utils.helpers.basic_helpers import console_log
-from app.utils.helpers.response_helpers import error_response, success_response
+from ...utils import AppJSON
+from ...utils.helpers.basic_helpers import console_log, log_exception
+from ...utils.helpers.response_helpers import error_response, success_response
+
+from ...utils.payments.flutterwave import fetch_supported_countries
 
 
 
 class LocationController:
     @staticmethod
     def get_supported_countries():
-        error = False
         
         try:
-            auth_headers ={
-                "Authorization": "Bearer {}".format(Config.PAYSTACK_SECRET_KEY),
-                "Content-Type": "application/json"
-            }
-            
-            # send request
-            response = requests.get(Config.PAYSTACK_COUNTIES_URL, headers=auth_headers)
-            response.raise_for_status()  # raise an exception if the request failed
-            response_data = json.loads(response.text)
-            
-            if response_data['status']:
-                status_code = 200
-                msg = response_data['message']
-                countries = response_data['data']
-                supported_countries = [{'name': country['name'], 'iso_code': country['iso_code'], 'currency_code': country['default_currency_code']} for country in countries]
+            supported_countries = fetch_supported_countries()
+            if supported_countries:
                 extra_data = {
                     'countries': supported_countries,
                     'total': len(supported_countries)
                 }
+                
+                api_response =  success_response('Countries fetched successfully', 200, extra_data)
             else:
-                error = True
-                status_code = 400
-                msg = response_data['message']
+                api_response =  error_response('Failed to get fetch supported countries', 500)
         except requests.exceptions.RequestException as e:
-            error = True
-            msg = 'Request failed'
-            status_code = 500
-            console_log('Request failed', str(e))
+            log_exception('Request failed', e)
+            api_response =  error_response('Request failed', 500)
         except Exception as e:
-            error = True
-            msg = 'An error occurred while processing the request.'
-            status_code = 500
-            logging.exception("An exception occurred getting PAYSTACK supported countries.", str(e)) # Log the error details for debugging
+            log_exception("An exception occurred getting supported countries.", e)
+            api_response =  error_response('Failed to get fetch supported countries', 500)
         
-        if error:
-            return error_response(msg, status_code, response_data)
-        else:
-            return success_response(msg, status_code, extra_data)
+        return api_response
 
 
     @staticmethod
@@ -156,7 +137,7 @@ class LocationController:
             api_response = success_response(f"Local governments for {state} fetched successfully", 200, extra_data)
             
         except Exception as e:
-            logging.exception(f"An exception occurred getting Local governments: {str(e)}")
-            return error_response('An error occurred while processing the request.', 500)
+            log_exception("An exception occurred getting Local governments", e)
+            api_response = error_response('An error occurred while processing the request.', 500)
         
         return api_response

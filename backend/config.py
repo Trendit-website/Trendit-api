@@ -40,8 +40,8 @@ class Config:
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=30)
     
     
+    PAYMENT_GATEWAY = os.environ.get('PAYMENT_GATEWAY') or "Flutterwave"
     # Paystack Configurations
-    PAYMENT_GATEWAY = 'Paystack'
     PAYSTACK_API_URL = os.environ.get('PAYSTACK_API_URL') or "https://api.paystack.co"
     PAYSTACK_INITIALIZE_URL = os.environ.get('PAYSTACK_INITIALIZE_URL') or "https://api.paystack.co/transaction/initialize"
     PAYSTACK_RECIPIENT_URL = os.environ.get('PAYSTACK_RECIPIENT_URL') or "https://api.paystack.co/transferrecipient"
@@ -51,6 +51,15 @@ class Config:
     PAYSTACK_BANKS_URL = os.environ.get('PAYSTACK_BANKS_URL') or "https://api.paystack.co/bank"
     PAYSTACK_SECRET_KEY = os.environ.get('PAYSTACK_SECRET_KEY') or "sk_test_a8784e4f50809b0ee5cba711046090b0df20d413"
     PAYSTACK_PUBLIC_KEY = os.environ.get('PAYSTACK_PUBLIC_KEY') or "pk_test_b6409653e947befe40cbacc78f7338de0e0764c3"
+    
+    # Flutterwave Configurations
+    FLW_INITIALIZE_URL = os.environ.get('FLW_INITIALIZE_URL') or "https://api.flutterwave.com/v3/payments"
+    FLW_BANKS_URL = os.environ.get('FLW_BANKS_URL') or "https://api.flutterwave.com/v3/banks"
+    FLW_TRANSFER_URL = os.environ.get('FLW_TRANSFER_URL') or "https://api.flutterwave.com/v3/transfers"
+    FLW_SECRET_KEY = os.environ.get('FLW_SECRET_KEY') or "FLWSECK_TEST-42411bcec771ba0d9a6cfbb21c9a3ca1-X"
+    FLW_PUBLIC_KEY = os.environ.get('FLW_PUBLIC_KEY') or "FLWPUBK_TEST-0db308be49b1ea25ba4e320ae778f04a-X"
+    FLW_SECRET_HASH = os.environ.get('FLW_SECRET_HASH') or "42cf4e6d9d8c728003ae3361d5268c23"
+    
     
     '''
     # mail configurations

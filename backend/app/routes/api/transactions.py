@@ -14,6 +14,11 @@ def transaction_history():
     """
     return TransactionController.get_transaction_history()
 
+@api.route('/transactions/funding', methods=['GET'])
+@jwt_required()
+def funding_history():
+    
+    return TransactionController.get_funding_history()
 
 @api.route('/transactions/metrics', methods=['GET'])
 @jwt_required()

@@ -2,7 +2,7 @@ import logging
 from flask import request
 from flask_jwt_extended import get_jwt_identity
 
-from ...models import Trendit3User, Payment, Transaction
+from ...models import Trendit3User, Payment, Transaction, TransactionType
 from ...utils.helpers.response_helpers import error_response, success_response
 from ...utils.helpers.basic_helpers import console_log, log_exception
 from ...utils.helpers.payment_helpers import get_total_amount_earned, get_total_amount_spent
@@ -14,7 +14,7 @@ class TransactionController:
         """
         Fetches the transaction history for a user.
 
-        This function extracts the current_user_id from the jwt identity, checks if the user exists, and if so, fetches the user's payment history from the database and returns it. If an error occurs at any point, it returns an error response with an appropriate status code and message.
+        This function extracts the current_user_id from the jwt identity, checks if the user exists, and if so, fetches the user's payment transaction from the database and returns it. If an error occurs at any point, it returns an error response with an appropriate status code and message.
 
         Returns:
             json, int: A JSON object containing the status of the request, a status code, a message (and payment history in case of success), and an HTTP status code.
@@ -30,10 +30,11 @@ class TransactionController:
             if user is None:
                 return error_response('User not found', 404)
             
-            # Fetch payment records from the database
+            # Fetch transaction records from the database
             pagination = Transaction.query.filter_by(trendit3_user_id=current_user_id) \
                 .order_by(Transaction.created_at.desc()) \
                 .paginate(page=page, per_page=per_page, error_out=False)
+            
             
             transactions = pagination.items
             current_transactions = [transaction.to_dict() for transaction in transactions]
@@ -51,6 +52,52 @@ class TransactionController:
         except Exception as e:
             log_exception(f"An exception occurred fetching transaction history", e)
             api_response = error_response("An error occurred while processing the request", 500)
+        
+        return api_response
+
+    
+    @staticmethod
+    def get_funding_history():
+        """
+        Fetches the Payment history that have payment type as "credit-wallet" for a user.
+
+        This function extracts the current_user_id from the jwt identity, checks if the user exists, and if so, fetches the user's Payment history from the database and returns it. If an error occurs at any point, it returns an error response with an appropriate status code and message.
+
+        Returns:
+            json, int: A JSON object containing the status of the request, a status code, a message (and payment history in case of success), and an HTTP status code.
+        """
+        
+        try:
+            current_user_id = int(get_jwt_identity())
+            page = request.args.get("page", 1, type=int)
+            per_page = 15
+            
+            # Check if user exists
+            user = Trendit3User.query.get(current_user_id)
+            if user is None:
+                return error_response('User not found', 404)
+            
+            # Fetch transaction records from the database
+            pagination = Payment.query.filter_by(trendit3_user_id=current_user_id, payment_type='credit-wallet') \
+                .order_by(Payment.created_at.desc()) \
+                .paginate(page=page, per_page=per_page, error_out=False)
+            
+            wallet_credits = pagination.items
+            current_wallet_credit = [wallet_credit.to_dict() for wallet_credit in wallet_credits]
+            extra_data = {
+                'total': pagination.total,
+                "current_page": pagination.page,
+                "total_pages": pagination.pages,
+                "funding_history": current_wallet_credit,
+            }
+            
+            if not wallet_credits:
+                return success_response(f'You have no history funding your wallet', 200, extra_data)
+            
+            api_response = success_response('Funding history fetched successfully', 200, extra_data)
+        except Exception as e:
+            log_exception(f"An exception occurred fetching Funding history", e)
+            api_response = error_response("An unexpected error occurred", 500)
         
         return api_response
 

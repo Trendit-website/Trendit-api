@@ -24,6 +24,9 @@ from ...models import Payment, Transaction, TransactionType, Withdrawal, Trendit
 from ...utils.helpers.basic_helpers import console_log, log_exception, generate_random_string
 from ...utils.helpers.response_helpers import error_response, success_response
 from ...utils.helpers.mail_helpers import send_other_emails
+
+from .flutterwave import initialize_flutterwave_payment
+from .paystack import initialize_paystack_payment
 from config import Config
 
 def construct_payload(amount: int, callback_url: str, meta: dict, user: Trendit3User):
@@ -59,7 +62,7 @@ def construct_payload(amount: int, callback_url: str, meta: dict, user: Trendit3
     
     return payload
 
-def initialize_payment(data, payment_type=None, meta_data=None):
+def initialize_payment(user_id, data, payment_type=None, meta_data=None):
     """
         Initialize payment for a user.
 
@@ -86,7 +89,7 @@ def initialize_payment(data, payment_type=None, meta_data=None):
         
         callback_url = data.get('callback_url')
         meta = {
-            "user_id": current_user_id,
+            "user_id": user_id,
             "email": current_user.email,
             "username": current_user.username,
             "payment_type": payment_type,
@@ -95,7 +98,7 @@ def initialize_payment(data, payment_type=None, meta_data=None):
             meta.update(meta_data)
         
         
-        if is_paid(current_user_id, payment_type):
+        if is_paid(user_id, payment_type):
             return error_response('Payment cannot be processed because it has already been made.', 409)
         
         payload = construct_payload(amount=amount, callback_url=callback_url, meta=meta, user=current_user)
@@ -162,7 +165,6 @@ def debit_wallet(user_id: int, amount: int, payment_type=None) -> float:
         raise ValueError("User does not have a wallet.")
 
     current_balance = wallet.balance
-    console_log('current_balance', current_balance)
     if current_balance < amount:
         raise ValueError("Insufficient balance.")
 
@@ -174,13 +176,9 @@ def debit_wallet(user_id: int, amount: int, payment_type=None) -> float:
         payment = Payment(key=key, amount=amount, payment_type=payment_type, payment_method='wallet', status='complete', trendit3_user=user)
         transaction = Transaction(key=key, amount=amount, transaction_type=TransactionType.DEBIT, status='complete', trendit3_user=user)
         
-        console_log('payment', payment)
-        console_log('transaction', transaction)
-        
         db.session.add(payment, transaction)
         db.session.commit()
         send_other_emails(user.email, email_type='debit', amount=amount) # send debit alert to user's mail
-        console_log('current_balance', wallet.balance)
         return wallet.balance
     except Exception as e:
         # Handle the exception appropriately (rollback, log the error, etc.)
@@ -213,38 +211,6 @@ def credit_wallet(user_id: int, amount: int) -> float:
 
 def payment_recorded(reference):
     return bool(Payment.query.filter_by(tx_ref=reference).first())
-
-
-
-def initiate_transfer(amount, recipient, user):
-    error = False
-    try:
-        bank_name = recipient.bank_account.bank_name
-        account_no = recipient.bank_account.account_no
-        reference = generate_random_string(16)
-        headers = {
-            "Authorization": "Bearer {}".format(Config.PAYSTACK_SECRET_KEY),
-            "Content-Type": "application/json"
-        }
-        data = {
-            "source": "balance",
-            "amount": amount,
-            "reference": reference,
-            "recipient": recipient.recipient_code
-        }
-        request_response = requests.post(Config.PAYSTACK_TRANSFER_URL, headers=headers, json=data)
-        response = request_response.json()
-        reference = response['data']['reference']
-        status = response['data']['status']
-        
-        if response['status']:
-            transaction = Transaction.create_transaction(key=reference, amount=amount, transaction_type=TransactionType.WITHDRAWAL, status='pending', trendit3_user=user)
-            withdrawal = Withdrawal.create_withdrawal(reference=reference, amount=amount, bank_name=bank_name, account_no=account_no, status=status, trendit3_user=user)
-            return response
-        else:
-            raise Exception(f"Transfer request not initiated: {response['message']}")
-    except Exception as e:
-        raise e
 
 
 

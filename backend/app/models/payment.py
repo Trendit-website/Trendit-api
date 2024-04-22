@@ -16,8 +16,8 @@ class Payment(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     key = db.Column(db.String(80), unique=True, nullable=False) # Unique identifier for the payments
     amount = db.Column(db.Float(), nullable=False)
-    payment_type = db.Column(db.String(50), nullable=False)  # 'task-creation', 'membership_fee', 'credit-wallet' or 'product_fee'
-    payment_method = db.Column(db.String(), nullable=False)  # 'wallet' or 'payment gateway(paystack)'
+    payment_type = db.Column(db.String(50), nullable=False)  # 'task-creation', 'membership-fee', 'credit-wallet' or 'product-fee'
+    payment_method = db.Column(db.String(), nullable=False)  # 'wallet' or 'payment gateway(flutterwave)'
     status = db.Column(db.String(20), nullable=False, default="pending")  # Status of the payment request
     
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
