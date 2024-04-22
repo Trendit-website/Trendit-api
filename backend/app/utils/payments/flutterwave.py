@@ -17,6 +17,7 @@ from ...utils.helpers.response_helpers import error_response, success_response
 from ...utils.helpers.task_helpers import get_task_by_key
 from ...utils.helpers.mail_helpers import send_other_emails
 from .exceptions import TransactionMissingError, CreditWalletError, SignatureError
+from .paystack import headers as paystack_headers
 from config import Config
 
 
@@ -450,12 +451,11 @@ def get_iso_code(country_name: str) -> str:
 
 def flutterwave_verify_bank_account(account_no: str, bank_code: str) -> dict:
     try:
-        console_log('account_no', account_no)
-        console_log('bank_code', bank_code)
         data = {
             "account_number": account_no,
             "account_bank": bank_code
         }
+        
         response = requests.post(Config.FLW_VERIFY_BANK_ACCOUNT_URL, headers=headers, json=data)
         response_data = response.json()
         
@@ -468,7 +468,18 @@ def flutterwave_verify_bank_account(account_no: str, bank_code: str) -> dict:
             }
             return account_info
         else:
-            raise Exception(f"Account Verification Failed: {response_data['message']}")
+            fallback_url = f"https://api.paystack.co/bank/resolve?account_number={account_no}&bank_code={bank_code}"
+            paystack_response = requests.get(fallback_url, headers=paystack_headers)
+            paystack_response_data = paystack_response.json()
+            
+            if paystack_response_data['status']:
+                account_info =  {
+                    "account_number": paystack_response_data['data']['account_number'],
+                    "account_name": paystack_response_data['data']['account_name']
+                }
+                return account_info
+            else:
+                raise Exception(f"Account Verification Failed: {response_data['message']}")
     except requests.exceptions.RequestException as e:
         raise e
     except Exception as e:

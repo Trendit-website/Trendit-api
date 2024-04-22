@@ -26,7 +26,7 @@ def supported_banks():
         
         country = user.address.country or 'Nigeria'
         
-        banks = get_banks('NG')
+        banks = get_banks(country)
         
         extra_data = { 'supported_banks': banks }
         api_response = success_response('supported banks fetched successfully', 200, extra_data)

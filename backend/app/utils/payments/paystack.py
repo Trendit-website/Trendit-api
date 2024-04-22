@@ -447,4 +447,21 @@ def fetch_supported_countries() -> list:
     return supported_countries
 
 
-
+def paystack_verify_bank_account(account_no: str, bank_code: str) -> dict:
+    try:
+        url = f"https://api.paystack.co/bank/resolve?account_number={account_no}&bank_code={bank_code}"
+        response = requests.post(url, headers=headers)
+        response_data = response.json()
+        
+        if 'status' in response_data and response_data['status']:
+            account_info =  {
+                "account_number": response_data['data']['account_number'],
+                "account_name": response_data['data']['account_name']
+            }
+            return account_info
+        else:
+            raise Exception(f"Account Verification Failed: {response_data['message']}")
+    except requests.exceptions.RequestException as e:
+        raise e
+    except Exception as e:
+        raise e
