@@ -7,8 +7,7 @@ from ...utils.helpers.basic_helpers import log_exception
 from ...utils.helpers.response_helpers import error_response, success_response
 
 
-# RELIGIONS ENDPOINTS
-@api.route("/supported-banks", methods=['GET'])
+@api.route("/banks", methods=['GET'])
 def supported_banks():
     """
     Get a list of all supported banks.
@@ -31,3 +30,7 @@ def supported_banks():
     return api_response
 
 
+
+@api.route("/banks/verify/account", methods=['GET'])
+def verify_bank_account():
+    pass

@@ -59,9 +59,9 @@ class TransactionController:
     @staticmethod
     def get_funding_history():
         """
-        Fetches the transaction history that have transaction type as "CREDIT" for a user.
+        Fetches the Payment history that have payment type as "credit-wallet" for a user.
 
-        This function extracts the current_user_id from the jwt identity, checks if the user exists, and if so, fetches the user's transaction history from the database and returns it. If an error occurs at any point, it returns an error response with an appropriate status code and message.
+        This function extracts the current_user_id from the jwt identity, checks if the user exists, and if so, fetches the user's Payment history from the database and returns it. If an error occurs at any point, it returns an error response with an appropriate status code and message.
 
         Returns:
             json, int: A JSON object containing the status of the request, a status code, a message (and payment history in case of success), and an HTTP status code.
@@ -78,20 +78,20 @@ class TransactionController:
                 return error_response('User not found', 404)
             
             # Fetch transaction records from the database
-            pagination = Transaction.query.filter_by(trendit3_user_id=current_user_id, transaction_type=TransactionType.CREDIT) \
-                .order_by(Transaction.created_at.desc()) \
+            pagination = Payment.query.filter_by(trendit3_user_id=current_user_id, payment_type='credit-wallet') \
+                .order_by(Payment.created_at.desc()) \
                 .paginate(page=page, per_page=per_page, error_out=False)
             
-            transactions = pagination.items
-            current_transactions = [transaction.to_dict() for transaction in transactions]
+            wallet_credits = pagination.items
+            current_wallet_credit = [wallet_credit.to_dict() for wallet_credit in wallet_credits]
             extra_data = {
                 'total': pagination.total,
                 "current_page": pagination.page,
                 "total_pages": pagination.pages,
-                "funding_history": current_transactions,
+                "funding_history": current_wallet_credit,
             }
             
-            if not transactions:
+            if not wallet_credits:
                 return success_response(f'You have no history funding your wallet', 200, extra_data)
             
             api_response = success_response('Funding history fetched successfully', 200, extra_data)
