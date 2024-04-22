@@ -26,7 +26,6 @@ from ...utils.helpers.response_helpers import error_response, success_response
 from ...utils.helpers.mail_helpers import send_other_emails
 
 from .flutterwave import initialize_flutterwave_payment
-from .paystack import initialize_paystack_payment
 from config import Config
 
 def construct_payload(amount: int, callback_url: str, meta: dict, user: Trendit3User):
@@ -103,12 +102,8 @@ def initialize_payment(user_id, data, payment_type=None, meta_data=None):
         
         payload = construct_payload(amount=amount, callback_url=callback_url, meta=meta, user=current_user)
         
-        
         # Initialize the payment
-        if gateway == "paystack":
-            result = initialize_paystack_payment(amount=amount, payload=payload, payment_type=payment_type, user=current_user)
-        elif gateway == "flutterwave":
-            result = initialize_flutterwave_payment(amount=amount, payload=payload, payment_type=payment_type, user=current_user)
+        result = initialize_flutterwave_payment(amount=amount, payload=payload, payment_type=payment_type, user=current_user)
         
         extra_data = result['extra_data']
         msg = result['msg']
