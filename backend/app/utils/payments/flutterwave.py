@@ -344,7 +344,8 @@ def flutterwave_initiate_transfer(bank: BankAccount, amount: float, currency: st
 
 def get_banks(country:str = None) -> list:
     try:
-        url = f"{Config.FLW_BANKS_URL}/{country}" if country else Config.FLW_BANKS_URL
+        iso_code = get_iso_code(country) if country else 'NG'
+        url = f"{Config.FLW_BANKS_URL}/{iso_code}" if iso_code else Config.FLW_BANKS_URL
         response = requests.get(url, headers=headers)
         response.raise_for_status()  # raise an exception if the request failed
         response_data = response.json()
@@ -366,15 +367,19 @@ def get_banks(country:str = None) -> list:
 def create_bank_name_to_code_mapping(country : str = None) -> dict:
     """This will give you a dictionary mapping bank names to their codes"""
     supported_banks = get_banks(country)
-    mapping = {bank['name']: bank['code'] for bank in supported_banks}
+    mapping = {bank['name'].lower(): bank['code'] for bank in supported_banks}
     console_log('mapping', mapping)
     
     return mapping
 
 def get_bank_code(bank_name: str, country: str | None = None):
-    bank_name_to_code_mapping = create_bank_name_to_code_mapping('NG')
-    console_log('get_bank_code', bank_name_to_code_mapping.get("FortisMobile"))
-    return bank_name_to_code_mapping.get("FortisMobile")
+    bank_name_to_code_mapping = create_bank_name_to_code_mapping(country)
+    bank_code = bank_name_to_code_mapping[bank_name.lower()]
+    
+    console_log('bank_name', bank_name)
+    console_log('bank_code', bank_code)
+    
+    return bank_code
 
 
 
@@ -421,6 +426,21 @@ def fetch_supported_countries() -> list:
         raise e
     
     return supported_countries
+
+
+def get_iso_code(country_name: str) -> str:
+    """
+    This function retrieves the ISO code for a given country name
+    """
+    try:
+        supported_countries = fetch_supported_countries()
+        for country in supported_countries:
+            if country['name'].lower() == country_name.lower():
+                return country['iso_code']
+        return None
+    except (KeyError, ValueError):
+        # Handle cases where the country name is not found or the structure is invalid
+        return None
 
 
 def flutterwave_verify_bank_account(account_no: str, bank_code: str) -> dict:
