@@ -114,7 +114,7 @@ def send_async_other_email(app, user_email, email_type, amount=None, admin_login
 
         elif email_type == 'task_rejected':
             subject = 'Task Rejected'
-            template = render_template("email/task_declined.html", redirect_link='https://app.trendit3.com/', user_email=user_email, username=username)
+            template = render_template("email/task_rejected.html", redirect_link='https://app.trendit3.com/', user_email=user_email, username=username)
             msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
 
         elif email_type == 'credit':
