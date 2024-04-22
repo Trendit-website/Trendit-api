@@ -412,25 +412,13 @@ def fetch_supported_countries() -> list:
     ]
     try:
         if supported_countries:
-            success = True
-            msg = 'supported countries fetched successfully'
-            extra_data = {
-                'countries': supported_countries,
-                'total': len(supported_countries)
-            }
+            supported_countries = supported_countries
         else:
-            msg = 'Failed to get fetch supported countries'
-            success = False
-            extra_data = {}
+            supported_countries = None
         
-        result = {
-            'msg': msg,
-            'success': success,
-            'extra_data': extra_data
-        }
     except Exception as e:
         raise e
     
-    return result
+    return supported_countries
 
 
