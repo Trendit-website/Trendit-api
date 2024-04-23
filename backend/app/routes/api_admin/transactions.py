@@ -13,3 +13,27 @@ def get_all_transactions():
 @roles_required('Junior Admin')
 def get_user_transactions():
     return TransactionController.get_user_transactions()
+
+
+@bp.route('/user_credit_transactions', methods=['POST'])
+@roles_required('Junior Admin')
+def get_user_credit_transactions():
+    return TransactionController.get_user_transactions_by_type('credit')
+
+
+@bp.route('/user_debit_transactions', methods=['POST'])
+@roles_required('Junior Admin')
+def get_user_debit_transactions():
+    return TransactionController.get_user_transactions_by_type('debit')
+
+
+@bp.route('/user_payment_transactions', methods=['POST'])
+@roles_required('Junior Admin')
+def get_user_payment_transactions():
+    return TransactionController.get_user_transactions_by_type('payment')
+
+
+@bp.route('/user_withdrawal_transactions', methods=['POST'])
+@roles_required('Junior Admin')
+def get_user_withdrawal_transactions():
+    return TransactionController.get_user_transactions_by_type('withdrawal')

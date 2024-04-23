@@ -68,3 +68,39 @@ class AdminUsersController:
             db.session.close()
             logging.exception("An exception occurred trying to delete user:\n", str(e))
             return error_response('Error deleting user', 500)
+        
+    
+    @staticmethod
+    def get_user_task_metrics(user_id: int):
+        try:
+            user = Trendit3User.query.get(user_id)
+            if user is None:
+                return error_response('User not found', 404)
+            
+            task_metrics = user.task_metrics
+            extra_data = {
+                'task_metrics': task_metrics
+            }
+            return success_response('User task metrics fetched successfully', 200, extra_data)
+        
+        except Exception as e:
+            logging.exception("An exception occurred trying to get user task metrics:\n", str(e))
+            return error_response('Error getting user task metrics', 500)
+
+        
+    @staticmethod
+    def get_user_transaction_metrics(user_id: int):
+        try:
+            user = Trendit3User.query.get(user_id)
+            if user is None:
+                return error_response('User not found', 404)
+            
+            transaction_metrics = user.transaction_metrics
+            extra_data = {
+                'transaction_metrics': transaction_metrics
+            }
+            return success_response('User transaction metrics fetched successfully', 200, extra_data)
+        
+        except Exception as e:
+            logging.exception("An exception occurred trying to get user transaction metrics:\n", str(e))
+            return error_response('Error getting user transaction metrics', 500)

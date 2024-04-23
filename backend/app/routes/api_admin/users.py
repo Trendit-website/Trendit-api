@@ -21,3 +21,15 @@ def get_user(user_id):
 @roles_required('Admin')
 def delete_user(user_id):
     return AdminUsersController.delete_user(user_id)
+
+
+@bp.route('/user_task_metrics', methods=['POST'])
+@roles_required('Junior Admin')
+def get_user_task_metrics():
+    return AdminUsersController.get_user_task_metrics()
+
+
+@bp.route('/user_transaction_metrics', methods=['POST'])
+@roles_required('Junior Admin')
+def get_user_transaction_metrics():
+    return AdminUsersController.get_user_transaction_metrics()
