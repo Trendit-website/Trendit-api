@@ -58,7 +58,7 @@ class Payment(db.Model):
             'payment_type': self.payment_type,
             'payment_method': self.payment_method,
             'status': self.status,
-            'created_at': self.created_at
+            'created_at': self.created_at,
             **user_info,
         }
 
