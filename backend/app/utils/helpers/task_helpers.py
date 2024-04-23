@@ -211,6 +211,7 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
         media = request.files.get('media', '')
         
         console_log('platform', platform)
+        console_log('media', media)
         
         goal = data.get('goal','')
         account_link = data.get('account_link', '')
@@ -228,7 +229,9 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
             media_id = None
         elif media.filename != '':
             try:
+                console_log('media filename', media.filename)
                 media_id = save_media(media)
+                console_log('media_id', media_id)
             except Exception as e:
                 current_app.logger.error(f"An error occurred while saving media for Task: {str(e)}")
                 return None
