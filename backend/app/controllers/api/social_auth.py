@@ -76,14 +76,9 @@ class SocialAuthController:
         
     @staticmethod
     def fb_signup_callback():
-        # Check for CSRF attacks
-        # if request.args.get('state') != session.pop('oauth_state', None):
-        #     print('here')
-        #     return 'Invalid state'
         try:
             facebook = OAuth2Session(FB_CLIENT_ID, redirect_uri=FB_SIGNUP_REDIRECT_URI)
             token = facebook.fetch_token(FB_TOKEN_URL, client_secret=FB_CLIENT_SECRET, authorization_response=request.url)
-
 
             # Use the token to make a request to the Facebook Graph API to get user data
             graph_api_url = 'https://graph.facebook.com/me'
@@ -92,15 +87,75 @@ class SocialAuthController:
 
             if response.status_code == 200:
                 user_data = response.json()
-                extra_data = {"user_data": user_data}
-                # change this to actually log in the user
-                return success_response('User messages fetched successfully', 200, extra_data)
-        
+                email = user_data.get('email', '')
+
+                if not email:
+                    return error_response('Facebook account not linked to an email. Email is required', 400)
+
+                if Trendit3User.query.filter_by(email=email).first():
+                    return error_response('Email already taken', 409)
+
+                firstname = user_data.get('name', '').split()[0]
+                lastname = user_data.get('name', '').split()[1] if len(user_data.get('name', '').split()) > 1 else ''
+                username = generate_random_string(12)
+
+                while Trendit3User.query.filter_by(username=username).first():
+                    username = generate_random_string(12)
+
+                new_user = Trendit3User(email=email, username=username)
+                new_user_profile = Profile(trendit3_user=new_user, firstname=firstname, lastname=lastname)
+                new_user_address = Address(trendit3_user=new_user)
+                new_membership = Membership(trendit3_user=new_user)
+                new_user_wallet = Wallet(trendit3_user=new_user)
+                new_user_setting = UserSettings(trendit3_user=new_user)
+                role = Role.query.filter_by(name=RoleNames.CUSTOMER).first()
+                if role:
+                    new_user.roles.append(role)
+
+                db.session.add_all([new_user, new_user_profile, new_user_address, new_membership, new_user_wallet, new_user_setting])
+                db.session.commit()
+
+                user_data = new_user.to_dict()
+
+                referral = ReferralHistory.query.filter_by(email=email).first()
+                if referral:
+                    referral.update(username=username, status='registered', date_joined=new_user.date_joined)
+
+                # Create access token
+                access_token = create_access_token(identity=new_user.id, expires_delta=timedelta(minutes=1440), additional_claims={'type': 'access'})
+
+                # Send Welcome Email
+                try:
+                    send_other_emails(email, email_type='welcome')  # send Welcome message to user's email
+                except Exception as e:
+                    logging.exception(f"Error sending Email: {str(e)}")
+                    return error_response(f'An error occurred while sending the verification email: {str(e)}', 500)
+
+                db.session.close()
+
+                return redirect(f'https://app.trendit3.com/?access_token={access_token}')
+
+            else:
+                return error_response('Error occurred processing the request. Response from Facebook was not ok', 500)
+
+        except IntegrityError as e:
+            db.session.rollback()
+            log_exception('Integrity Error:', e)
+            return error_response(f'User already exists: {str(e)}', 409)
+
+        except (DataError, DatabaseError) as e:
+            db.session.rollback()
+            log_exception('Database error occurred during registration', e)
+            return error_response('Error interacting with the database.', 500)
+
         except Exception as e:
-            msg = f'An error occurred while fetching user data from facebook: {e}'
-            logging.exception("An error occured while fetching user data from facebook ")
-            status_code = 500
-            return error_response(msg, status_code)
+            db.session.rollback()
+            log_exception('An error occurred during registration', e)
+            return error_response(f'An error occurred while processing the request: {str(e)}', 500)
+
+        finally:
+            db.session.close()
+
 
 
     @staticmethod
@@ -126,29 +181,46 @@ class SocialAuthController:
     def fb_login_callback():
         # Check for CSRF attacks
         # if request.args.get('state') != session.pop('oauth_state', None):
-        #     print('here')
         #     return 'Invalid state'
+
         try:
             facebook = OAuth2Session(FB_CLIENT_ID, redirect_uri=FB_LOGIN_REDIRECT_URI)
             token = facebook.fetch_token(FB_TOKEN_URL, client_secret=FB_CLIENT_SECRET, authorization_response=request.url)
 
-
             # Use the token to make a request to the Facebook Graph API to get user data
             graph_api_url = 'https://graph.facebook.com/me'
-            params = {'access_token': token['access_token'], 'fields': 'id,name,email'}
+            params = {'fields': 'id,name,email', 'access_token': token['access_token']}
             response = requests.get(graph_api_url, params=params)
 
             if response.status_code == 200:
                 user_data = response.json()
-                extra_data = {"user_data": user_data}
-                # change this to actually log in the user
-                return success_response('User messages fetched successfully', 200, extra_data)
-        
+                email = user_data.get('email')
+                if not email:
+                    error_response('Facebook account does not provide an email.', 401)
+                    return redirect(f'https://app.trendit3.com/login?error=Facebook_account_does_not_provide_an_email')
+
+                # Attempt to find the user by email
+                user = get_trendit3_user(email)
+                if not user:
+                    error_response('Facebook account is incorrect or doesn\'t exist in our records', 401)
+                    return redirect(f'https://app.trendit3.com/login?error=Facebook_Account_is_incorrect_or_does_not_exist_in_our_records')
+
+                # Assuming create_access_token is a method that creates JWT tokens
+                access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=1440), additional_claims={'type': 'access'})
+
+                db.session.close()  # It is good practice to close the session when done.
+                success_response('Logged in successfully', 200)
+                
+                return redirect(f'https://app.trendit3.com/login?access_token={access_token}')
+            else:
+                error_response('Error occurred processing the Facebook API response.', 500)
+                return redirect(f'https://app.trendit3.com/login?error=Error_occurred_processing_the_Facebook_API_response')
+
         except Exception as e:
-            msg = f'An error occurred while fetching user data from facebook: {e}'
-            logging.exception("An error occured while fetching user data from facebook ")
-            status_code = 500
-            return error_response(msg, status_code)
+            logging.exception(f"An error occurred during Facebook login: {e}")
+            error_response(f'An unexpected error occurred processing the request: {str(e)}', 500)
+            return redirect(f'https://app.trendit3.com/login?error=An_unexpected_error_occurred_processing_the_request')
+
 
 
     @staticmethod
