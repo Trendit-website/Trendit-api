@@ -65,7 +65,7 @@ class TransactionController:
         
     
     @staticmethod
-    def get_user_transaction_by_type():
+    def get_user_transactions_by_type():
         """Get user transactions by type (credit, debit, payment, withdrawal)"""
 
         try:
