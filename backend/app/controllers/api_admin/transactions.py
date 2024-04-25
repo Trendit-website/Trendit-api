@@ -65,7 +65,7 @@ class TransactionController:
         
     
     @staticmethod
-    def get_user_transactions_by_type():
+    def get_user_transactions_by_type(type):
         """Get user transactions by type (credit, debit, payment, withdrawal)"""
 
         try:
@@ -77,7 +77,8 @@ class TransactionController:
                 "payment": TransactionType.PAYMENT,
                 "withdrawal": TransactionType.WITHDRAWAL
             }
-            transaction_type = data.get('transactionType')
+            # transaction_type = data.get('transactionType')
+            transaction_type = type
             page = request.args.get('page', default=1, type=int)
             per_page = request.args.get('per_page', default=20, type=int)
             
