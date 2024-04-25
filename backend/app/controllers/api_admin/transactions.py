@@ -95,5 +95,5 @@ class TransactionController:
             return success_response('User transactions fetched successfully', 200, extra_data)
         
         except Exception as e:
-            logging.exception("An exception occurred trying to get user transactions by type:\n", str(e))
+            logging.exception("An exception occurred trying to get user transactions by type:\n"+ str(e))
             return error_response('Error getting user transactions', 500)
