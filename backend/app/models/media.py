@@ -12,10 +12,10 @@ class Media(db.Model):
     def __repr__(self):
         return f"<Media {self.id}, Filename: {self.filename}>"
     
-    def get_path(self):
+    def get_path(self) -> str:
         return self.media_path
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         return {
             'id': self.id,
             'filename': self.filename,
