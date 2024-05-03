@@ -16,3 +16,4 @@ from ..models.task import Task, AdvertTask, EngagementTask, TaskStatus, TaskPaym
 from ..models.notification import UserMessageStatus, Notification, user_notification
 from ..models.settings import UserSettings, NotificationPreference, SecuritySetting, UserPreference
 from ..models.role import Role, RoleNames, user_roles, create_roles
+from ..models.pricing import Pricing
