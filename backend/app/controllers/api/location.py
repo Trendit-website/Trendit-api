@@ -66,10 +66,11 @@ class LocationController:
                 status_code = 200
                 msg = response_data['msg']
                 states = response_data['data']['states']
-                states.append({"name": "All States", "state_code": "all"})
+                states.insert(0, {"name": "All States", "state_code": "all"})
                 
                 if country.lower() == "nigeria":
-                    states.append({"name": "Rivers State", "state_code": "RI"})
+                    plateau_index = next((index for index, state in enumerate(states) if state['name'] == 'Plateau State'), None)
+                    states.insert(plateau_index + 1, {"name": "Rivers State", "state_code": "RI"})
                 
                 extra_data = {
                     'states': states,
