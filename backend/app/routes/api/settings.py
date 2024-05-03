@@ -33,7 +33,7 @@ def get_security_settings():
 
 
 # Update settings
-@api.route("update-settings/", methods=['POST'])
+@api.route("update-settings", methods=['POST'])
 @jwt_required()
 def update_settings():
     return ManageSettingsController.update_settings()
