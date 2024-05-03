@@ -142,7 +142,199 @@ class ManageSettingsController:
 
 
     @staticmethod
+    def update_settings():
+        try:
+            current_user_id = get_jwt_identity()
+            current_user = Trendit3User.query.get(current_user_id)
+            if not current_user:
+                return error_response(f"user not found", 404)
+            
+            data = request.get_json()
+            setting_type = data.get('setting_type')
+            setting_name = data.get('setting_typ')
+            value = data.get('value')
+            
+            user_settings = UserSettings.query.filter_by(trendit3_user_id=current_user_id).first()
+            if not user_settings:
+                user_settings = UserSettings(trendit3_user_id=current_user_id)
+                db.session.add(user_settings)
+            
+            setting_types = ['notification', 'preference', 'security']
+            
+            if setting_type not in setting_types:
+                return error_response("This type of settings doesn't exist on Trendit³")
+            
+            if setting_type == 'notification':
+                if not user_settings.notification_preference:
+                    user_settings.notification_preference = NotificationPreference()
+                
+                setting_obj = user_settings.notification_preference
+            elif setting_type == 'preference':
+                if not user_settings.user_preference:
+                    user_settings.user_preference = UserPreference()
+                
+                setting_obj = user_settings.user_preference
+            elif setting_type == 'security':
+                if not user_settings.security_setting:
+                    user_settings.security_setting = SecuritySetting()
+                
+                setting_obj = user_settings.security_setting
+            
+            # Update notification preference
+            setattr(setting_obj, setting_name, value)
+            db.session.commit()
+            
+            extra_data = {f"{setting_type}_settings": setting_obj.to_dict()}
+            api_response = success_response(f"{setting_type} settings updated successfully", 200, extra_data)
+        except (DataError, DatabaseError) as e:
+            db.session.rollback()
+            log_exception('Database error occurred updating settings', e)
+            return error_response("Error interacting with the database.", 500)
+        except Exception as e:
+            db.session.rollback()
+            msg = "An unexpected error occurred updating settings"
+            log_exception("An exception occurred updating settings.", e)
+            api_response = error_response(msg, 500)
+        finally:
+            db.session.close()
+        
+        return api_response
+    
+
+    @staticmethod
     def update_notification_settings():
+        try:
+            current_user_id = get_jwt_identity()
+            current_user = Trendit3User.query.get(current_user_id)
+            if not current_user:
+                return error_response(f"user not found", 404)
+            
+            data = request.get_json()
+            setting_name = data.get('setting_name')
+            value = data.get('value')
+            
+            user_settings = UserSettings.query.filter_by(trendit3_user_id=current_user_id).first()
+            if not user_settings:
+                user_settings = UserSettings(trendit3_user_id=current_user_id)
+                db.session.add(user_settings)
+            
+            if not user_settings.notification_preference:
+                user_settings.notification_preference = NotificationPreference()
+            
+            notification_preference = user_settings.notification_preference
+            
+            # Update notification preference
+            setattr(notification_preference, setting_name, value)
+            db.session.commit()
+            
+            extra_data = {"notification_settings": notification_preference.to_dict()}
+            api_response = success_response('Notification settings updated successfully', 200, extra_data)
+            
+        except (DataError, DatabaseError) as e:
+            db.session.rollback()
+            log_exception('Database error occurred updating settings', e)
+            return error_response("Error interacting with the database.", 500)
+        except Exception as e:
+            db.session.rollback()
+            msg = "An unexpected error occurred updating settings"
+            log_exception("An exception occurred updating settings.", e)
+            api_response = error_response(msg, 500)
+        finally:
+            db.session.close()
+        
+        return api_response
+
+
+    @staticmethod
+    def update_preference_settings():
+        try:
+            current_user_id = get_jwt_identity()
+            current_user = Trendit3User.query.get(current_user_id)
+            if not current_user:
+                return error_response(f"user not found", 404)
+            
+            data = request.get_json()
+            setting_name = data.get('setting_name')
+            value = data.get('value')
+            
+            user_settings = UserSettings.query.filter_by(trendit3_user_id=current_user_id).first()
+            if not user_settings:
+                user_settings = UserSettings(trendit3_user_id=current_user_id)
+                db.session.add(user_settings)
+            
+            if not user_settings.user_preference:
+                user_settings.user_preference = UserPreference()
+            
+            user_preference = user_settings.user_preference
+            
+            # Update user preferences
+            setattr(user_preference, setting_name, value)
+            db.session.commit()
+            
+            extra_data = {"preference_settings": user_preference.to_dict()}
+            api_response = success_response('preference updated successfully', 200, extra_data)
+            
+        except (DataError, DatabaseError) as e:
+            db.session.rollback()
+            log_exception('Database error occurred updating settings', e)
+            return error_response("Error interacting with the database.", 500)
+        except Exception as e:
+            db.session.rollback()
+            msg = "An unexpected error occurred updating settings"
+            log_exception("An exception occurred updating settings.", e)
+            api_response = error_response(msg, 500)
+        finally:
+            db.session.close()
+        
+        return api_response
+
+
+    @staticmethod
+    def update_security_settings():
+        try:
+            current_user_id = get_jwt_identity()
+            current_user = Trendit3User.query.get(current_user_id)
+            if not current_user:
+                return error_response(f"user not found", 404)
+            
+            data = request.get_json()
+            setting_name = data.get('setting_name')
+            value = data.get('value')
+            
+            user_settings = UserSettings.query.filter_by(trendit3_user_id=current_user_id).first()
+            if not user_settings:
+                user_settings = UserSettings(trendit3_user_id=current_user_id)
+                db.session.add(user_settings)
+            
+            if not user_settings.security_setting:
+                user_settings.security_setting = SecuritySetting()
+            
+            security_setting = user_settings.security_setting
+            
+            # Update security settings
+            setattr(security_setting, setting_name, value)
+            db.session.commit()
+            
+            extra_data = {"security_settings": security_setting.to_dict()}
+            api_response = success_response('Security settings updated successfully', 200, extra_data)
+            
+        except (DataError, DatabaseError) as e:
+            db.session.rollback()
+            log_exception('Database error occurred updating settings', e)
+            return error_response("Error interacting with the database.", 500)
+        except Exception as e:
+            db.session.rollback()
+            msg = "An unexpected error occurred updating settings"
+            log_exception("An exception occurred updating settings.", e)
+            api_response = error_response(msg, 500)
+        finally:
+            db.session.close()
+        
+        return api_response
+
+
+    @staticmethod
+    def save_notification_settings():
         try:
             current_user_id = get_jwt_identity()
             current_user = Trendit3User.query.get(current_user_id)
@@ -185,7 +377,7 @@ class ManageSettingsController:
 
 
     @staticmethod
-    def update_preference_settings():
+    def save_preference_settings():
         try:
             current_user_id = get_jwt_identity()
             current_user = Trendit3User.query.get(current_user_id)
@@ -211,7 +403,7 @@ class ManageSettingsController:
             
             db.session.commit()
             api_response = success_response('preferences updated successfully', 200, extra_data)
-            
+        
         except (DataError, DatabaseError) as e:
             db.session.rollback()
             log_exception('Database error occurred saving preference', e)
@@ -228,7 +420,7 @@ class ManageSettingsController:
 
 
     @staticmethod
-    def update_security_settings():
+    def save_security_settings():
         try:
             current_user_id = get_jwt_identity()
             current_user = Trendit3User.query.get(current_user_id)

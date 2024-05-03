@@ -227,7 +227,7 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
         
         if not media:
             media_id = None
-        elif media.filename != '':
+        elif media and media.filename != '':
             try:
                 console_log('media filename', media.filename)
                 media_id = save_media(media)
@@ -235,11 +235,8 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
             except Exception as e:
                 current_app.logger.error(f"An error occurred while saving media for Task: {str(e)}")
                 return None
-        elif media.filename == '' and task:
-            if task.media_id:
-                media_id = task.media_id
-            else:
-                media_id = None
+        elif task and task.media_id:
+            media_id = task.media_id
         else:
             media_id = None
         
@@ -251,7 +248,7 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
                 
                 return task
             else:
-                new_task = AdvertTask.create_task(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee=fee, media_id=media_id, payment_status=payment_status, posts_count=posts_count, target_country=target_country, target_state=target_state, gender=gender, caption=caption, hashtags=hashtags)
+                new_task = AdvertTask.create_task(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee=fee, payment_status=payment_status, posts_count=posts_count, target_country=target_country, target_state=target_state, gender=gender, caption=caption, hashtags=hashtags)
                 
                 console_log('new_task', new_task)
                 
@@ -263,7 +260,7 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
                 
                 return task
             else:
-                new_task = EngagementTask.create_task(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee=fee, media_id=media_id, payment_status=payment_status, goal=goal, account_link=account_link, engagements_count=engagements_count)
+                new_task = EngagementTask.create_task(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee=fee, payment_status=payment_status, goal=goal, account_link=account_link, engagements_count=engagements_count)
                 
                 return new_task
         else:

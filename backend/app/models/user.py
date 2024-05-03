@@ -142,6 +142,10 @@ class Trendit3User(db.Model):
             'total_withdrawal': self.total_withdrawal
         }
     
+    @property
+    def is_membership_paid(self) -> bool:
+        return self.membership.membership_fee_paid
+    
     def __repr__(self):
         return f'<ID: {self.id}, username: {self.username}, email: {self.email}>'
     
@@ -299,7 +303,7 @@ class Profile(db.Model):
             'phone': self.phone,
             'birthday': self.birthday,
             'profile_picture': self.profile_pic,
-            'referral_link': f'{self.referral_link}',
+            'referral_link': f'{self.referral_link}' if self.trendit3_user.is_membership_paid else "",
         }
 
 

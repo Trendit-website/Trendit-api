@@ -198,5 +198,5 @@ class SecuritySetting(db.Model):
     
     def to_dict(self):
         return {
-            '2FA_method': self.two_factor_method,
+            'two_fa_method': self.two_factor_method,
         }

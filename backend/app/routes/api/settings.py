@@ -33,6 +33,11 @@ def get_security_settings():
 
 
 # Update settings
+@api.route("update-settings", methods=['POST'])
+@jwt_required()
+def update_settings():
+    return ManageSettingsController.update_settings()
+
 @api.route("settings/notifications", methods=['POST'])
 @jwt_required()
 def update_notification_settings():
@@ -49,6 +54,24 @@ def update_preference_settings():
 @jwt_required()
 def update_security_settings():
     return ManageSettingsController.update_security_settings()
+
+
+@api.route("settings/notifications/save", methods=['POST'])
+@jwt_required()
+def save_notification_settings():
+    return ManageSettingsController.save_notification_settings()
+
+
+@api.route("settings/preferences/save", methods=['POST'])
+@jwt_required()
+def save_preference_settings():
+    return ManageSettingsController.save_preference_settings()
+
+
+@api.route("settings/security/save", methods=['POST'])
+@jwt_required()
+def save_security_settings():
+    return ManageSettingsController.save_security_settings()
 
 
 @api.route("settings/activate/google-2fa", methods=['GET'])

@@ -30,12 +30,18 @@ class TaskPerformanceStatus(Enum):
     CANCELLED = 'cancelled'
     TIMED_OUT = 'timed_out'
 
+# association table for the many-to-many relationship
+task_medias = db.Table(
+    'task_medias',
+    db.Column('task_id', db.Integer, db.ForeignKey('task.id')),
+    db.Column('media_id', db.Integer, db.ForeignKey('media.id'))
+)
+
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     task_type = db.Column(db.String(50), nullable=False) # advert task, or engagement task
     platform = db.Column(db.String(80), nullable=False)
     fee = db.Column(db.Float, nullable=False)
-    media_id = db.Column(db.Integer, db.ForeignKey('media.id'), nullable=True)
     task_key = db.Column(db.String(120), unique=True, nullable=False)
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -47,6 +53,7 @@ class Task(db.Model):
     
     trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
     trendit3_user = db.relationship('Trendit3User', backref=db.backref('tasks', lazy='dynamic'))
+    medias = db.relationship('Media', secondary='task_medias', backref=db.backref('tasks', lazy='dynamic'), cascade="all, delete-orphan", single_parent=True)
     
     @property
     def total_performances(self) -> int:
@@ -54,7 +61,7 @@ class Task(db.Model):
         return self.performances.count()
     
     @classmethod
-    def create_task(cls, trendit3_user_id, task_type, platform, fee, payment_status, media_id=None, **kwargs):
+    def create_task(cls, trendit3_user_id, task_type, platform, fee, payment_status, **kwargs):
         the_task_ref = generate_random_string(20)
         counter = 1
         max_attempts = 6  # maximum number of attempts to create a unique task_key
@@ -62,10 +69,10 @@ class Task(db.Model):
         while cls.query.filter_by(task_key=the_task_ref).first() is not None:
             if counter > max_attempts:
                 raise ValueError(f"Unable to create a unique task after {max_attempts} attempts.")
-            the_task_ref = f"{generate_random_string(8)}-{generate_random_string(2)}-{counter}"
+            the_task_ref = f"{generate_random_string(20)}-{generate_random_string(4)}-{counter}"
             counter += 1
         
-        task = cls(trendit3_user_id=trendit3_user_id, task_type=task_type, platform=platform, fee=fee, task_key=the_task_ref, payment_status=payment_status, media_id=media_id, **kwargs)
+        task = cls(trendit3_user_id=trendit3_user_id, task_type=task_type, platform=platform, fee=fee, task_key=the_task_ref, payment_status=payment_status, **kwargs)
         
         # Set additional attributes from kwargs
         for key, value in kwargs.items():
@@ -85,15 +92,11 @@ class Task(db.Model):
         db.session.delete(self)
         db.session.commit()
 
-    def get_task_media(self):
-        if self.media_id:
-            theMedia = Media.query.get(self.media_id)
-            if theMedia:
-                return theMedia.get_path()
-            else:
-                return None
-        else:
-            return None
+    def get_task_media(self) -> list[str]:
+        media_paths = []
+        for media in self.medias:
+            media_paths.append(media.get_path())
+        return media_paths if media_paths else None
     
     def to_dict(self):
         advert_task_dict = {}
