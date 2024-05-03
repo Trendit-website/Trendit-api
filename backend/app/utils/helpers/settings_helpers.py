@@ -118,7 +118,7 @@ def update_user_preferences(user_preference: object, data: dict):
     return user_preference
 
 
-def update_security_settings(security_setting: object, data: dict):
+def update_security_settings(security_setting: SecuritySetting, data: dict):
     """
     Update Security Settings based on the provided data.
     
@@ -126,13 +126,13 @@ def update_security_settings(security_setting: object, data: dict):
         data (dict): Dictionary containing user preference data.
             It should be in the format:
             {
-                "2fa_method": "email",
+                "two_fa_method": "email",
                 "new_password": "new_password",
             }
     """
     try:
         new_password = data.get('new_password', '')
-        two_factor_method = data.get('2fa_method', security_setting.two_factor_method)
+        two_factor_method = data.get('two_fa_method', security_setting.two_factor_method)
         
         if new_password:
             current_user = Trendit3User.query.get(int(get_jwt_identity()))
