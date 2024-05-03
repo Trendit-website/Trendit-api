@@ -36,9 +36,11 @@ class PricingController:
 
                 prices.append(price)
 
+            extra_data = {'pricing': prices}
+
             db.session.close()
 
-            return success_response('Pricing retrieved successfully', 200, extra_data=prices)
+            return success_response('Pricing retrieved successfully', 200, extra_data=extra_data)
         
         except Exception as e:
             console_log("An error occurred while retrieving pricing", e)
