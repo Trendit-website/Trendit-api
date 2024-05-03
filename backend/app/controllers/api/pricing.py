@@ -19,7 +19,6 @@ class PricingController:
     @staticmethod
     def get_all_pricing():
         try:
-            # pricings = {item.item_name: item.price for item in Pricing.query.all()}
             pricings = Pricing.query.all()
 
             prices = []
@@ -29,8 +28,8 @@ class PricingController:
                     "item_name": item.item_name,
                     "price_earn": item.price_earn,
                     "price_pay": item.price_pay,
-                    "created_at": item.created_at,
-                    "updated_at": item.updated_at
+                    "created_at": str(item.created_at),  # Convert to string
+                    "updated_at": str(item.updated_at)  # Convert to string
                 }
 
                 prices.append(price)
