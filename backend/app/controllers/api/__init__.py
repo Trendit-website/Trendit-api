@@ -23,3 +23,4 @@ from .notification import NotificationController
 from .settings import ManageSettingsController
 from .social_auth import SocialAuthController
 from .transactions import TransactionController
+from .pricing import PricingController
