@@ -66,6 +66,11 @@ class LocationController:
                 status_code = 200
                 msg = response_data['msg']
                 states = response_data['data']['states']
+                states.append({"name": "All States", "state_code": "all"})
+                
+                if country.lower() == "nigeria":
+                    states.append({"name": "Rivers State", "state_code": "RI"})
+                
                 extra_data = {
                     'states': states,
                     'total': len(states)
