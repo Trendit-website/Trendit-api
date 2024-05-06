@@ -18,7 +18,7 @@ from ...exceptions import InvalidTwoFactorMethod
 from ...utils.helpers.basic_helpers import console_log, log_exception
 from ...utils.helpers.settings_helpers import set_2fa_method, generate_google_authenticator_secret_key, generate_google_authenticator_qr_code
 from ...utils.helpers.response_helpers import error_response, success_response
-from ...utils.helpers.settings_helpers import update_notification_preferences, update_user_preferences, update_security_settings
+from ...utils.helpers.settings_helpers import update_notification_preferences, update_user_preferences, update_user_security_settings
 
 
 class ManageSettingsController:
@@ -213,6 +213,9 @@ class ManageSettingsController:
             setting_name = data.get('setting_name')
             value = data.get('value')
             
+            if not isinstance(value, bool):
+                return error_response("Value must be boolean", 400)
+            
             user_settings = UserSettings.query.filter_by(trendit3_user_id=current_user_id).first()
             if not user_settings:
                 user_settings = UserSettings(trendit3_user_id=current_user_id)
@@ -334,6 +337,55 @@ class ManageSettingsController:
 
 
     @staticmethod
+    def update_two_fa_method():
+        try:
+            current_user_id = get_jwt_identity()
+            current_user = Trendit3User.query.get(current_user_id)
+            if not current_user:
+                return error_response(f"user not found", 404)
+            
+            data = request.get_json()
+            two_fa_method = data.get('two_fa_method', None)
+            
+            
+            user_settings = UserSettings.query.filter_by(trendit3_user_id=current_user_id).first()
+            if not user_settings:
+                user_settings = UserSettings(trendit3_user_id=current_user_id)
+                db.session.add(user_settings)
+            
+            if not user_settings.security_setting:
+                user_settings.security_setting = SecuritySetting()
+            
+            security_setting = user_settings.security_setting
+            
+            # Update security settings
+            # Validate and update security method
+            if not SecuritySetting.validate_2fa_method(two_fa_method):
+                raise InvalidTwoFactorMethod
+                
+            security_setting.update(
+                two_factor_method=two_fa_method
+            )
+            
+            extra_data = {"security_settings": security_setting.to_dict()}
+            msg = "Two Factor method updated successfully" if two_fa_method else "Two factor Authentication has been disabled"
+            api_response = success_response(msg, 200, extra_data)
+            
+        except (DataError, DatabaseError) as e:
+            db.session.rollback()
+            log_exception('Database error occurred updating settings', e)
+            return error_response("Error interacting with the database.", 500)
+        except Exception as e:
+            db.session.rollback()
+            msg = "An unexpected error occurred updating settings"
+            log_exception("An exception occurred updating two factor method.", e)
+            api_response = error_response(msg, 500)
+        finally:
+            db.session.close()
+        
+        return api_response
+
+    @staticmethod
     def save_notification_settings():
         try:
             current_user_id = get_jwt_identity()
@@ -440,7 +492,7 @@ class ManageSettingsController:
             security_setting = user_settings.security_setting
             
             # Update user preferences
-            security_settings = update_security_settings(security_setting, data)
+            security_settings = update_user_security_settings(security_setting, data)
             
             extra_data = {"security_settings": security_settings.to_dict()}
             

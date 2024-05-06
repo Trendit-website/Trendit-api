@@ -55,6 +55,9 @@ def update_preference_settings():
 def update_security_settings():
     return ManageSettingsController.update_security_settings()
 
+@api.route("settings/two-fa", methods=['POST'])
+def update_two_fa_method():
+    return ManageSettingsController.update_two_fa_method()
 
 @api.route("settings/notifications/save", methods=['POST'])
 @jwt_required()
