@@ -118,7 +118,7 @@ def update_user_preferences(user_preference: object, data: dict):
     return user_preference
 
 
-def update_security_settings(security_setting: SecuritySetting, data: dict):
+def update_user_security_settings(security_setting: SecuritySetting, data: dict):
     """
     Update Security Settings based on the provided data.
     
@@ -139,13 +139,14 @@ def update_security_settings(security_setting: SecuritySetting, data: dict):
             hashed_pwd = generate_password_hash(new_password, "pbkdf2:sha256")
             current_user.update(thePassword=hashed_pwd)
         
-        # Validate and update security method
-        if not SecuritySetting.validate_2fa_method(two_factor_method):
-            raise InvalidTwoFactorMethod
-        
-        security_setting.update(
-            two_factor_method=two_factor_method
-        )
+        if two_factor_method:
+            # Validate and update security method
+            if not SecuritySetting.validate_2fa_method(two_factor_method):
+                raise InvalidTwoFactorMethod
+            
+            security_setting.update(
+                two_factor_method=two_factor_method
+            )
     except (DataError, DatabaseError) as e:
         raise e
     except Exception as e:
