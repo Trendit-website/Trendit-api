@@ -107,7 +107,7 @@ class Notification(db.Model):
 
 # Admin  Notification model
 class SocialVerification(db.Model):
-    __tablename__ = 'notification'
+    __tablename__ = 'socialverification'
 
     id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
     sender_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
