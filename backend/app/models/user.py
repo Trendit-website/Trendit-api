@@ -48,6 +48,7 @@ class Trendit3User(db.Model):
 
     # Relationships
     social_ids = db.relationship('SocialIDs', back_populates="trendit3_user", uselist=False, cascade="all, delete-orphan")
+    social_links = db.relationship('SocialLinks', back_populates="trendit3_user", uselist=False, cascade="all, delete-orphan")
     profile = db.relationship('Profile', back_populates="trendit3_user", uselist=False, cascade="all, delete-orphan")
     address = db.relationship('Address', back_populates="trendit3_user", uselist=False, cascade="all, delete-orphan")
     membership = db.relationship('Membership', back_populates="trendit3_user", uselist=False, cascade="all, delete-orphan")
@@ -212,6 +213,15 @@ class Trendit3User(db.Model):
             'tiktok_id': user_social_ids.tiktok_id if user_social_ids else None,
             'x_id': user_social_ids.x_id if user_social_ids else None,
         }
+
+        user_social_links = self.social_links
+        social_links = {
+            'google_id': user_social_links.google_id if user_social_links else None,
+            'facebook_id': user_social_links.facebook_id if user_social_links else None,
+            'instagram_id': user_social_links.instagram_id if user_social_links else None,
+            'tiktok_id': user_social_links.tiktok_id if user_social_links else None,
+            'x_id': user_social_links.x_id if user_social_links else None,
+        }
         
         
         return {
@@ -222,6 +232,7 @@ class Trendit3User(db.Model):
             'membership_fee': self.membership.membership_fee_paid,
             'wallet': wallet_info,
             'social_ids': social_ids,
+            'social_links': social_links,
             'primary_bank': bank_details,
             'roles': self.role_names,
             **address_info,  # Merge address information into the output dictionary
@@ -256,6 +267,46 @@ class SocialIDs(db.Model):
             'tiktok_id': self.tiktok_id,
             'x_id': self.x_id,
         }
+
+class SocialLinks(db.Model):
+    
+    id = db.Column(db.Integer(), primary_key=True)
+    google_id = db.Column(db.String(200), nullable=True)
+    google_verified = db.Column(db.Boolean, default=False)
+    facebook_id = db.Column(db.String(200), nullable=True)
+    facebook_verified = db.Column(db.Boolean, default=False)
+    instagram_id = db.Column(db.String(200), nullable=True)
+    instagram_verified = db.Column(db.Boolean, default=False)
+    tiktok_id = db.Column(db.String(200), nullable=True)
+    tiktok_verified = db.Column(db.Boolean, default=False)
+    x_id = db.Column(db.String(200), nullable=True)
+    x_verified = db.Column(db.Boolean, default=False)
+    
+    trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id', ondelete='CASCADE'), nullable=False,)
+    trendit3_user = db.relationship('Trendit3User', back_populates="social_links")
+    
+    def __repr__(self):
+        return f'< primary ID: {self.id}, google_id: {self.google_id}, facebook_id: {self.facebook_id} >'
+    
+    def update(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+        db.session.commit()
+    
+    def to_dict(self):
+        return {
+            'google_id': self.google_id,
+            'google_verified': self.google_verified,
+            'facebook_id': self.facebook_id,
+            'facebook_verified': self.facebook_verified,
+            'instagram_id': self.instagram_id,
+            'instagram_verified': self.instagram_verified,
+            'tiktok_id': self.tiktok_id,
+            'tiktok_verified': self.tiktok_verified,
+            'x_id': self.x_id,
+            'x_verified': self.x_verified
+        }
+
 
 class Profile(db.Model):
     __tablename__ = "profile"

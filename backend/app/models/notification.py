@@ -25,6 +25,11 @@ class MessageType(Enum):
     NOTIFICATION = 'notification'
     ACTIVITY = 'activity'
 
+class SocialVerificationStatus(Enum):
+    PENDING = 'pending'
+    APPROVED = 'approved'
+    REJECTED = 'rejected'
+
 user_notification = db.Table(
     'user_notification', db.Model.metadata,
     db.Column('user_id', db.Integer, db.ForeignKey('trendit3_user.id')),
@@ -93,9 +98,63 @@ class Notification(db.Model):
     def to_dict(self):
         return {
             'id': self.id,
-            # 'title': self.title,
-            # 'description': self.description,
             'type': self.type.value,
+            'created_at': self.createdAt,
+            'updated_at': self.updatedAt,
+            'body': self.body
+        }
+    
+
+# Admin  Notification model
+class SocialVerification(db.Model):
+    __tablename__ = 'notification'
+
+    id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
+    sender_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
+    type = db.Column(db.String(25), nullable=False)
+    status = db.Column(db.Enum(MessageType), nullable=False, default=MessageType.MESSAGE)
+    createdAt = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    updatedAt = db.Column(db.DateTime, nullable=True, default=None)
+    body = db.Column(db.Text, nullable=True, default=None)
+
+    # Relationships
+    # recipients = db.relationship('Trendit3User', secondary=user_notification, backref='received_messages', lazy='dynamic')
+    # recipients = db.relationship('Trendit3User', secondary=user_notification, back_populates='notifications')
+
+    def __repr__(self):
+        return f'<Notification {self.id}>'
+    
+    @classmethod
+    def send_notification(cls, sender_id, body, status=SocialVerificationStatus.PENDING):
+        """
+        Send a notification from an admin to multiple recipients.
+
+        Args:
+            admin (User): The admin user sending the notification.
+            recipients (list of User): List of recipient users.
+            body (str): Body of the notification message.
+            message_type (MessageType): Type of the notification message.
+        """
+        message = cls(sender_id=sender_id, body=body, status=status)
+        db.session.add(message)
+        db.session.commit()
+
+        return message
+    
+    def update(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+        db.session.commit()
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'status': self.status.value,
+            'type': self.type,
             'created_at': self.createdAt,
             'updated_at': self.updatedAt,
             'body': self.body

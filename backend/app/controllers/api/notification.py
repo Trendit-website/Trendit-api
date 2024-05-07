@@ -4,7 +4,7 @@ from sqlalchemy.exc import ( IntegrityError, DataError, DatabaseError, InvalidRe
 from flask_jwt_extended import create_access_token, decode_token, get_jwt_identity, jwt_required
 from flask_jwt_extended.exceptions import JWTDecodeError
 
-from app.models.notification import MessageStatus, MessageType, UserMessageStatus, Notification
+from app.models.notification import MessageStatus, MessageType, UserMessageStatus, Notification, SocialVerification, SocialVerificationStatus
 from app.models.user import Trendit3User
 from app.utils.helpers.basic_helpers import console_log, log_exception
 from app.utils.helpers.user_helpers import get_notifications, mark_as_read
@@ -159,5 +159,27 @@ class NotificationController:
             msg = f'Error getting search results'
             status_code = 500
             logging.exception(f"An exception occurred trying to fetch search results: ==>", str(e))
+
+            return error_response(msg, status_code)
+        
+    @staticmethod
+    def send_social_verification_request():
+
+        # TODO: send a notification to the user that the admin has received their request
+        try:
+            data = request.get_json()
+            body = data.get('body')
+            type = data.get('type')
+            sender_id = int(get_jwt_identity())
+            SocialVerification.send_notification(sender_id=sender_id,body=body, type=type, status=SocialVerificationStatus.PENDING)
+            
+            msg = f'Notification sent successfully'
+            status_code = 200
+            return success_response(msg, status_code)
+
+        except Exception as e:
+            msg = f'Error sending broadcast message'
+            status_code = 500
+            logging.exception(f"An exception occurred trying to send broadcast message: ==>", str(e))
 
             return error_response(msg, status_code)

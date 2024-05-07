@@ -16,3 +16,4 @@ from app.controllers.api_admin.users import AdminUsersController
 from app.controllers.api_admin.transactions import TransactionController
 from app.controllers.api_admin.earn_appeal import EarnAppealController
 from app.controllers.api_admin.pricing import PricingController
+from app.controllers.api_admin.social_verification import SocialVerificationController
