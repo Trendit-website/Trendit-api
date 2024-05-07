@@ -33,7 +33,7 @@ class AuthController:
     def signUp():
         try:
             data = request.get_json()
-            email = data.get('email')
+            email = data.get('email', '').lower()
             referral_code = data.get('referral_code') # get code of referrer
             
             if not email:
