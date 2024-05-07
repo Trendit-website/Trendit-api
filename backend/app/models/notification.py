@@ -112,7 +112,7 @@ class SocialVerification(db.Model):
     id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
     sender_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
     type = db.Column(db.String(25), nullable=False)
-    status = db.Column(db.Enum(MessageType), nullable=False, default=MessageType.MESSAGE)
+    status = db.Column(db.Enum(SocialVerificationStatus), nullable=False, default=SocialVerificationStatus.PENDING)
     createdAt = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updatedAt = db.Column(db.DateTime, nullable=True, default=None)
     body = db.Column(db.Text, nullable=True, default=None)
