@@ -16,15 +16,16 @@ class LocationController:
         
         try:
             supported_countries = fetch_supported_countries()
-            if supported_countries:
-                extra_data = {
-                    'countries': supported_countries,
-                    'total': len(supported_countries)
-                }
-                
-                api_response =  success_response('Countries fetched successfully', 200, extra_data)
-            else:
-                api_response =  error_response('Failed to get fetch supported countries', 500)
+            if not supported_countries:
+                return  error_response('Failed to get fetch supported countries', 500)
+            
+            supported_countries.insert(0, {"name": "All Countries", "currency_code": "all", "iso_code":"all"})
+            extra_data = {
+                'countries': supported_countries,
+                'total': len(supported_countries)
+            }
+            
+            api_response =  success_response('Countries fetched successfully', 200, extra_data)
         except requests.exceptions.RequestException as e:
             log_exception('Request failed', e)
             api_response =  error_response('Request failed', 500)
