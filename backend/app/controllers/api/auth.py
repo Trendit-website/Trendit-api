@@ -275,7 +275,7 @@ class AuthController:
         
         try:
             data = request.get_json()
-            email_username = data.get('email_username')
+            email_username = data.get('email_username').lower()
             pwd = data.get('password')
             
             # get user from db with the email/username.
@@ -315,14 +315,14 @@ class AuthController:
                 
                 # Create a JWT that includes the user's info and the 2FA code
                 expires = timedelta(minutes=15)
-                identity.update({'two_FA_code': two_FA_code})
-                two_FA_token = create_access_token(identity=identity, expires_delta=expires, additional_claims={'type': '2fa'})
-                extra_data = { 'two_FA_token': two_FA_token }
+                identity.update({'two_fa_code': two_FA_code})
+                two_FA_token = create_access_token(identity=identity, expires_delta=expires, additional_claims={'type': 'two_fa'})
+                extra_data = { 'two_fa_token': two_FA_token }
                 msg = '2 Factor Authentication code sent successfully'
             elif user_security_setting and two_factor_method.lower() == 'google_auth_app':
                 expires = timedelta(minutes=30)
-                two_FA_token = create_access_token(identity=identity, expires_delta=expires, additional_claims={'type': '2fa'})
-                extra_data = { 'two_FA_token': two_FA_token }
+                two_FA_token = create_access_token(identity=identity, expires_delta=expires, additional_claims={'type': 'two_fa'})
+                extra_data = { 'two_fa_token': two_FA_token }
                 msg = 'Check the Google Auth App for 2 Factor Authentication code.'
             
             api_response = success_response(msg, 200, extra_data)
@@ -399,11 +399,10 @@ class AuthController:
 
     @staticmethod
     def forgot_password():
-        error = False
         
         try:
             data = request.get_json()
-            email_username = data.get('email_username')
+            email_username = data.get('email_username').lower()
             
             # get user from db with the email/username.
             user = get_trendit3_user(email_username)
@@ -432,18 +431,16 @@ class AuthController:
             if pwd_reset_token is None:
                 return error_response('Error saving the reset token in the database', 500)
             
-            status_code = 200
-            msg = 'Password reset code sent successfully'
             extra_data = { 'reset_token': reset_token, 'email': user.email, }
-            return success_response(msg, status_code, extra_data)
-
+            api_response = success_response('Password reset code sent successfully', 200, extra_data)
+            
         except Exception as e:
-            status_code = 500
-            msg = 'An error occurred while processing the request.'
             log_exception(f"An exception occurred processing the request", e)
-            return error_response(msg, status_code)
+            api_response = error_response('An error occurred while processing the request.', 500)
         finally:
             db.session.close()
+        
+        return api_response
 
 
     @staticmethod
@@ -541,7 +538,7 @@ class AuthController:
             
         except Exception as e:
             db.session.rollback()
-            logging.exception(f"An exception occurred processing request: {e}")
+            log_exception("An exception occurred processing request", e)
             api_response = error_response('An unexpected error occurred while processing the request.', 500)
         finally:
             db.session.close()
@@ -552,60 +549,48 @@ class AuthController:
     
     @staticmethod
     def username_check():
-        error = False
         try:
             data = request.get_json()
-            username = data.get('username', '')
+            username = data.get('username', '').lower()
             if not username:
                 return error_response("username parameter is required in request's body.", 400)
             
             if is_user_exist(username, 'username'):
-                return error_response(f'{username} is already Taken', 409)
+                return error_response(f"{username} is already Taken", 409)
             
-            msg = f'{username} is available'
-            status_code = 200
+            api_response = success_response(f"{username} is available", 200)
             
         except UnsupportedMediaType as e:
-            error = True
-            msg = "username parameter is required in request's body."
-            status_code = 415
-            logging.exception(f"An exception occurred checking username. {e}")
+            log_exception("An exception occurred checking username", e)
+            api_response = error_response("username parameter is required in request's body", 415)
         except Exception as e:
-            error = True
-            msg = "An error occurred while processing the request."
-            status_code = 500
-            logging.exception(f"An exception occurred checking username. {e}")
+            log_exception("An exception occurred checking username", e)
+            api_response = error_response("An error occurred while processing the request.", 500)
         
-        return error_response(msg, status_code) if error else success_response(msg, status_code)
+        return api_response
     
     
     @staticmethod
     def email_check():
-        error = False
         try:
             data = request.get_json()
-            email = data.get('email', '')
+            email = data.get('email', '').lower()
             if not email:
                 return error_response("email parameter is required in request's body.", 415)
             
             if is_user_exist(email, 'email'):
                 return error_response(f'{email} is already taken', 409)
             
-            msg = f'{email} is available'
-            status_code = 200
+            api_response = success_response(f"{email} is available", 200)
             
         except UnsupportedMediaType as e:
-            error = True
-            msg = "email parameter is required in request's body."
-            status_code = 415
-            logging.exception(f"An exception occurred checking email. {e}")
+            log_exception("An exception occurred checking email", e)
+            api_response = error_response("email parameter is required in request's body.", 415)
         except Exception as e:
-            error = True
-            msg = "An error occurred while processing the request."
-            status_code = 500
-            logging.exception(f"An exception occurred checking email. {e}")
+            log_exception("An exception occurred checking email", e)
+            api_response = error_response("An error occurred while processing the request.", 500)
 
-        return error_response(msg, status_code) if error else success_response(msg, status_code)
+        return api_response
     
     
     @staticmethod
