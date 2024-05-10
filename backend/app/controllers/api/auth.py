@@ -18,7 +18,6 @@ from flask_jwt_extended import create_access_token, decode_token, get_jwt_identi
 from flask_jwt_extended.exceptions import JWTDecodeError
 from jwt import ExpiredSignatureError, DecodeError
 import pyotp
-from itsdangerous import URLSafeTimedSerializer
 
 from config import Config
 from ...extensions import db
