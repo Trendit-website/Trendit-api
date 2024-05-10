@@ -411,8 +411,6 @@ class AuthController:
             if not user:
                 return error_response('No account with that username or email exists.', 404)
             
-            # Generate a random six-digit number
-            reset_code = generate_six_digit_code()
             # Generate a password reset token
             expires = timedelta(minutes=15)
             reset_token = create_access_token(identity={
@@ -446,7 +444,7 @@ class AuthController:
         
         try:
             data = request.get_json()
-            reset_token = request.args.get('token', '')
+            reset_token = data.get('reset_token', '')
             new_password = data.get('new_password')
             hashed_pwd = generate_password_hash(new_password, "pbkdf2:sha256")
             
@@ -468,20 +466,22 @@ class AuthController:
             user = get_trendit3_user(token_data['email'])
             user.update(thePassword=hashed_pwd)
             
-            return success_response('Password changed successfully', 200)
+            api_response = success_response('Password changed successfully', 200)
         except UnsupportedMediaType as e:
             db.session.rollback()
             log_exception("An UnsupportedMediaType exception occurred", e)
-            return error_response(f"UnsupportedMediaType: {str(e)}", 415)
+            api_response = error_response(f"UnsupportedMediaType: {str(e)}", 415)
         except JWTDecodeError:
             db.session.rollback()
-            return error_response(f"Invalid or expired reset URL", 401)
+            api_response = error_response(f"Invalid or expired reset URL", 401)
         except Exception as e:
             db.session.rollback()
             logging.exception(f"An exception occurred processing the request: {e}")
-            return error_response('An error occurred while processing the request.', 500)
+            api_response = error_response('An error occurred while processing the request.', 500)
         finally:
             db.session.close()
+        
+        return api_response
 
 
     @staticmethod
