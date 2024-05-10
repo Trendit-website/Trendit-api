@@ -19,7 +19,7 @@ class EmailType(Enum):
     DEBIT = 'debit'
 
 # SEND VERIFICATION CODE TO USER'S EMAIL
-def send_code_async_email(app, user_email, six_digit_code, code_type):
+def send_code_async_email(app, user_email:str, six_digit_code:int | str, code_type:str):
     """
     Sends an email asynchronously.
 
@@ -45,7 +45,7 @@ def send_code_async_email(app, user_email, six_digit_code, code_type):
         
         if code_type == 'pwd_reset':
             subject = 'Reset your password'
-            template = render_template("email/pwd_reset2.html", verification_code=six_digit_code, user_email=user_email, username=username)
+            template = render_template("email/pwd_reset2.html", reset_url=six_digit_code, user_email=user_email, username=username)
             msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
 
         elif code_type == '2FA':
@@ -75,6 +75,9 @@ def send_code_to_email(user_email, six_digit_code, code_type='verify_email'):
         None
     """
     Thread(target=send_code_async_email, args=(current_app._get_current_object(), user_email, six_digit_code, code_type)).start()
+
+def send_url_to_email (user_email: str, url: str, code_type:str = 'pwd_reset'):
+    Thread(target=send_code_async_email, args=(current_app._get_current_object(), user_email, url, code_type)).start()
 
 
 # SEND OTHER EMAILS LIKE WELCOME MAIL, CREDIT ALERT, ETC

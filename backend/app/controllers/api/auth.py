@@ -18,15 +18,16 @@ from flask_jwt_extended import create_access_token, decode_token, get_jwt_identi
 from flask_jwt_extended.exceptions import JWTDecodeError
 from jwt import ExpiredSignatureError, DecodeError
 import pyotp
+from itsdangerous import URLSafeTimedSerializer
 
+from config import Config
 from ...extensions import db
 from ...models import Role, RoleNames, TempUser, Trendit3User, Address, Profile, OneTimeToken, ReferralHistory, Membership, Wallet, UserSettings
 from ...utils.helpers.basic_helpers import console_log, log_exception
 from ...utils.helpers.response_helpers import error_response, success_response
-from ...utils.helpers.location_helpers import get_currency_info
 from ...utils.helpers.auth_helpers import generate_six_digit_code, save_pwd_reset_token, send_2fa_code
 from ...utils.helpers.user_helpers import is_user_exist, get_trendit3_user, referral_code_exists
-from ...utils.helpers.mail_helpers import send_other_emails, send_code_to_email
+from ...utils.helpers.mail_helpers import send_other_emails, send_code_to_email, send_url_to_email
 
 class AuthController:
     @staticmethod
@@ -408,31 +409,28 @@ class AuthController:
             user = get_trendit3_user(email_username)
             
             if not user:
-                return error_response('email or username isn\'t registered with us', 404)
+                return error_response('No account with that username or email exists.', 404)
             
             # Generate a random six-digit number
             reset_code = generate_six_digit_code()
-            
-            try:
-                send_code_to_email(user.email, reset_code, code_type='pwd_reset') # send reset code to user's email
-            except Exception as e:
-                return error_response(f'An error occurred while sending the reset code to the email address', 500)
-            
-            # Create a JWT that includes the user's info and the reset code
+            # Generate a password reset token
             expires = timedelta(minutes=15)
             reset_token = create_access_token(identity={
+                'user_id': user.id,
                 'username': user.username,
-                'email': user.email,
-                'reset_code': reset_code
-            }, expires_delta=expires)
+                'email': user.email
+            }, expires_delta=expires, additional_claims={'type': 'reset-pwd', "reset": True})
             
-            pwd_reset_token = save_pwd_reset_token(reset_token, user)
+            reset_url = f"{Config.APP_DOMAIN_NAME}/reset_password?token={reset_token}"
             
-            if pwd_reset_token is None:
-                return error_response('Error saving the reset token in the database', 500)
+            try:
+                send_url_to_email(user.email, reset_url, code_type='pwd_reset') # send reset code to user's email
+            except Exception as e:
+                return error_response(f'An error sending the reset URL to provided email address', 500)
             
-            extra_data = { 'reset_token': reset_token, 'email': user.email, }
-            api_response = success_response('Password reset code sent successfully', 200, extra_data)
+            
+            extra_data = { 'email': user.email, }
+            api_response = success_response('An email with instructions to reset your password has been sent.', 200, extra_data)
             
         except Exception as e:
             log_exception(f"An exception occurred processing the request", e)
@@ -448,8 +446,7 @@ class AuthController:
         
         try:
             data = request.get_json()
-            reset_token = data.get('reset_token')
-            entered_code = data.get('entered_code')
+            reset_token = request.args.get('token', '')
             new_password = data.get('new_password')
             hashed_pwd = generate_password_hash(new_password, "pbkdf2:sha256")
             
@@ -461,40 +458,24 @@ class AuthController:
                 
                 token_data = decoded_token['sub']
             except ExpiredSignatureError:
-                return error_response("The reset code has expired. Please request a new one.", 401)
+                return error_response("This reset URL has expired. Please request a new one.", 401)
             except Exception as e:
                 return error_response("An error occurred while processing the request.", 500)
             
-            
-            # Check if the reset token exists in the database
-            pwd_reset_token = OneTimeToken.query.filter_by(token=reset_token).first()
-            if not pwd_reset_token:
-                return error_response('The Reset token not found.', 404)
-            
-            if pwd_reset_token.used:
-                return error_response('The Reset Code has already been used', 403)
-            
-            # Check if the entered code matches the one in the JWT
-            if int(entered_code) != int(token_data['reset_code']):
-                return error_response('The wrong password Reset Code was provided. Please check your mail for the correct code and try again.', 400)
             
             # Reset token is valid, update user password
             # get user from db with the email.
             user = get_trendit3_user(token_data['email'])
             user.update(thePassword=hashed_pwd)
             
-            # Reset token is valid, mark it as used
-            pwd_reset_token.update(used=True)
-            status_code = 200
-            msg = 'Password changed successfully'
-            return success_response(msg, status_code)
+            return success_response('Password changed successfully', 200)
         except UnsupportedMediaType as e:
             db.session.rollback()
-            logging.exception(f"An UnsupportedMediaType exception occurred: {e}")
-            return error_response(f"{str(e)}", 415)
+            log_exception("An UnsupportedMediaType exception occurred", e)
+            return error_response(f"UnsupportedMediaType: {str(e)}", 415)
         except JWTDecodeError:
             db.session.rollback()
-            return error_response(f"Invalid or expired reset code", 401)
+            return error_response(f"Invalid or expired reset URL", 401)
         except Exception as e:
             db.session.rollback()
             logging.exception(f"An exception occurred processing the request: {e}")
