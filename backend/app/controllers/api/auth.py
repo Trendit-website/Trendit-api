@@ -447,6 +447,7 @@ class AuthController:
             new_password = data.get('new_password')
             hashed_pwd = generate_password_hash(new_password, "pbkdf2:sha256")
             
+            console_log('token', reset_token)
             try:
                 # Decode the JWT and extract the user's info and the reset code
                 decoded_token = decode_token(reset_token)
@@ -457,13 +458,16 @@ class AuthController:
             except ExpiredSignatureError:
                 return error_response("This reset URL has expired. Please request a new one.", 401)
             except Exception as e:
-                return error_response("An error occurred while processing the request.", 500)
+                log_exception("An exception occurred decoding token", e)
+                return error_response("An unexpected error occurred processing the request.", 500)
             
             
             # Reset token is valid, update user password
             # get user from db with the email.
             user = get_trendit3_user(token_data['email'])
+            console_log('user', user)
             user.update(thePassword=hashed_pwd)
+            
             
             api_response = success_response('Password changed successfully', 200)
         except UnsupportedMediaType as e:
