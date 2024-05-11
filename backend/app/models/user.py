@@ -238,7 +238,7 @@ class Trendit3User(db.Model):
             'two_fa': {
                 'enabled': self.is_2fa_enabled,
                 'method': self.user_settings.two_factor_method,
-            }
+            },
             **address_info,  # Merge address information into the output dictionary
             **profile_data # Merge profile information into the output dictionary
         }
