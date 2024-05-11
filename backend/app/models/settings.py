@@ -38,6 +38,10 @@ class UserSettings(db.Model):
         
         return True
     
+    @property
+    def two_factor_method(self):
+        return self.security_setting.two_factor_method
+    
     @classmethod
     def create_user_settings(cls, trendit3_user_id):
         default_settings = cls(trendit3_user_id=trendit3_user_id)
