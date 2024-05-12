@@ -168,10 +168,27 @@ class NotificationController:
         # TODO: send a notification to the user that the admin has received their request
         try:
             data = request.get_json()
-            body = data.get('body')
+            link = data.get('link')
             type = data.get('type')
             sender_id = int(get_jwt_identity())
-            SocialVerification.send_notification(sender_id=sender_id,body=body, type=type, status=SocialVerificationStatus.PENDING)
+
+            user = Trendit3User.query.filter_by(id=sender_id).first()
+            if not user:
+                return error_response('User not found', 404)
+            
+            field_mapping = {
+                'facebook': 'facebook_id',
+                'tiktok': 'tiktok_id',
+                'instagram': 'instagram_id',
+                'x': 'x_id'
+            }
+
+            if not field_mapping.get(type):
+                return error_response('Invalid social media type', 400)
+            
+            setattr(user.social_ids, field_mapping[type], link)
+
+            SocialVerification.send_notification(sender_id=sender_id,body=link, type=type, status=SocialVerificationStatus.PENDING)
             
             msg = f'Notification sent successfully'
             status_code = 200
