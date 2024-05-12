@@ -187,8 +187,9 @@ class Wallet(db.Model):
 
     id = db.Column(db.Integer(), primary_key=True)
     balance = db.Column(db.Float(), default=00.00, nullable=True)
-    currency_name = db.Column(db.String(), default='Dollars', nullable=True)
-    currency_code = db.Column(db.String(), default='USD', nullable=True)
+    currency_name = db.Column(db.String(), default='Naira', nullable=True)
+    currency_code = db.Column(db.String(), default='NGN', nullable=True)
+    currency_symbol = db.Column(db.String(), default=str('₦'), nullable=True)
     
     # Relationship with the user model
     trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
@@ -196,11 +197,15 @@ class Wallet(db.Model):
     
     
     def __repr__(self):
-        return f'<ID: {self.id}, Balance: {self.balance}, Currency Name: {self.currency_name}>'
+        return f'<ID: {self.id}, Balance: {self.balance}, Currency Name: {self.currency_name}, Symbol: {self.currency_symbol}>'
     
     @classmethod
-    def create_wallet(cls, trendit3_user, balance=00.00, currency_name='Dollars', currency_code='USD'):
+    def create_wallet(cls, trendit3_user, balance=00.00, currency_name='Naira', currency_code='NGN', **kwargs):
         wallet = cls(trendit3_user=trendit3_user, balance=balance, currency_name=currency_name, currency_code=currency_code)
+        
+        # Set additional attributes from kwargs
+        for key, value in kwargs.items():
+            setattr(wallet, key, value)
         
         db.session.add(wallet)
         db.session.commit()
@@ -223,5 +228,6 @@ class Wallet(db.Model):
             'balance': self.balance,
             'currency_name': self.currency_name,
             'currency_code': self.currency_code,
+            'currency_symbol': self.currency_symbol,
             **user_info,
         }

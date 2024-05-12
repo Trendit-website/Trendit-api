@@ -60,6 +60,11 @@ def update_security_settings():
 def update_two_fa_method():
     return ManageSettingsController.update_two_fa_method()
 
+@api.route("settings/password", methods=['POST'])
+@jwt_required()
+def update_password():
+    return ManageSettingsController.update_password()
+
 @api.route("settings/notifications/save", methods=['POST'])
 @jwt_required()
 def save_notification_settings():
