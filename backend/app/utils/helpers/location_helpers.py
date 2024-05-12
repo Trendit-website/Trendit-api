@@ -20,7 +20,7 @@ from app.utils.helpers.response_helpers import error_response, success_response
 
 
 
-def get_currency_info(country):
+def get_currency_info(country:str) -> dict:
     try:
         response = requests.get(f'https://restcountries.com/v3/name/{country}?fullText=true')
         response.raise_for_status()  # raise an exception if the request failed
@@ -36,7 +36,7 @@ def get_currency_info(country):
         currency_info = {
             'code': currency_code,
             'name': currency_name,
-            'symbol': currency_symbol
+            'symbol': str(currency_symbol)
         }
         
         return currency_info

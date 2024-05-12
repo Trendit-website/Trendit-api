@@ -163,7 +163,7 @@ class ManageSettingsController:
             setting_types = ['notification', 'preference', 'security']
             
             if setting_type not in setting_types:
-                return error_response("This type of settings doesn't exist on Trendit³")
+                return error_response("This type of settings doesn't exist on Trendit³", 400)
             
             if setting_type == 'notification':
                 if not user_settings.notification_preference:

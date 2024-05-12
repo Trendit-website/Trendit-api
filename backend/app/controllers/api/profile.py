@@ -77,7 +77,7 @@ class ProfileController:
                 currency_info = get_currency_info(country)
                 
                 if currency_info is None:
-                    return error_response('Error getting the currency of user\'s country', 500)
+                    return error_response("Error getting the currency of user's country", 500)
             
             
             if is_username_exist(username, current_user):
@@ -101,7 +101,7 @@ class ProfileController:
             # update user details
             current_user.update(username=username)
             user_profile.update(firstname=firstname, lastname=lastname, gender=gender, profile_picture_id=profile_picture_id, birthday=birthday)
-            user_wallet.update(currency_name=currency_info.get('name', user_wallet.currency_name), currency_code=currency_info.get('code', user_wallet.currency_code))
+            user_wallet.update(currency_name=currency_info.get('name', user_wallet.currency_name), currency_code=currency_info.get('code', user_wallet.currency_code), currency_symbol=currency_info.get('symbol', user_wallet.currency_symbol))
             user_address.update(country=country, state=state, local_government=local_government)
             
             
@@ -190,7 +190,7 @@ class ProfileController:
             # update user details
             current_user.update(username=username)
             user_profile.update(firstname=firstname, lastname=lastname, gender=gender, profile_picture_id=profile_picture_id, birthday=birthday)
-            user_wallet.update(currency_name=currency_info.get('name', user_wallet.currency_name), currency_code=currency_info.get('code', user_wallet.currency_code))
+            user_wallet.update(currency_name=currency_info.get('name', user_wallet.currency_name), currency_code=currency_info.get('code', user_wallet.currency_code), currency_symbol=currency_info.get('symbol', user_wallet.currency_symbol))
             user_address.update(country=country, state=state, local_government=local_government)
             
             
