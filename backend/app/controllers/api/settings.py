@@ -301,7 +301,7 @@ class ManageSettingsController:
                 return error_response(f"user not found", 404)
             
             data = request.get_json()
-            setting_name = data.get('setting_name')
+            setting_name = data.get('two_fa_method')
             value = data.get('value')
             
             user_settings = UserSettings.query.filter_by(trendit3_user_id=current_user_id).first()
