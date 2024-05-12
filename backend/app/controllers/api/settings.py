@@ -301,7 +301,7 @@ class ManageSettingsController:
                 return error_response(f"user not found", 404)
             
             data = request.get_json()
-            setting_name = data.get('two_fa_method')
+            setting_name = data.get('setting_name')
             value = data.get('value')
             
             user_settings = UserSettings.query.filter_by(trendit3_user_id=current_user_id).first()
@@ -315,6 +315,7 @@ class ManageSettingsController:
             security_setting = user_settings.security_setting
             
             # Update security settings
+            setting_name = "two_factor_method" if setting_name == 'two_fa_method' else setting_name
             setattr(security_setting, setting_name, value)
             db.session.commit()
             
