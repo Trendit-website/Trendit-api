@@ -10,6 +10,7 @@ import logging, hashlib, pyotp
 from flask import request
 from sqlalchemy.exc import ( DataError, DatabaseError )
 from flask_jwt_extended import get_jwt_identity
+from werkzeug.security import generate_password_hash
 from werkzeug.exceptions import UnsupportedMediaType
 
 from ...extensions import db
@@ -385,6 +386,40 @@ class ManageSettingsController:
         
         return api_response
 
+
+    @staticmethod
+    def update_password():
+        try:
+            current_user_id = get_jwt_identity()
+            current_user = Trendit3User.query.get(current_user_id)
+            if not current_user:
+                return error_response(f"user not found", 404)
+            
+            data = request.get_json()
+            new_password = data.get('new_password', '')
+            
+            if not new_password:
+                return error_response("New password field cannot be empty", 400)
+            
+            hashed_pwd = generate_password_hash(new_password, "pbkdf2:sha256")
+            current_user.update(thePassword=hashed_pwd)
+            
+            api_response = success_response("Password updated successfully", 200)
+            
+        except (DataError, DatabaseError) as e:
+            db.session.rollback()
+            log_exception('Database error occurred updating settings', e)
+            return error_response("Error interacting with the database.", 500)
+        except Exception as e:
+            db.session.rollback()
+            msg = "An unexpected error occurred updating password"
+            log_exception("An exception occurred updating password", e)
+            api_response = error_response(msg, 500)
+        finally:
+            db.session.close()
+        
+        return api_response
+    
     @staticmethod
     def save_notification_settings():
         try:
