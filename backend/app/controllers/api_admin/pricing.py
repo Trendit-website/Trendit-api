@@ -29,6 +29,7 @@ class PricingController:
                     "item_name": item.item_name,
                     "price_earn": item.price_earn,
                     "price_pay": item.price_pay,
+                    "description": item.description,
                     "created_at": str(item.created_at),  # Convert to string
                     "updated_at": str(item.updated_at)  # Convert to string
                 }
@@ -52,11 +53,12 @@ class PricingController:
             item_name = data.get('item_name')
             price_pay = data.get('price_pay')
             price_earn = data.get('price_earn')
+            price_description = data.get('price_description')
 
-            if not item_name or not price_pay or not price_earn:
-                return error_response('Item name, price_pay and price_earn are required', 400)
+            if not item_name or not price_pay or not price_earn or not price_description:
+                return error_response('Item name, price_pay, price_description and price_earn are required', 400)
 
-            pricing = Pricing(item_name=item_name, price_pay=price_pay, price_earn=price_earn)
+            pricing = Pricing(item_name=item_name, price_pay=price_pay, price_earn=price_earn, description=price_description)
             db.session.add(pricing)
             db.session.commit()
             db.session.close()
@@ -74,6 +76,7 @@ class PricingController:
             item_name = data.get('item_name')
             price_pay = data.get('price_pay')
             price_earn = data.get('price_earn')
+            price_description = data.get('price_description')
 
             if not item_name:
                 return error_response('Item name and price are required', 400)
@@ -89,7 +92,10 @@ class PricingController:
 
             if price_earn:
                 pricing.price_earn = price_earn
-                db.session.commit()                
+                db.session.commit()
+
+            if price_description:
+                pricing.description = price_description                
             
             db.session.close()
 
