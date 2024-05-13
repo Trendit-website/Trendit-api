@@ -80,7 +80,13 @@ class Trendit3User(db.Model):
     
     @property
     def is_2fa_enabled(self):
-        return self.user_settings.is_2fa_enabled
+        return self.user_settings.is_2fa_enabled if self.user_settings else False
+    
+    def two_fa_info(self):
+        return {
+                'enabled': self.is_2fa_enabled,
+                'method': self.user_settings.two_factor_method if self.user_settings else None,
+                }
     
     @property
     def wallet_balance(self):
@@ -236,10 +242,7 @@ class Trendit3User(db.Model):
             'social_links': social_links,
             'primary_bank': bank_details,
             'roles': self.role_names,
-            'two_fa': {
-                'enabled': self.is_2fa_enabled,
-                'method': self.user_settings.two_factor_method,
-            },
+            'two_fa': self.two_fa_info(),
             **address_info,  # Merge address information into the output dictionary
             **profile_data # Merge profile information into the output dictionary
         }
