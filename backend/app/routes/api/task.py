@@ -41,6 +41,11 @@ def get_single_task(task_id_key):
 def get_current_user_advert_tasks():
     return TaskController.get_current_user_advert_tasks()
 
+@api.route('/current-user/tasks/<task_id_key>', methods=['GET'])
+@jwt_required()
+def get_current_user_single_task(task_id_key):
+    return TaskController.get_current_user_single_task(task_id_key)
+
 
 @api.route('/tasks/advert', methods=['GET'])
 def get_all_advert_tasks():
