@@ -32,7 +32,7 @@ class UserSettings(db.Model):
     
     @property
     def is_2fa_enabled(self):
-        two_factor_method = self.security_setting.two_factor_method
+        two_factor_method = self.security_setting.two_factor_method if self.security_setting else None
         if two_factor_method is None:
             return False
         

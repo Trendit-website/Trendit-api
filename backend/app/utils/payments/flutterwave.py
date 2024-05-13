@@ -208,7 +208,6 @@ def flutterwave_webhook():
         data = json.loads(request.data) # Get the data from the request
         console_log('DATA', data)
         
-        user_id = get_jwt_identity()
         secret_hash = Config.FLW_SECRET_HASH
         signature = request.headers.get('verifi-hash') # Get the signature from the request headers
         
