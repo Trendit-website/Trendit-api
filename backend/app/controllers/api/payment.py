@@ -332,7 +332,8 @@ class PaymentController:
             extra_data = {
                 "balance": user_wallet.balance if user_wallet else None,
                 'currency_name': user_wallet.currency_name if user_wallet else None,
-                'currency_code': user_wallet.currency_code if user_wallet else None
+                'currency_code': user_wallet.currency_code if user_wallet else None,
+                'currency_symbol': user_wallet.currency_symbol if user_wallet else None
             }
 
             return success_response(f'Balanced fetched successfully', 200, extra_data)
