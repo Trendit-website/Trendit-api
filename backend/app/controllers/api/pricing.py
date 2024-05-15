@@ -28,6 +28,7 @@ class PricingController:
                     "item_name": item.item_name,
                     "price_earn": item.price_earn,
                     "price_pay": item.price_pay,
+                    "description": item.description,
                     "created_at": str(item.created_at),  # Convert to string
                     "updated_at": str(item.updated_at)  # Convert to string
                 }
