@@ -61,21 +61,41 @@ class SocialVerificationController:
                 
                 social_verification.status = SocialVerificationStatus.APPROVED
 
-                if type == 'facebook':
-                    user.social_ids.facebook_verified = True
+                # Define field mapping
+                field_mapping = {
+                    'facebook': 'facebook_verified',
+                    'tiktok': 'tiktok_verified',
+                    'instagram': 'instagram_verified',
+                    'x': 'x_verified'
+                }
 
-                elif type == 'tiktok':
-                    user.social_ids.tiktok_verified = True
+                # Check if social media type is valid
+                if not field_mapping.get(type):
+                    return error_response('Invalid social media type', 400)
+                
+                # Set the corresponding social media link
+                setattr(user.social_links, field_mapping[type], True)
 
-                elif type == 'instagram':
-                    user.social_ids.instagram_verified = True
+                # if type == 'facebook':
+                #     user.social_ids.facebook_verified = True
 
-                elif type == 'x':
-                    user.social_ids.x_verified = True
+                # elif type == 'tiktok':
+                #     user.social_ids.tiktok_verified = True
+
+                # elif type == 'instagram':
+                #     user.social_ids.instagram_verified = True
+
+                # elif type == 'x':
+                #     user.social_ids.x_verified = True
                     
                 db.session.commit()
                 
-                Notification.send_notification(sender_id=sender_id, recipients=user, body=body, message_type=MessageType.NOTIFICATION)
+                Notification.send_notification(
+                    sender_id=sender_id,
+                    recipients=user,
+                    body=body,
+                    message_type=MessageType.NOTIFICATION
+                )
 
                 db.session.close()
                                 
@@ -111,21 +131,41 @@ class SocialVerificationController:
                 
                 social_verification.status = SocialVerificationStatus.REJECTED
 
-                if type == 'facebook':
-                    user.social_ids.facebook_verified = False
+                # Define field mapping
+                field_mapping = {
+                    'facebook': 'facebook_verified',
+                    'tiktok': 'tiktok_verified',
+                    'instagram': 'instagram_verified',
+                    'x': 'x_verified'
+                }
 
-                elif type == 'tiktok':
-                    user.social_ids.tiktok_verified = False
+                # Check if social media type is valid
+                if not field_mapping.get(type):
+                    return error_response('Invalid social media type', 400)
+                
+                # Set the corresponding social media link
+                setattr(user.social_links, field_mapping[type], False)
 
-                elif type == 'instagram':
-                    user.social_ids.instagram_verified = False
+                # if type == 'facebook':
+                #     user.social_ids.facebook_verified = False
 
-                elif type == 'x':
-                    user.social_ids.x_verified = False
+                # elif type == 'tiktok':
+                #     user.social_ids.tiktok_verified = False
+
+                # elif type == 'instagram':
+                #     user.social_ids.instagram_verified = False
+
+                # elif type == 'x':
+                #     user.social_ids.x_verified = False
                     
                 db.session.commit()
                 
-                Notification.send_notification(sender_id=sender_id, recipients=user, body=body, message_type=MessageType.NOTIFICATION)
+                Notification.send_notification(
+                    sender_id=sender_id,
+                    recipients=user,
+                    body=body,
+                    message_type=MessageType.NOTIFICATION
+                )
 
                 db.session.close()
                 
