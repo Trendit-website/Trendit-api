@@ -64,12 +64,12 @@ class ProfileController:
             lastname = data.get('lastname', user_profile.lastname if user_profile else '')
             username = data.get('username', current_user.username if current_user else '')
             gender = data.get('gender', user_profile.gender if current_user else '')
+            phone = data.get('phone', user_profile.phone if current_user else '')
             country = data.get('country', user_address.country if user_address else '')
             state = data.get('state', user_address.state if user_address else '')
             local_government = data.get('local_government', user_address.local_government if user_address else '')
             birthday = data.get('birthday', user_profile.birthday if user_profile else None)
             profile_picture = request.files.get('profile_picture', '')
-            console_log('profile_picture', profile_picture)
             
             
             currency_info = {}
@@ -100,7 +100,7 @@ class ProfileController:
             
             # update user details
             current_user.update(username=username)
-            user_profile.update(firstname=firstname, lastname=lastname, gender=gender, profile_picture_id=profile_picture_id, birthday=birthday)
+            user_profile.update(firstname=firstname, lastname=lastname, gender=gender, phone=phone, profile_picture_id=profile_picture_id, birthday=birthday)
             user_wallet.update(currency_name=currency_info.get('name', user_wallet.currency_name), currency_code=currency_info.get('code', user_wallet.currency_code), currency_symbol=currency_info.get('symbol', user_wallet.currency_symbol))
             user_address.update(country=country, state=state, local_government=local_government)
             
@@ -129,11 +129,8 @@ class ProfileController:
             data = request.form.to_dict()
             current_user_id = data.get('user_id', 0)
             
-            console_log('current_user_id', current_user_id)
-            
             current_user = Trendit3User.query.get(current_user_id)
             
-            console_log('current_user', current_user)
             if not current_user:
                 return error_response(f"user not found", 404)
             
@@ -145,20 +142,18 @@ class ProfileController:
                 user_wallet = Wallet.create_wallet(trendit3_user=current_user)
             
             
-            console_log('content_type', request.content_type)
-            
             # Get the request data
             data = request.form.to_dict()
             firstname = data.get('firstname', user_profile.firstname if user_profile else '')
             lastname = data.get('lastname', user_profile.lastname if user_profile else '')
             username = data.get('username', current_user.username if current_user else '')
             gender = data.get('gender', user_profile.gender if current_user else '')
+            phone = data.get('phone', user_profile.phone if current_user else '')
             country = data.get('country', user_address.country if user_address else '')
             state = data.get('country', user_address.state if user_address else '')
             local_government = data.get('local_government', user_address.local_government if user_address else '')
             birthday = data.get('birthday', user_profile.birthday if user_profile else None)
             profile_picture = request.files.get('profile_picture', '')
-            console_log('profile_picture', profile_picture)
             
             
             currency_info = {}
@@ -189,7 +184,7 @@ class ProfileController:
             
             # update user details
             current_user.update(username=username)
-            user_profile.update(firstname=firstname, lastname=lastname, gender=gender, profile_picture_id=profile_picture_id, birthday=birthday)
+            user_profile.update(firstname=firstname, lastname=lastname, gender=gender, phone=phone, profile_picture_id=profile_picture_id, birthday=birthday)
             user_wallet.update(currency_name=currency_info.get('name', user_wallet.currency_name), currency_code=currency_info.get('code', user_wallet.currency_code), currency_symbol=currency_info.get('symbol', user_wallet.currency_symbol))
             user_address.update(country=country, state=state, local_government=local_government)
             
