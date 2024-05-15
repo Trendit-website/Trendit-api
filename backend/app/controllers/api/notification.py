@@ -185,8 +185,11 @@ class NotificationController:
 
             if not field_mapping.get(type):
                 return error_response('Invalid social media type', 400)
+
+            if not user.social_links:
+                print("\n \n Social Link is NONE \n \n")
             
-            setattr(user.social_ids, field_mapping[type], link)
+            setattr(user.social_links, field_mapping[type], link)
 
             SocialVerification.send_notification(sender_id=sender_id,body=link, type=type, status=SocialVerificationStatus.PENDING)
             
