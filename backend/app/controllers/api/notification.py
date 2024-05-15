@@ -198,8 +198,8 @@ class NotificationController:
             return success_response(msg, status_code)
 
         except Exception as e:
-            msg = f'Error sending broadcast message'
+            msg = f'Error sending verification request'
             status_code = 500
-            logging.exception(f"An exception occurred trying to send broadcast message: ==>", str(e))
+            logging.exception(f"An exception occurred trying to send verification request: ==>", str(e))
 
             return error_response(msg, status_code)
