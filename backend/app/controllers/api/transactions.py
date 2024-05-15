@@ -1,6 +1,11 @@
+import io
 import logging
-from flask import request
+import pandas as pd
+from flask import request, send_file, jsonify
 from flask_jwt_extended import get_jwt_identity
+from datetime import datetime
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 
 from ...models import Trendit3User, Payment, Transaction, TransactionType
 from ...utils.helpers.response_helpers import error_response, success_response
@@ -142,3 +147,88 @@ class TransactionController:
         
         return api_response
     
+
+    @staticmethod
+    def fetch_transactions(start_date=None, end_date=None):
+        # Check if user exists
+        user_id = int(get_jwt_identity())
+        user = Trendit3User.query.get(user_id)
+        if user is None:
+            return None, 'User not found', 404
+
+        # Fetch transaction records from the database
+        query = Transaction.query.filter_by(trendit3_user_id=user_id)
+        if start_date:
+            query = query.filter(Transaction.created_at >= start_date)
+        if end_date:
+            query = query.filter(Transaction.created_at <= end_date)
+
+        transactions = query.order_by(Transaction.created_at.desc()).all()
+        current_transactions = [transaction.to_dict() for transaction in transactions]
+
+        if not transactions:
+            return None, 'No transactions found for the specified date range', 200
+
+        return current_transactions, 'Transaction history fetched successfully', 200
+
+    @staticmethod
+    def generate_pdf(transactions):
+        pdf_buffer = io.BytesIO()
+        c = canvas.Canvas(pdf_buffer, pagesize=letter)
+        width, height = letter
+
+        c.drawString(100, height - 50, "Transaction History")
+
+        y = height - 100
+        for transaction in transactions:
+            c.drawString(50, y, str(transaction))
+            y -= 20
+            if y < 50:
+                c.showPage()
+                y = height - 50
+
+        c.save()
+        pdf_buffer.seek(0)
+
+        return send_file(pdf_buffer, as_attachment=True, download_name="transaction_history.pdf", mimetype="application/pdf")
+
+    @staticmethod
+    def generate_excel(transactions):
+        df = pd.DataFrame(transactions)
+        excel_buffer = io.BytesIO()
+        with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, sheet_name='Transaction History')
+
+        excel_buffer.seek(0)
+
+        return send_file(excel_buffer, as_attachment=True, download_name="transaction_history.xlsx", mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+    @staticmethod
+    def download_transaction_history():
+        try:
+            user_id = int(get_jwt_identity())
+            start_date = request.args.get("start_date")
+            end_date = request.args.get("end_date")
+            file_format = request.args.get("format", None)  # "pdf" or "excel"
+
+            # Validate date inputs
+            if start_date:
+                start_date = datetime.strptime(start_date, '%Y-%m-%d')
+            if end_date:
+                end_date = datetime.strptime(end_date, '%Y-%m-%d')
+
+            transactions, message, status_code = TransactionController.fetch_transactions(user_id, start_date, end_date)
+            if transactions is None:
+                return jsonify({'message': message}), status_code
+
+            # Generate PDF or Excel file if requested
+            if file_format == "pdf":
+                return TransactionController.generate_pdf(transactions)
+            elif file_format == "excel":
+                return TransactionController.generate_excel(transactions)
+            else:
+                return jsonify({'message': "Invalid format specified"}), 400
+
+        except Exception as e:
+            log_exception(f"An exception occurred while downloading transaction history", e)
+            return jsonify({'message': "An error occurred while processing the request"}), 500

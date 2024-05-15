@@ -30,3 +30,8 @@ def transaction_metrics():
         json: A JSON object containing the status of the request, a status code, and the metrics.
     """
     return TransactionController.get_transaction_stats()
+
+@api.route('/download_transaction_history', methods=['GET'])
+@jwt_required()
+def download_transaction_history_endpoint():
+    return TransactionController.download_transaction_history()
