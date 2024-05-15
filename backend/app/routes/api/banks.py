@@ -28,7 +28,7 @@ def supported_banks():
         
         banks = get_banks(country)
         
-        extra_data = { 'supported_banks': banks[:15] }
+        extra_data = { 'supported_banks': banks[:100] }
         api_response = success_response('supported banks fetched successfully', 200, extra_data)
     except requests.exceptions.RequestException as e:
         log_exception("A RequestException fetching banks from payment gateway", e)
