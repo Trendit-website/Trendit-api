@@ -81,7 +81,7 @@ class Notification(db.Model):
         db.session.flush()  # Ensure the message is added to the session before creating user message statuses
         user_message_statuses = [UserMessageStatus(user_id=recipient.id, message_id=message.id, status=MessageStatus.UNREAD) for recipient in recipients]
         db.session.bulk_save_objects(user_message_statuses)
-        db.session.commit()
+        # db.session.commit()
 
         return message
         
@@ -137,7 +137,7 @@ class SocialVerification(db.Model):
         """
         message = cls(sender_id=sender_id, body=body, status=status)
         db.session.add(message)
-        db.session.commit()
+        # db.session.commit()
 
         return message
     
