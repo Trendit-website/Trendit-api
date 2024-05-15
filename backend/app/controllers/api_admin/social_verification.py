@@ -1,5 +1,6 @@
 import logging
 from flask import request, jsonify
+from sqlalchemy.exc import ( IntegrityError, DataError, DatabaseError, InvalidRequestError, SQLAlchemyError )
 from flask_jwt_extended import get_jwt_identity
 
 from app.extensions import db
@@ -72,11 +73,6 @@ class SocialVerificationController:
                 # Check if social media type is valid
                 if not field_mapping.get(type):
                     return error_response('Invalid social media type', 400)
-
-                # Initialize social links if absent
-                if user.social_links is None:
-                    kwargs = {key: '' for key in field_mapping.values()}
-                    user.social_links = SocialLinks(**kwargs)
                 
                 # Set the corresponding social media link
                 setattr(user.social_links, field_mapping[type], True)
@@ -106,9 +102,17 @@ class SocialVerificationController:
                                 
                 return success_response('Social verification request approved successfully', 200)
             
+            except ValueError as ve:
+                logging.error(f"ValueError occurred: {ve}")
+                return error_response('Invalid data provided', 400)
+            except SQLAlchemyError as sae:
+                logging.error(f"Database error occurred: {sae}")
+                db.session.rollback()
+                return error_response('Database error occurred', 500)
             except Exception as e:
-                logging.exception("An exception occurred trying to approve social verification request:\n", str(e))
-                return error_response('Error approving social verification request', 500)
+                logging.exception(f"An unexpected error occurred: {e}")
+                db.session.rollback()
+                return error_response('Error approving verification request', 500)
             
 
         @staticmethod
@@ -148,11 +152,6 @@ class SocialVerificationController:
                 if not field_mapping.get(type):
                     return error_response('Invalid social media type', 400)
                 
-                # Initialize social links if absent
-                if user.social_links is None:
-                    kwargs = {key: '' for key in field_mapping.values()}
-                    user.social_links = SocialLinks(**kwargs)
-                
                 # Set the corresponding social media link
                 setattr(user.social_links, field_mapping[type], False)
 
@@ -181,6 +180,15 @@ class SocialVerificationController:
                 
                 return success_response('Social verification request rejected successfully', 200)
             
+            except ValueError as ve:
+                logging.error(f"ValueError occurred: {ve}")
+                return error_response('Invalid data provided', 400)
+            except SQLAlchemyError as sae:
+                logging.error(f"Database error occurred: {sae}")
+                db.session.rollback()
+                return error_response('Database error occurred', 500)
             except Exception as e:
-                logging.exception("An exception occurred trying to reject social verification request:\n", str(e))
-                return error_response('Error rejecting social verification request', 500)
+                logging.exception(f"An unexpected error occurred: {e}")
+                db.session.rollback()
+                return error_response('Error rejecting verification request', 500)
+            
