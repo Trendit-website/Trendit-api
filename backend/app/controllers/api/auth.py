@@ -344,10 +344,10 @@ class AuthController:
         error = False
         try:
             data = request.get_json()
-            two_FA_token = data.get('two_FA_token')
+            two_FA_token = data.get('two_fa_token')
             entered_code = data.get('entered_code')
             
-            console_log("two_FA_token", two_FA_token)
+            console_log("two_fa_token", two_FA_token)
             console_log("entered_code", entered_code)
             
             try:
