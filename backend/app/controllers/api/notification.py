@@ -231,7 +231,7 @@ class NotificationController:
             Notification.send_notification(
                 sender_id=sender_id,
                 body='Your social verification request has been received and is pending approval.',
-                recipients=user,
+                recipients=[user] if not isinstance(user, (list, tuple)) else user,
                 message_type=MessageType.NOTIFICATION
             )
 
