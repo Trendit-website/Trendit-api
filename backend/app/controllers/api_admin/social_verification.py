@@ -98,7 +98,7 @@ class SocialVerificationController:
                 
                 Notification.send_notification(
                     sender_id=sender_id,
-                    recipients=user,
+                    recipients=[user] if not isinstance(user, (list, tuple)) else user,
                     body=body,
                     message_type=MessageType.NOTIFICATION
                 )
@@ -181,7 +181,7 @@ class SocialVerificationController:
                 
                 Notification.send_notification(
                     sender_id=sender_id,
-                    recipients=user,
+                    recipients=[user] if not isinstance(user, (list, tuple)) else user,
                     body=body,
                     message_type=MessageType.NOTIFICATION
                 )
