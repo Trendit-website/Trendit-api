@@ -3,7 +3,7 @@ Author: @al-chris
 
 Description: This module contains models and functions for notifications.
 """
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy.orm import backref
 from enum import Enum
 from flask import request
@@ -54,8 +54,8 @@ class Notification(db.Model):
     id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
     sender_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
     type = db.Column(db.Enum(MessageType), nullable=False, default=MessageType.MESSAGE)
-    createdAt = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    updatedAt = db.Column(db.DateTime, nullable=True, default=None)
+    createdAt = db.Column(db.DateTime, nullable=False, default=datetime.now(timezone.utc))
+    updatedAt = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
     body = db.Column(db.Text, nullable=True, default=None)
 
     # Relationships
@@ -113,8 +113,8 @@ class SocialVerification(db.Model):
     sender_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
     type = db.Column(db.String(25), nullable=False)
     status = db.Column(db.Enum(SocialVerificationStatus), nullable=False, default=SocialVerificationStatus.PENDING)
-    createdAt = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    updatedAt = db.Column(db.DateTime, nullable=True, default=None)
+    createdAt = db.Column(db.DateTime, nullable=False, default=datetime.now(timezone.utc))
+    updatedAt = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
     body = db.Column(db.Text, nullable=True, default=None)
 
     # Relationships
