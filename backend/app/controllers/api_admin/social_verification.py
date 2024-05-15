@@ -73,6 +73,11 @@ class SocialVerificationController:
                 # Check if social media type is valid
                 if not field_mapping.get(type):
                     return error_response('Invalid social media type', 400)
+
+                # Initialize social links if absent
+                if user.social_links is None:
+                    kwargs = {key: False for key in field_mapping.values()}
+                    user.social_links = SocialLinks(**kwargs)
                 
                 # Set the corresponding social media link
                 setattr(user.social_links, field_mapping[type], True)
@@ -151,6 +156,11 @@ class SocialVerificationController:
                 # Check if social media type is valid
                 if not field_mapping.get(type):
                     return error_response('Invalid social media type', 400)
+                
+                # Initialize social links if absent
+                if user.social_links is None:
+                    kwargs = {key: False for key in field_mapping.values()}
+                    user.social_links = SocialLinks(**kwargs)
                 
                 # Set the corresponding social media link
                 setattr(user.social_links, field_mapping[type], False)
