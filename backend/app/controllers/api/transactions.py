@@ -207,11 +207,10 @@ class TransactionController:
     @staticmethod
     def download_transaction_history():
         try:
-            user_id = int(get_jwt_identity())
-            start_date = request.args.get("start_date")
-            end_date = request.args.get("end_date")
-            file_format = request.args.get("format", None)  # "pdf" or "excel"
-            print(file_format)
+            data = request.get_json()
+            start_date = data.get("start_date")
+            end_date = data.get("end_date")
+            file_format = data.get("format", None)  # "pdf" or "excel"
 
             # Validate date inputs
             if start_date:
