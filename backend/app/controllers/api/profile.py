@@ -3,7 +3,7 @@ from datetime import timedelta
 from flask import request, jsonify, current_app
 from werkzeug.datastructures import FileStorage
 from sqlalchemy.exc import ( IntegrityError, DataError, DatabaseError, InvalidRequestError, )
-from flask_jwt_extended import create_access_token, decode_token, get_jwt_identity, jwt_required, get_jwt, get_jwt_header
+from flask_jwt_extended import create_access_token, decode_token, get_jwt_identity
 from flask_jwt_extended.exceptions import JWTDecodeError
 
 from ...extensions import db
@@ -25,7 +25,7 @@ class ProfileController:
         
         try:
             current_user_id = get_jwt_identity()
-            user_info = get_user_info(current_user_id)
+            user_info = get_user_info(int(current_user_id))
             extra_data = {'user_profile': user_info}
         except Exception as e:
             error = True
@@ -245,22 +245,12 @@ class ProfileController:
             error = True
             msg = f'An error occurred trying to change the email: {e}'
             status_code = 500
-            # Log the error details for debugging
-            logging.exception("An exception occurred changing the email.")
+            log_exception("An exception occurred changing the email.", e)
         
         if error:
-            return jsonify({
-                    'status': 'failed',
-                    'status_code': status_code,
-                    'message': msg
-                }), status_code
+            return error_response(msg, status_code)
         else:
-            return jsonify({
-                    'status': 'success',
-                    'status_code': 200,
-                    'message': 'Verification code sent successfully',
-                    'edit_email_token': edit_email_token,
-                }), 200
+            return success_response("Verification code sent successfully", 200, {'edit_email_token': edit_email_token})
 
 
     @staticmethod

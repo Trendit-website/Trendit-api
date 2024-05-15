@@ -341,19 +341,23 @@ class AuthController:
 
     @staticmethod
     def verify_2fa():
-        error = False
         try:
             data = request.get_json()
-            two_FA_token = data.get('two_FA_token')
+            two_FA_token = data.get('two_fa_token')
             entered_code = data.get('entered_code')
+            
+            console_log("two_fa_token", two_FA_token)
+            console_log("entered_code", entered_code)
             
             try:
                 # Decode the JWT and extract the user's info and the 2FA code
                 decoded_token = decode_token(two_FA_token)
                 token_data = decoded_token['sub']
-            except ExpiredSignatureError:
+            except ExpiredSignatureError as e:
+                log_exception("The 2FA code has expired. Please try again.", e)
                 return error_response("The 2FA code has expired. Please try again.", 401)
             except Exception as e:
+                log_exception("An Exception occurred verifying 2fa", e)
                 return error_response(f"An unexpected error occurred: {str(e)}.", 500)
             
             if not decoded_token:
@@ -369,7 +373,7 @@ class AuthController:
             
             elif two_factor_method.lower() in ['email', 'phone']:
                 # Check if the entered code matches the one in the JWT
-                if int(entered_code) != int(token_data['two_FA_code']):
+                if int(entered_code) != int(token_data['two_fa_code']):
                     return error_response('The wrong 2FA Code was provided. Please check your mail for the correct code and try again.', 400)
             
             elif two_factor_method.lower() == 'google_auth_app':
@@ -388,14 +392,22 @@ class AuthController:
             
             api_response = success_response('User logged in successfully', 200, extra_data)
         except UnsupportedMediaType as e:
-            logging.exception(f"An UnsupportedMediaType exception occurred: {e}")
+            log_exception("An UnsupportedMediaType exception occurred:", e)
             return error_response(f"{str(e)}", 415)
         except Exception as e:
-            logging.exception(f"An exception occurred trying to login: {e}") # Log the error details for debugging
-            return error_response('An error occurred while processing the request.', 500)
+            log_exception("An exception occurred trying to verify two fa:", e)
+            return error_response('An unexpected error. Our developers are already looking into it.', 500)
         
         return api_response
 
+
+    @staticmethod
+    def resend_two_fa():
+        try:
+            data = request.get_json()
+            two_FA_token = data.get('two_fa_token')
+        except Exception as e:
+            pass
 
     @staticmethod
     def forgot_password():
