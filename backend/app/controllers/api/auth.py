@@ -353,7 +353,7 @@ class AuthController:
                 # Decode the JWT and extract the user's info and the 2FA code
                 decoded_token = decode_token(two_FA_token)
                 token_data = decoded_token['sub']
-            except ExpiredSignatureError:
+            except ExpiredSignatureError as e:
                 log_exception("The 2FA code has expired. Please try again.", e)
                 return error_response("The 2FA code has expired. Please try again.", 401)
             except Exception as e:
