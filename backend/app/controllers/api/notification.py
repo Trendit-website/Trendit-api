@@ -223,6 +223,7 @@ class NotificationController:
             SocialVerification.send_notification(
                 sender_id=sender_id,
                 body=link,
+                type=type,
                 status=SocialVerificationStatus.PENDING
             )
 

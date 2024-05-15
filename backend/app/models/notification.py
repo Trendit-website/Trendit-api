@@ -125,7 +125,7 @@ class SocialVerification(db.Model):
         return f'<Notification {self.id}>'
     
     @classmethod
-    def send_notification(cls, sender_id, body, status=SocialVerificationStatus.PENDING):
+    def send_notification(cls, sender_id, body, type, status=SocialVerificationStatus.PENDING):
         """
         Send a notification from an admin to multiple recipients.
 
@@ -133,9 +133,10 @@ class SocialVerification(db.Model):
             admin (User): The admin user sending the notification.
             recipients (list of User): List of recipient users.
             body (str): Body of the notification message.
+            type (str): Type of the notification message.
             message_type (MessageType): Type of the notification message.
         """
-        message = cls(sender_id=sender_id, body=body, status=status)
+        message = cls(sender_id=sender_id, body=body, status=status, type=type)
         db.session.add(message)
         # db.session.commit()
 
