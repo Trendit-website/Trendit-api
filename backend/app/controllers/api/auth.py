@@ -373,7 +373,7 @@ class AuthController:
             
             elif two_factor_method.lower() in ['email', 'phone']:
                 # Check if the entered code matches the one in the JWT
-                if int(entered_code) != int(token_data['two_FA_code']):
+                if int(entered_code) != int(token_data['two_fa_code']):
                     return error_response('The wrong 2FA Code was provided. Please check your mail for the correct code and try again.', 400)
             
             elif two_factor_method.lower() == 'google_auth_app':
@@ -400,6 +400,14 @@ class AuthController:
         
         return api_response
 
+
+    @staticmethod
+    def resend_two_fa():
+        try:
+            data = request.get_json()
+            two_FA_token = data.get('two_fa_token')
+        except Exception as e:
+            pass
 
     @staticmethod
     def forgot_password():
