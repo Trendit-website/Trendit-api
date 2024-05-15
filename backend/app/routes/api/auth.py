@@ -56,6 +56,8 @@ def resend_code():
         return ProfileController.user_email_edit()
     if code_type == 'pwd-reset':
         return AuthController.forgot_password()
+    if code_type == 'two-fa':
+        return AuthController.forgot_password()
 
 @api.route('/logout', methods=['DELETE'])
 @jwt_required()

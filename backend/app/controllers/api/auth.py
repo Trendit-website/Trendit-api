@@ -347,13 +347,18 @@ class AuthController:
             two_FA_token = data.get('two_FA_token')
             entered_code = data.get('entered_code')
             
+            console_log("two_FA_token", two_FA_token)
+            console_log("entered_code", entered_code)
+            
             try:
                 # Decode the JWT and extract the user's info and the 2FA code
                 decoded_token = decode_token(two_FA_token)
                 token_data = decoded_token['sub']
             except ExpiredSignatureError:
+                log_exception("The 2FA code has expired. Please try again.", e)
                 return error_response("The 2FA code has expired. Please try again.", 401)
             except Exception as e:
+                log_exception("An Exception occurred verifying 2fa", e)
                 return error_response(f"An unexpected error occurred: {str(e)}.", 500)
             
             if not decoded_token:
