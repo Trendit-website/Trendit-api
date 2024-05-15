@@ -5,7 +5,7 @@ from flask_jwt_extended import get_jwt_identity
 from app.extensions import db
 from app.utils.helpers.response_helpers import error_response, success_response
 from app.models.notification import SocialVerification, SocialVerificationStatus, Notification, MessageType
-from app.models.user import Trendit3User
+from app.models.user import Trendit3User, SocialLinks
 from ...utils.helpers.mail_helpers import send_other_emails
 
 
@@ -72,6 +72,11 @@ class SocialVerificationController:
                 # Check if social media type is valid
                 if not field_mapping.get(type):
                     return error_response('Invalid social media type', 400)
+
+                # Initialize social links if absent
+                if user.social_links is None:
+                    kwargs = {key: '' for key in field_mapping.values()}
+                    user.social_links = SocialLinks(**kwargs)
                 
                 # Set the corresponding social media link
                 setattr(user.social_links, field_mapping[type], True)
@@ -114,10 +119,10 @@ class SocialVerificationController:
     
             try:
                 data = request.get_json()
-                user_id = data.get('userId')
+                user_id = int(data.get('userId'))
                 sender_id = int(get_jwt_identity())
                 type = data.get('type')
-                social_verification_id = data.get('socialVerificationId') 
+                social_verification_id = int(data.get('socialVerificationId'))
                 social_verification = SocialVerification.query.filter_by(id=social_verification_id).first()
                 user = Trendit3User.query.filter_by(id=user_id).first()
 
@@ -142,6 +147,11 @@ class SocialVerificationController:
                 # Check if social media type is valid
                 if not field_mapping.get(type):
                     return error_response('Invalid social media type', 400)
+                
+                # Initialize social links if absent
+                if user.social_links is None:
+                    kwargs = {key: '' for key in field_mapping.values()}
+                    user.social_links = SocialLinks(**kwargs)
                 
                 # Set the corresponding social media link
                 setattr(user.social_links, field_mapping[type], False)
