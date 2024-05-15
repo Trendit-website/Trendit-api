@@ -341,7 +341,6 @@ class AuthController:
 
     @staticmethod
     def verify_2fa():
-        error = False
         try:
             data = request.get_json()
             two_FA_token = data.get('two_fa_token')
@@ -393,11 +392,11 @@ class AuthController:
             
             api_response = success_response('User logged in successfully', 200, extra_data)
         except UnsupportedMediaType as e:
-            logging.exception(f"An UnsupportedMediaType exception occurred: {e}")
+            log_exception("An UnsupportedMediaType exception occurred:", e)
             return error_response(f"{str(e)}", 415)
         except Exception as e:
-            logging.exception(f"An exception occurred trying to login: {e}") # Log the error details for debugging
-            return error_response('An error occurred while processing the request.', 500)
+            log_exception("An exception occurred trying to verify two fa:", e)
+            return error_response('An unexpected error. Our developers are already looking into it.', 500)
         
         return api_response
 
