@@ -217,7 +217,7 @@ class TransactionController:
             if end_date:
                 end_date = datetime.strptime(end_date, '%Y-%m-%d')
 
-            transactions, message, status_code = TransactionController.fetch_transactions(user_id, start_date, end_date)
+            transactions, message, status_code = TransactionController.fetch_transactions(start_date, end_date)
             if transactions is None:
                 return jsonify({'message': message}), status_code
 
