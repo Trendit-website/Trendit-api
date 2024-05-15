@@ -16,13 +16,13 @@ from app.models.notification import MessageStatus, MessageType, UserMessageStatu
 from app.utils.helpers.basic_helpers import generate_random_string
 
 
-def get_user_info(userId):
+def get_user_info(user_id: int) -> dict:
     '''Gets profile details of a particular user'''
     
-    if userId is None:
+    if user_id is None:
         userInfo = {}
     else:
-        trendit3_user = Trendit3User.query.filter(Trendit3User.id == userId).first()
+        trendit3_user = Trendit3User.query.get(user_id)
         userInfo = trendit3_user.to_dict()
     
     for key in userInfo:

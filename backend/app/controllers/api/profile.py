@@ -25,7 +25,7 @@ class ProfileController:
         
         try:
             current_user_id = get_jwt_identity()
-            user_info = get_user_info(current_user_id)
+            user_info = get_user_info(int(current_user_id))
             extra_data = {'user_profile': user_info}
         except Exception as e:
             error = True
