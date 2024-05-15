@@ -183,9 +183,9 @@ class PaymentController:
             
             name = user.profile.firstname
             is_primary = data.get('is_primary', True)
-            bank_name = data.get('bank_name')
-            account_no = data.get('account_no')
-            bank_code = get_bank_code(bank_name)
+            bank_name = data.get('bank_name', '')
+            account_no = data.get('account_no', '')
+            bank_code = get_bank_code(bank_name) if bank_name else ''
             currency = user.wallet.currency_code
             
             if is_primary:
@@ -332,7 +332,8 @@ class PaymentController:
             extra_data = {
                 "balance": user_wallet.balance if user_wallet else None,
                 'currency_name': user_wallet.currency_name if user_wallet else None,
-                'currency_code': user_wallet.currency_code if user_wallet else None
+                'currency_code': user_wallet.currency_code if user_wallet else None,
+                'currency_symbol': user_wallet.currency_symbol if user_wallet else None
             }
 
             return success_response(f'Balanced fetched successfully', 200, extra_data)
