@@ -264,15 +264,6 @@ class TransactionController:
 
             # Generate PDF or Excel file if requested
 
-            # logo_url = url_for('static', filename='img/Trendit/Trendit3-Icon.png', _external=True)
-
-            
-
-            # # Download the image
-            # response = requests.get(logo_url)
-            # image = PILImage.open(BytesIO(response.content))
-            # image.save('/tmp/logo.png')  # Save temporarily
-
             BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
             # Construct the path to the image
