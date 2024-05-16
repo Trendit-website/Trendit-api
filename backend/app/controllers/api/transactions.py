@@ -247,6 +247,11 @@ class TransactionController:
     @staticmethod
     def download_transaction_history():
         try:
+            console_log('request', request)
+            console_log('request data as text', request.get_data(as_text=True))
+            console_log('request Headers', request.headers)
+            for header, value in request.headers.items():
+                console_log("header & value", f"{header}\n{value}")
             console_log('Content-Type', request.headers['Content-Type'])
             
             data = request.get_json()

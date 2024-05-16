@@ -214,7 +214,7 @@ class TaskController:
             msg = 'Task fetched successfully'
             extra_data = {'task': task.to_dict()}
             
-            api_response = success_response()
+            api_response = success_response("Task fetched successfully", 200, extra_data)
             
         except Exception as e:
             api_response = error_response("An unexpected error occurred. Our developers are looking into this.", 500)
