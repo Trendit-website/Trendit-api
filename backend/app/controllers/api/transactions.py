@@ -1,3 +1,4 @@
+import os
 import io
 import logging
 import pandas as pd
@@ -272,8 +273,13 @@ class TransactionController:
             # image = PILImage.open(BytesIO(response.content))
             # image.save('/tmp/logo.png')  # Save temporarily
 
+            BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+            # Construct the path to the image
+            logo_path = os.path.join(BASE_DIR, 'static', 'img', 'Trendit', 'Trendit3-Icon.png')
+
             if file_format == "pdf":
-                return TransactionController.generate_pdf(transactions, "../../static/img/Trendit/Trendit3-Icon.png")
+                return TransactionController.generate_pdf(transactions, logo_path)
             elif file_format == "excel":
                 return TransactionController.generate_excel(transactions)
             else:
