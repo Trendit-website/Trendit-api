@@ -252,7 +252,9 @@ class TransactionController:
             console_log('request Headers', request.headers)
             for header, value in request.headers.items():
                 console_log("header & value", f"{header}\n{value}")
-            console_log('Content-Type', request.headers['Content-Type'])
+            
+            if 'Content-Type' in request.headers:
+                console_log('Content-Type', request.headers['Content-Type'])
             
             data = request.get_json()
             
