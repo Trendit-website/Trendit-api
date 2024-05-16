@@ -248,6 +248,9 @@ class TransactionController:
     def download_transaction_history():
         try:
             data = request.get_json()
+            
+            console_log('Content-Type', request.headers['Content-Type'])
+            
             start_date = data.get("start_date")
             end_date = data.get("end_date")
             file_format = data.get("format", None)  # "pdf" or "excel"
@@ -260,7 +263,7 @@ class TransactionController:
 
             transactions, message, status_code = TransactionController.fetch_transactions(start_date, end_date)
             if transactions is None:
-                return jsonify({'message': message}), status_code
+                return error_response(message, status_code)
 
             # Generate PDF or Excel file if requested
 
@@ -274,7 +277,7 @@ class TransactionController:
             elif file_format == "excel":
                 return TransactionController.generate_excel(transactions)
             else:
-                return jsonify({'message': "Invalid format specified"}), 400
+                return error_response("Invalid format specified", 400)
 
         except ValueError as ve:
             logging.error(f"ValueError occurred: {ve}")
@@ -287,4 +290,4 @@ class TransactionController:
 
         except Exception as e:
             log_exception(f"An exception occurred while downloading transaction history", e)
-            return jsonify({'message': "An error occurred while processing the request"}), 500
+            return error_response("An error occurred while processing the request", 500)

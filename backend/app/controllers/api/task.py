@@ -3,7 +3,7 @@ from flask import request
 from flask_jwt_extended import get_jwt_identity
 
 from config import Config
-from ...models import Task, AdvertTask, EngagementTask, TaskPaymentStatus, TaskStatus, Trendit3User
+from ...models import Task, AdvertTask, EngagementTask, TaskPaymentStatus, TaskStatus, TaskPerformance, Trendit3User
 from ...utils.helpers.task_helpers import save_task, get_tasks_dict_grouped_by_field, fetch_task, get_aggregated_task_counts_by_field
 from ...utils.helpers.response_helpers import error_response, success_response
 from ...utils.helpers.basic_helpers import console_log, log_exception
@@ -184,6 +184,43 @@ class TaskController:
             return error_response(msg, status_code)
         else:
             return success_response(msg, status_code, extra_data)
+    
+    
+    @staticmethod
+    def get_current_user_single_task(task_id_key):
+        try:
+            current_user_id = int(get_jwt_identity())
+            current_user = Trendit3User.query.get(current_user_id)
+            
+            if not current_user:
+                return error_response(f"user not found", 404)
+            
+            task = fetch_task(task_id_key)
+            if not task:
+                return error_response("Task not found", 404)
+            
+            if task.trendit3_user_id != current_user_id:
+                return error_response("You are not authorized to view this Ad", 401)
+            
+            page = request.args.get("page", 1, type=int)
+            per_page = 10
+            pagination = TaskPerformance.query.filter_by(task_id=task.id) \
+                .order_by(TaskPerformance.started_at.desc()) \
+                .paginate(page=page, per_page=per_page, error_out=False)
+            task_allocations = pagination.items
+            current_performed_tasks = [task_allocation.to_dict() for task_allocation in task_allocations]
+            
+            
+            msg = 'Task fetched successfully'
+            extra_data = {'task': task.to_dict()}
+            
+            api_response = success_response()
+            
+        except Exception as e:
+            api_response = error_response("An unexpected error occurred. Our developers are looking into this.", 500)
+            log_exception("An exception occurred trying to get task:", e)
+        
+        return api_response
     
     
     

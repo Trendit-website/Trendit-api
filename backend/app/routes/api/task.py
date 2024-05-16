@@ -34,17 +34,17 @@ def get_all_aggregated_task_counts(field):
 def get_single_task(task_id_key):
     return TaskController.get_single_task(task_id_key)
 
+@api.route('/current-user/tasks/<task_id_key>', methods=['GET'])
+@jwt_required()
+def get_current_user_single_task(task_id_key):
+    return TaskController.get_current_user_single_task(task_id_key)
+
 
 # ADVERT TASKS
 @api.route('/current-user/tasks/advert', methods=['GET'])
 @jwt_required()
 def get_current_user_advert_tasks():
     return TaskController.get_current_user_advert_tasks()
-
-@api.route('/current-user/tasks/<task_id_key>', methods=['GET'])
-@jwt_required()
-def get_current_user_single_task(task_id_key):
-    return TaskController.get_current_user_single_task(task_id_key)
 
 
 @api.route('/tasks/advert', methods=['GET'])
