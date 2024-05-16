@@ -1,11 +1,12 @@
 import logging
 from flask import request, jsonify
+from sqlalchemy.exc import ( IntegrityError, DataError, DatabaseError, InvalidRequestError, SQLAlchemyError )
 from flask_jwt_extended import get_jwt_identity
 
 from app.extensions import db
 from app.utils.helpers.response_helpers import error_response, success_response
 from app.models.notification import SocialVerification, SocialVerificationStatus, Notification, MessageType
-from app.models.user import Trendit3User
+from app.models.user import Trendit3User, SocialLinks
 from ...utils.helpers.mail_helpers import send_other_emails
 
 
@@ -61,29 +62,50 @@ class SocialVerificationController:
                 
                 social_verification.status = SocialVerificationStatus.APPROVED
 
-                if type == 'facebook':
-                    user.social_ids.facebook_verified = True
+                # Define field mapping
+                field_mapping = {
+                    'facebook': 'facebook_verified',
+                    'tiktok': 'tiktok_verified',
+                    'instagram': 'instagram_verified',
+                    'x': 'x_verified'
+                }
 
-                elif type == 'tiktok':
-                    user.social_ids.tiktok_verified = True
+                # Check if social media type is valid
+                if not field_mapping.get(type):
+                    return error_response('Invalid social media type', 400)
 
-                elif type == 'instagram':
-                    user.social_ids.instagram_verified = True
-
-                elif type == 'x':
-                    user.social_ids.x_verified = True
+                # Initialize social links if absent
+                if user.social_links is None:
+                    kwargs = {key: False for key in field_mapping.values()}
+                    user.social_links = SocialLinks(**kwargs)
+                
+                # Set the corresponding social media link
+                setattr(user.social_links, field_mapping[type], True)
                     
                 db.session.commit()
                 
-                Notification.send_notification(sender_id=sender_id, recipients=user, body=body, message_type=MessageType.NOTIFICATION)
+                Notification.send_notification(
+                    sender_id=sender_id,
+                    recipients=[user] if not isinstance(user, (list, tuple)) else user,
+                    body=body,
+                    message_type=MessageType.NOTIFICATION
+                )
 
                 db.session.close()
                                 
                 return success_response('Social verification request approved successfully', 200)
             
+            except ValueError as ve:
+                logging.error(f"ValueError occurred: {ve}")
+                return error_response('Invalid data provided', 400)
+            except SQLAlchemyError as sae:
+                logging.error(f"Database error occurred: {sae}")
+                db.session.rollback()
+                return error_response('Database error occurred', 500)
             except Exception as e:
-                logging.exception("An exception occurred trying to approve social verification request:\n", str(e))
-                return error_response('Error approving social verification request', 500)
+                logging.exception(f"An unexpected error occurred: {e}")
+                db.session.rollback()
+                return error_response('Error approving verification request', 500)
             
 
         @staticmethod
@@ -94,10 +116,10 @@ class SocialVerificationController:
     
             try:
                 data = request.get_json()
-                user_id = data.get('userId')
+                user_id = int(data.get('userId'))
                 sender_id = int(get_jwt_identity())
                 type = data.get('type')
-                social_verification_id = data.get('socialVerificationId') 
+                social_verification_id = int(data.get('socialVerificationId'))
                 social_verification = SocialVerification.query.filter_by(id=social_verification_id).first()
                 user = Trendit3User.query.filter_by(id=user_id).first()
 
@@ -111,26 +133,48 @@ class SocialVerificationController:
                 
                 social_verification.status = SocialVerificationStatus.REJECTED
 
-                if type == 'facebook':
-                    user.social_ids.facebook_verified = False
+                # Define field mapping
+                field_mapping = {
+                    'facebook': 'facebook_verified',
+                    'tiktok': 'tiktok_verified',
+                    'instagram': 'instagram_verified',
+                    'x': 'x_verified'
+                }
 
-                elif type == 'tiktok':
-                    user.social_ids.tiktok_verified = False
-
-                elif type == 'instagram':
-                    user.social_ids.instagram_verified = False
-
-                elif type == 'x':
-                    user.social_ids.x_verified = False
+                # Check if social media type is valid
+                if not field_mapping.get(type):
+                    return error_response('Invalid social media type', 400)
+                
+                # Initialize social links if absent
+                if user.social_links is None:
+                    kwargs = {key: False for key in field_mapping.values()}
+                    user.social_links = SocialLinks(**kwargs)
+                
+                # Set the corresponding social media link
+                setattr(user.social_links, field_mapping[type], False)
                     
                 db.session.commit()
                 
-                Notification.send_notification(sender_id=sender_id, recipients=user, body=body, message_type=MessageType.NOTIFICATION)
+                Notification.send_notification(
+                    sender_id=sender_id,
+                    recipients=[user] if not isinstance(user, (list, tuple)) else user,
+                    body=body,
+                    message_type=MessageType.NOTIFICATION
+                )
 
                 db.session.close()
                 
                 return success_response('Social verification request rejected successfully', 200)
             
+            except ValueError as ve:
+                logging.error(f"ValueError occurred: {ve}")
+                return error_response('Invalid data provided', 400)
+            except SQLAlchemyError as sae:
+                logging.error(f"Database error occurred: {sae}")
+                db.session.rollback()
+                return error_response('Database error occurred', 500)
             except Exception as e:
-                logging.exception("An exception occurred trying to reject social verification request:\n", str(e))
-                return error_response('Error rejecting social verification request', 500)
+                logging.exception(f"An unexpected error occurred: {e}")
+                db.session.rollback()
+                return error_response('Error rejecting verification request', 500)
+            

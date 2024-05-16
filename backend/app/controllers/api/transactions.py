@@ -1,6 +1,19 @@
+import os
+import io
 import logging
-from flask import request
+import pandas as pd
+import requests
+from sqlalchemy.exc import ( IntegrityError, DataError, DatabaseError, InvalidRequestError, SQLAlchemyError )
+from flask import request, send_file, jsonify, url_for
 from flask_jwt_extended import get_jwt_identity
+from datetime import datetime
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.units import inch
+from reportlab.pdfgen import canvas
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Image, Spacer
+from PIL import Image as PILImage
+from io import BytesIO
 
 from ...models import Trendit3User, Payment, Transaction, TransactionType
 from ...utils.helpers.response_helpers import error_response, success_response
@@ -142,3 +155,136 @@ class TransactionController:
         
         return api_response
     
+
+    @staticmethod
+    def fetch_transactions(start_date=None, end_date=None):
+        # Check if user exists
+        user_id = int(get_jwt_identity())
+        user = Trendit3User.query.get(user_id)
+        if user is None:
+            return None, 'User not found', 404
+
+        # Fetch transaction records from the database
+        query = Transaction.query.filter_by(trendit3_user_id=user_id)
+        if start_date:
+            query = query.filter(Transaction.created_at >= start_date)
+        if end_date:
+            query = query.filter(Transaction.created_at <= end_date)
+
+        transactions = query.order_by(Transaction.created_at.desc()).all()
+        current_transactions = [transaction.to_dict() for transaction in transactions]
+
+        if not transactions:
+            return None, 'No transactions found for the specified date range', 200
+
+        return current_transactions, 'Transaction history fetched successfully', 200
+
+    @staticmethod
+    def generate_pdf(transactions, logo_path):
+        pdf_buffer = io.BytesIO()
+        doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
+        elements = []
+
+        # Add logo if path is provided
+        if logo_path:
+            logo = Image(logo_path)
+            logo.drawHeight = 1 * inch  # Example size, adjust as necessary
+            logo.drawWidth = 2 * inch
+            elements.append(logo)
+
+        # Add a space and title after the logo
+        elements.append(Spacer(1, 0.25 * inch))
+        title_table = Table([['Transaction History']], colWidths=[doc.width])
+        title_table.setStyle(TableStyle([
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (0, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (0, 0), 14),
+        ]))
+        elements.append(title_table)
+        elements.append(Spacer(1, 0.25 * inch))
+
+        # Table Header and Data
+        table_header = [['ID', 'Key', 'Amount', 'Type', 'Description']]
+        table_data = table_header + [[
+            str(transaction['id']),
+            transaction['key'],
+            f"${transaction['amount']:,.2f}",
+            transaction['transaction_type'],
+            transaction['description']
+        ] for transaction in transactions]
+
+        # Create Transaction Table
+        transaction_table = Table(table_data, colWidths=[50, 100, 100, 100, 150])
+        transaction_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('BOX', (0, 0), (-1, -1), 2, colors.black),
+        ]))
+        elements.append(transaction_table)
+
+        # Build the document
+        doc.build(elements)
+
+        pdf_buffer.seek(0)
+        return send_file(pdf_buffer, as_attachment=True, download_name="transaction_history.pdf", mimetype="application/pdf")
+
+
+    @staticmethod
+    def generate_excel(transactions):
+        df = pd.DataFrame(transactions)
+        excel_buffer = io.BytesIO()
+        with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, sheet_name='Transaction History')
+
+        excel_buffer.seek(0)
+
+        return send_file(excel_buffer, as_attachment=True, download_name="transaction_history.xlsx", mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+    @staticmethod
+    def download_transaction_history():
+        try:
+            data = request.get_json()
+            start_date = data.get("start_date")
+            end_date = data.get("end_date")
+            file_format = data.get("format", None)  # "pdf" or "excel"
+
+            # Validate date inputs
+            if start_date:
+                start_date = datetime.strptime(start_date, '%Y-%m-%d')
+            if end_date:
+                end_date = datetime.strptime(end_date, '%Y-%m-%d')
+
+            transactions, message, status_code = TransactionController.fetch_transactions(start_date, end_date)
+            if transactions is None:
+                return jsonify({'message': message}), status_code
+
+            # Generate PDF or Excel file if requested
+
+            BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+            # Construct the path to the image
+            logo_path = os.path.join(BASE_DIR, 'static', 'img', 'Trendit', 'Trendit3-Icon.png')
+
+            if file_format == "pdf":
+                return TransactionController.generate_pdf(transactions, logo_path)
+            elif file_format == "excel":
+                return TransactionController.generate_excel(transactions)
+            else:
+                return jsonify({'message': "Invalid format specified"}), 400
+
+        except ValueError as ve:
+            logging.error(f"ValueError occurred: {ve}")
+            return error_response('Invalid data provided', 400)
+        
+        except SQLAlchemyError as sae:
+            logging.error(f"Database error occurred: {sae}")
+            # db.session.rollback()
+            return error_response('Database error occurred', 500)
+
+        except Exception as e:
+            log_exception(f"An exception occurred while downloading transaction history", e)
+            return jsonify({'message': "An error occurred while processing the request"}), 500
