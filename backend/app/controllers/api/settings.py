@@ -211,6 +211,8 @@ class ManageSettingsController:
                 return error_response(f"user not found", 404)
             
             data = request.get_json()
+            console_log('data', data)
+            
             setting_name = data.get('setting_name')
             value = data.get('value')
             
