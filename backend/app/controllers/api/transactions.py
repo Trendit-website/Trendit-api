@@ -214,7 +214,7 @@ class TransactionController:
         ] for transaction in transactions]
 
         # Create Transaction Table
-        transaction_table = Table(table_data, colWidths=[50, 150, 100, 100, 100])
+        transaction_table = Table(table_data, colWidths=[50, 100, 100, 100, 150])
         transaction_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
@@ -279,6 +279,7 @@ class TransactionController:
         except ValueError as ve:
             logging.error(f"ValueError occurred: {ve}")
             return error_response('Invalid data provided', 400)
+        
         except SQLAlchemyError as sae:
             logging.error(f"Database error occurred: {sae}")
             # db.session.rollback()
