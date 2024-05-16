@@ -247,9 +247,10 @@ class TransactionController:
     @staticmethod
     def download_transaction_history():
         try:
+            console_log('Content-Type', request.headers['Content-Type'])
+            
             data = request.get_json()
             
-            console_log('Content-Type', request.headers['Content-Type'])
             
             start_date = data.get("start_date")
             end_date = data.get("end_date")
