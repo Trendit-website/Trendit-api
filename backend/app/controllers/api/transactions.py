@@ -263,7 +263,7 @@ class TransactionController:
 
             # Generate PDF or Excel file if requested
 
-            logo_url = url_for('static', filename='img/Trendit/Trendit3-icon.png', _external=True)
+            logo_url = url_for('static', filename='img/Trendit/Trendit3-Icon.png', _external=True)
 
             
 
