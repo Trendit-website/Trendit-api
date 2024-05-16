@@ -263,17 +263,17 @@ class TransactionController:
 
             # Generate PDF or Excel file if requested
 
-            logo_url = url_for('static', filename='img/Trendit/Trendit3-Icon.png', _external=True)
+            # logo_url = url_for('static', filename='img/Trendit/Trendit3-Icon.png', _external=True)
 
             
 
-            # Download the image
-            response = requests.get(logo_url)
-            image = PILImage.open(BytesIO(response.content))
-            image.save('/tmp/logo.png')  # Save temporarily
+            # # Download the image
+            # response = requests.get(logo_url)
+            # image = PILImage.open(BytesIO(response.content))
+            # image.save('/tmp/logo.png')  # Save temporarily
 
             if file_format == "pdf":
-                return TransactionController.generate_pdf(transactions, "/tmp/logo.png")
+                return TransactionController.generate_pdf(transactions, "../../static/img/Trendit/Trendit3-Icon.png")
             elif file_format == "excel":
                 return TransactionController.generate_excel(transactions)
             else:
