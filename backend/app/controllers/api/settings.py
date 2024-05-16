@@ -216,6 +216,10 @@ class ManageSettingsController:
             setting_name = data.get('setting_name')
             value = data.get('value')
             
+            console_log('value', value)
+            console_log('value Datatype', type(value))
+            console_log('is Value bool??', isinstance(value, bool))
+            
             if not isinstance(value, bool):
                 return error_response("Value must be boolean", 400)
             
