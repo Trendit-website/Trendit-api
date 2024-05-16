@@ -1,12 +1,18 @@
 import io
 import logging
 import pandas as pd
+import requests
 from sqlalchemy.exc import ( IntegrityError, DataError, DatabaseError, InvalidRequestError, SQLAlchemyError )
-from flask import request, send_file, jsonify
+from flask import request, send_file, jsonify, url_for
 from flask_jwt_extended import get_jwt_identity
 from datetime import datetime
+from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
+from reportlab.lib.units import inch
 from reportlab.pdfgen import canvas
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Image, Spacer
+from PIL import Image as PILImage
+from io import BytesIO
 
 from ...models import Trendit3User, Payment, Transaction, TransactionType
 from ...utils.helpers.response_helpers import error_response, success_response
@@ -173,25 +179,58 @@ class TransactionController:
         return current_transactions, 'Transaction history fetched successfully', 200
 
     @staticmethod
-    def generate_pdf(transactions):
+    def generate_pdf(transactions, logo_path):
         pdf_buffer = io.BytesIO()
-        c = canvas.Canvas(pdf_buffer, pagesize=letter)
-        width, height = letter
+        doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
+        elements = []
 
-        c.drawString(100, height - 50, "Transaction History")
+        # Add logo if path is provided
+        if logo_path:
+            logo = Image(logo_path)
+            logo.drawHeight = 1 * inch  # Example size, adjust as necessary
+            logo.drawWidth = 2 * inch
+            elements.append(logo)
 
-        y = height - 100
-        for transaction in transactions:
-            c.drawString(50, y, str(transaction))
-            y -= 20
-            if y < 50:
-                c.showPage()
-                y = height - 50
+        # Add a space and title after the logo
+        elements.append(Spacer(1, 0.25 * inch))
+        title_table = Table([['Transaction History']], colWidths=[doc.width])
+        title_table.setStyle(TableStyle([
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (0, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (0, 0), 14),
+        ]))
+        elements.append(title_table)
+        elements.append(Spacer(1, 0.25 * inch))
 
-        c.save()
+        # Table Header and Data
+        table_header = [['ID', 'Key', 'Amount', 'Type', 'Description']]
+        table_data = table_header + [[
+            str(transaction['id']),
+            transaction['key'],
+            f"${transaction['amount']:,.2f}",
+            transaction['transaction_type'],
+            transaction['description']
+        ] for transaction in transactions]
+
+        # Create Transaction Table
+        transaction_table = Table(table_data, colWidths=[50, 150, 100, 100, 100])
+        transaction_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('BOX', (0, 0), (-1, -1), 2, colors.black),
+        ]))
+        elements.append(transaction_table)
+
+        # Build the document
+        doc.build(elements)
+
         pdf_buffer.seek(0)
-
         return send_file(pdf_buffer, as_attachment=True, download_name="transaction_history.pdf", mimetype="application/pdf")
+
 
     @staticmethod
     def generate_excel(transactions):
@@ -223,8 +262,18 @@ class TransactionController:
                 return jsonify({'message': message}), status_code
 
             # Generate PDF or Excel file if requested
+
+            logo_url = url_for('static', filename='img/Trendit/Trendit3-icon.png', _external=True)
+
+            
+
+            # Download the image
+            response = requests.get(logo_url)
+            image = PILImage.open(BytesIO(response.content))
+            image.save('/tmp/logo.png')  # Save temporarily
+
             if file_format == "pdf":
-                return TransactionController.generate_pdf(transactions)
+                return TransactionController.generate_pdf(transactions, "/tmp/logo.png")
             elif file_format == "excel":
                 return TransactionController.generate_excel(transactions)
             else:
