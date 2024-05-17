@@ -1,10 +1,12 @@
 import logging
 from flask import request
 from flask_jwt_extended import get_jwt_identity
+from sqlalchemy.exc import ( DataError, DatabaseError, )
 
 from config import Config
+from ...extensions import db
 from ...models import Task, AdvertTask, EngagementTask, TaskPaymentStatus, TaskStatus, TaskPerformance, Trendit3User
-from ...utils.helpers.task_helpers import save_task, get_tasks_dict_grouped_by_field, fetch_task, get_aggregated_task_counts_by_field
+from ...utils.helpers.task_helpers import save_task, get_tasks_dict_grouped_by_field, fetch_task, get_aggregated_task_counts_by_field, fetch_performed_task
 from ...utils.helpers.response_helpers import error_response, success_response
 from ...utils.helpers.basic_helpers import console_log, log_exception
 from ...utils.helpers.payment_helpers import initialize_payment, debit_wallet
@@ -46,7 +48,7 @@ class TaskController:
     
     
     @staticmethod
-    def get_current_user_tasks():
+    def get_advertiser_tasks():
         try:
             current_user_id = int(get_jwt_identity())
             page = request.args.get("page", 1, type=int)
@@ -76,7 +78,7 @@ class TaskController:
     
     
     @staticmethod
-    def get_current_user_tasks_by_status(status):
+    def get_advertiser_tasks_by_status(status):
         try:
             current_user_id = int(get_jwt_identity())
             page = request.args.get("page", 1, type=int)
@@ -187,7 +189,7 @@ class TaskController:
     
     
     @staticmethod
-    def get_current_user_single_task(task_id_key):
+    def get_advertiser_single_task(task_id_key):
         try:
             current_user_id = int(get_jwt_identity())
             current_user = Trendit3User.query.get(current_user_id)
@@ -202,16 +204,6 @@ class TaskController:
             if task.trendit3_user_id != current_user_id:
                 return error_response("You are not authorized to view this Ad", 401)
             
-            page = request.args.get("page", 1, type=int)
-            per_page = 10
-            pagination = TaskPerformance.query.filter_by(task_id=task.id) \
-                .order_by(TaskPerformance.started_at.desc()) \
-                .paginate(page=page, per_page=per_page, error_out=False)
-            task_allocations = pagination.items
-            current_performed_tasks = [task_allocation.to_dict() for task_allocation in task_allocations]
-            
-            
-            msg = 'Task fetched successfully'
             extra_data = {'task': task.to_dict()}
             
             api_response = success_response("Task fetched successfully", 200, extra_data)
@@ -223,10 +215,122 @@ class TaskController:
         return api_response
     
     
+    @staticmethod
+    def get_advertiser_total_task():
+        try:
+            current_user_id = int(get_jwt_identity())
+            current_user = Trendit3User.query.get(current_user_id)
+            
+            if not current_user:
+                return error_response(f"user not found", 404)
+            
+            pagination = Task.query.filter_by(trendit3_user_id=current_user_id, payment_status=TaskPaymentStatus.COMPLETE) \
+                .order_by(Task.date_created.desc()) \
+                .paginate(page=1, per_page=5, error_out=False)
+            
+            
+            total_tasks = pagination.total
+            extra_data = {
+                'total': total_tasks
+            }
+            
+            api_response = success_response(f"Total number of tasks is {total_tasks}", 200, extra_data)
+        except Exception as e:
+            api_response = error_response("An unexpected error occurred. Our developers are looking into this.", 500)
+            log_exception("An exception occurred fetching total tasks for advertiser:", e)
+        
+        return api_response
+    
+    
+    @staticmethod
+    def get_task_performances(task_id_key):
+        try:
+            current_user_id = int(get_jwt_identity())
+            current_user = Trendit3User.query.get(current_user_id)
+            
+            if not current_user:
+                return error_response(f"user not found", 404)
+            
+            task = fetch_task(task_id_key)
+            if not task:
+                return error_response("Task not found", 404)
+            
+            if task.trendit3_user_id != current_user_id:
+                return error_response("You are not authorized to view performances of this task", 401)
+            
+            page = request.args.get("page", 1, type=int)
+            per_page = 5
+            pagination = TaskPerformance.query.filter_by(task_id=task.id) \
+                .order_by(TaskPerformance.started_at.desc()) \
+                .paginate(page=page, per_page=per_page, error_out=False)
+            
+            task_performances = pagination.items
+            current_task_performances = [task_performance.to_dict() for task_performance in task_performances]
+            extra_data = {
+                'total': pagination.total,
+                "current_page": pagination.page,
+                "total_pages": pagination.pages,
+                "task_performances": current_task_performances,
+            }
+            
+            if not task_performances:
+                return success_response(f'No one has performed this task yet', 200, extra_data)
+            
+            api_response = success_response("Task performances fetched successfully", 200, extra_data)
+        
+        except Exception as e:
+            api_response = error_response("An unexpected error occurred. Our developers are looking into this.", 500)
+            log_exception("An exception occurred trying to get task:", e)
+        
+        return api_response
+    
+    
+    @staticmethod
+    def verify_performed_task():
+        try:
+            current_user_id = int(get_jwt_identity())
+            current_user = Trendit3User.query.get(current_user_id)
+            
+            if not current_user:
+                return error_response(f"user not found", 404)
+            
+            data = request.get_json()
+            status = data.get("status", 'reject')
+            pt_id_key = data.get("performed_task_id_key")
+            
+            if not status or not pt_id_key:
+                return error_response("The field status or performed_task_id_key must be provided", 400)
+            
+            performed_task = fetch_performed_task(pt_id_key)
+            if not performed_task:
+                return error_response("Performed Task not found", 404)
+            
+            if performed_task.task.trendit3_user_id != current_user_id:
+                return error_response("You are not authorized to verify this performed task", 401)
+            
+            if status not in ["accept", "reject"]:
+                return error_response("status not allowed", 400)
+            
+            status_val = "completed" if status == "accept" else "rejected"
+            
+            performed_task.update(status=status_val)
+            extra_data = {"performed_task": performed_task.to_dict()}
+            
+            api_response = success_response(f"Performed Task {status}ed", 200, extra_data)
+        except (DataError, DatabaseError) as e:
+            db.session.rollback()
+            log_exception('Database error occurred during registration', e)
+            api_response = error_response('Error connecting to the database.', 500)
+        except Exception as e:
+            db.session.rollback()
+            api_response = error_response("An unexpected error occurred. Our developers are looking into this.", 500)
+            log_exception("An exception occurred trying to get task:", e)
+        
+        return api_response
     
     # ADVERT TASKS
     @staticmethod
-    def get_current_user_advert_tasks():
+    def get_advertiser_advert_tasks():
         error = False
         
         try:
