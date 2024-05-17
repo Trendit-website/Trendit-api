@@ -12,7 +12,7 @@ from ...exceptions import PendingTaskError, NoUnassignedTaskError
 
 
 
-def fetch_task(task_id_key: int | str):
+def fetch_task(task_id_key: int | str) -> Task:
     """
     Fetches a task from the database based on either its ID or task_key.
 
@@ -39,7 +39,7 @@ def fetch_task(task_id_key: int | str):
         return None
 
 
-def get_tasks_dict_grouped_by_field(field, task_type):
+def get_tasks_dict_grouped_by_field(field: str, task_type: str) -> dict:
     tasks_dict = {}
     
     try:
@@ -67,7 +67,7 @@ def get_tasks_dict_grouped_by_field(field, task_type):
     return tasks_dict
 
 
-def get_aggregated_task_counts_by_field(field, task_type=None):
+def get_aggregated_task_counts_by_field(field: str, task_type: None | str =None) -> dict:
     """Retrieves aggregated task counts grouped by the specified field,
     optimized using database-level aggregation, and returns results as a dictionary.
 
@@ -99,7 +99,7 @@ def get_aggregated_task_counts_by_field(field, task_type=None):
         raise e
 
 
-def generate_random_task(task_type, filter_value) -> object:
+def generate_random_task(task_type:str, filter_value:str) -> AdvertTask | EngagementTask:
     """Retrieves a random task of the specified type, filtering by platform or goal, ensuring it's not assigned to another user.
 
         Args:
@@ -128,7 +128,7 @@ def generate_random_task(task_type, filter_value) -> object:
         count_field = 'posts_count' if task_type == 'advert' else 'engagements_count'
         
         # Filter for unassigned tasks
-        unassigned_task = task_model.query.filter(
+        random_task = task_model.query.filter(
             getattr(task_model, filter_field) == filter_value,
             task_model.payment_status == TaskPaymentStatus.COMPLETE,
             task_model.status == TaskStatus.APPROVED,
@@ -139,10 +139,10 @@ def generate_random_task(task_type, filter_value) -> object:
             ).exists()
         ).order_by(func.random()).first()
         
-        if not unassigned_task:
+        if not random_task:
             raise NoUnassignedTaskError(f"There are no {task_type} tasks for the {filter_field} '{filter_value}'.")
         
-        return unassigned_task  # Return the generated task
+        return random_task  # Return the generated task
 
     except AttributeError as e:
         raise ValueError(f"Invalid Task Type or Filter: {task_type}/{filter_value}")
@@ -150,7 +150,7 @@ def generate_random_task(task_type, filter_value) -> object:
         raise e
 
 
-def initiate_task(task, status='pending') -> dict:
+def initiate_task(task: Task, status='pending') -> dict:
     try:
         current_user_id = int(get_jwt_identity())
         
