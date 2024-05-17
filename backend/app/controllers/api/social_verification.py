@@ -22,18 +22,21 @@ class SocialVerificationController:
             
             user = Trendit3User.query.filter_by(id=user_id).first()
 
+            msg = "verified social media fetched successfully"
+
             if not user:
                 return error_response('User not found', 404)
             
             social_links = user.social_links
 
             if not social_links:
-                return success_response({
+                extra_data = {
                     'facebook': False,
                     'tiktok': False,
                     'instagram': False,
                     'x': False
-                }, 200)
+                }
+                return success_response(msg, 200, extra_data=extra_data)
             
             verified_social_media = {
                 'facebook': social_links.facebook_verified,
@@ -42,7 +45,7 @@ class SocialVerificationController:
                 'x': social_links.x_verified
             }
 
-            return success_response(verified_social_media, 200)
+            return success_response(msg, 200, verified_social_media)
 
         except ValueError as ve:
             logging.error(f"ValueError occurred: {ve}")
