@@ -31,7 +31,7 @@ def transaction_metrics():
     """
     return TransactionController.get_transaction_stats()
 
-@api.route('/download_transaction_history', methods=['GET'])
+@api.route('/download_transaction_history', methods=['POST'])
 @jwt_required()
 def download_transaction_history_endpoint():
     return TransactionController.download_transaction_history()

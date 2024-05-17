@@ -24,3 +24,4 @@ from .settings import ManageSettingsController
 from .social_auth import SocialAuthController
 from .transactions import TransactionController
 from .pricing import PricingController
+from .social_verification import SocialVerificationController
