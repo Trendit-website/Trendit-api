@@ -84,7 +84,7 @@ def create_app(config_name=Config.ENV):
     
     def createSOcials ():
         try:
-            users = Trendit3User.query().all()
+            users = Trendit3User.query.all()
             
             for user in users:
                 if not user.social_ids:
