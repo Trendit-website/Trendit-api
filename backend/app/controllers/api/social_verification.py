@@ -16,8 +16,9 @@ class SocialVerificationController:
     def get_verified_social_media():
         """Get verified social media for a user"""
         try:
-            data = request.get_json()
-            user_id = data.get('userId')
+            # data = request.get_json()
+            # user_id = data.get('userId')
+            user_id = int(get_jwt_identity())
             
             user = Trendit3User.query.filter_by(id=user_id).first()
 
