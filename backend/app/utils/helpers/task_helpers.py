@@ -402,4 +402,3 @@ def get_user_tasks_metrics(user: object) -> dict:
         log_exception('An exception occurred getting getting task metrics', e)
         raise e
     
-    
