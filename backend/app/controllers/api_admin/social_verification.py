@@ -48,6 +48,7 @@ class SocialVerificationController:
                 user_id = data.get('userId')
                 sender_id = int(get_jwt_identity())
                 type = data.get('type')
+                link = data.get('link')
                 social_verification_id = data.get('socialVerificationId') 
                 social_verification = SocialVerification.query.filter_by(id=social_verification_id).first()
                 user = Trendit3User.query.filter_by(id=user_id).first()
@@ -64,11 +65,13 @@ class SocialVerificationController:
 
                 # Define field mapping
                 field_mapping = {
-                    'facebook': 'facebook_verified',
-                    'tiktok': 'tiktok_verified',
-                    'instagram': 'instagram_verified',
-                    'x': 'x_verified'
+                    'facebook': ['facebook_verified', 'facebook_id'],
+                    'tiktok': ['tiktok_verified', 'tiktok_id'],
+                    'instagram': ['instagram_verified', 'instagram_id'],
+                    'x': ['x_verified', 'x_id']
                 }
+
+                
 
                 # Check if social media type is valid
                 if not field_mapping.get(type):
@@ -80,7 +83,8 @@ class SocialVerificationController:
                     user.social_links = SocialLinks(**kwargs)
                 
                 # Set the corresponding social media link
-                setattr(user.social_links, field_mapping[type], True)
+                setattr(user.social_links, field_mapping[type][1], link)
+                setattr(user.social_links, field_mapping[type][0], True)
                     
                 db.session.commit()
                 
