@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required
 
 from . import api
 from ...controllers.api import TaskController
+from ...decorators import roles_required
 from ...utils.helpers.response_helpers import success_response
 
 # CREATE NEW TASK
@@ -12,16 +13,6 @@ def create_task():
     return TaskController.create_task()
 
 # ALL TASKS
-@api.route('/current-user/tasks', methods=['GET'])
-@jwt_required()
-def get_current_user_tasks():
-    status = request.args.get('status', '')
-    if status:
-        return TaskController.get_current_user_tasks_by_status(status.lower())
-    
-    return TaskController.get_current_user_tasks()
-
-
 @api.route('/tasks', methods=['GET'])
 def get_all_tasks():
     return TaskController.get_tasks()
@@ -35,16 +26,44 @@ def get_single_task(task_id_key):
     return TaskController.get_single_task(task_id_key)
 
 
-# ADVERT TASKS
-@api.route('/current-user/tasks/advert', methods=['GET'])
+@api.route('/user/tasks', methods=['GET'])
 @jwt_required()
-def get_current_user_advert_tasks():
-    return TaskController.get_current_user_advert_tasks()
+def get_advertiser_tasks():
+    status = request.args.get('status', '')
+    if status:
+        return TaskController.get_advertiser_tasks_by_status(status.lower())
+    
+    return TaskController.get_advertiser_tasks()
 
-@api.route('/current-user/tasks/<task_id_key>', methods=['GET'])
+@api.route('/user/tasks/<task_id_key>', methods=['GET'])
 @jwt_required()
-def get_current_user_single_task(task_id_key):
-    return TaskController.get_current_user_single_task(task_id_key)
+def get_advertiser_single_task(task_id_key):
+    return TaskController.get_advertiser_single_task(task_id_key)
+
+@api.route('/user/tasks/<task_id_key>/performances', methods=['GET'])
+@jwt_required()
+@roles_required(['Advertiser'])
+def get_task_performances(task_id_key):
+    return TaskController.get_task_performances(task_id_key)
+
+@api.route('/user/tasks/total', methods=['GET'])
+@jwt_required()
+@roles_required(['Advertiser'])
+def get_advertiser_total_task():
+    return TaskController.get_advertiser_total_task()
+
+@api.route('/user/tasks/verify-performances', methods=['POST'])
+@jwt_required()
+@roles_required(['Advertiser'])
+def verify_task_performance():
+    return TaskController.verify_task_performance()
+
+
+# ADVERT TASKS
+@api.route('/user/tasks/advert', methods=['GET'])
+@jwt_required()
+def get_advertiser_advert_tasks():
+    return TaskController.get_advertiser_advert_tasks()
 
 
 @api.route('/tasks/advert', methods=['GET'])
