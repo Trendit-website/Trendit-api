@@ -21,7 +21,7 @@ import pyotp
 
 from config import Config
 from ...extensions import db
-from ...models import Role, RoleNames, TempUser, Trendit3User, Address, Profile, OneTimeToken, ReferralHistory, Membership, Wallet, UserSettings
+from ...models import Role, RoleNames, TempUser, Trendit3User, Address, Profile, OneTimeToken, ReferralHistory, Membership, Wallet, UserSettings, SocialLinks, SocialIDs
 from ...utils.helpers.basic_helpers import console_log, log_exception
 from ...utils.helpers.response_helpers import error_response, success_response
 from ...utils.helpers.auth_helpers import generate_six_digit_code, save_pwd_reset_token, send_2fa_code
@@ -221,11 +221,23 @@ class AuthController:
             new_membership = Membership(trendit3_user=new_user)
             new_user_wallet = Wallet(trendit3_user=new_user)
             new_user_setting = UserSettings(trendit3_user=new_user)
+            new_user_social_links = SocialLinks(trendit3_user=new_user)
+            new_user_social_ids = SocialIDs(trendit3_user=new_user)
             role = Role.query.filter_by(name=RoleNames.CUSTOMER).first()
             if role:
                 new_user.roles.append(role)
             
-            db.session.add_all([new_user, new_user_profile, new_user_address, new_membership, new_user_wallet, new_user_setting])
+            db.session.add_all([
+                new_user,
+                new_user_profile,
+                new_user_address,
+                new_membership,
+                new_user_wallet,
+                new_user_setting,
+                new_user_social_ids,
+                new_user_social_links
+            ])
+            
             db.session.delete(user)
             db.session.commit()
             
