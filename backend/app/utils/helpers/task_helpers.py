@@ -5,10 +5,11 @@ from flask_jwt_extended import get_jwt_identity
 from datetime import datetime, timedelta
 
 from ...extensions import db
-from ...models import Task, AdvertTask, EngagementTask, TaskStatus, TaskPaymentStatus, TaskPerformance
+from ...models import Task, AdvertTask, EngagementTask, TaskStatus, TaskPaymentStatus, TaskPerformance, RoleNames
 from ...utils.helpers.basic_helpers import console_log, log_exception
 from ...utils.helpers.media_helpers import save_media
 from ...exceptions import PendingTaskError, NoUnassignedTaskError
+from .user_helpers import add_user_role
 
 
 
@@ -249,8 +250,9 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
                 return task
             else:
                 new_task = AdvertTask.create_task(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee=fee, payment_status=payment_status, posts_count=posts_count, target_country=target_country, target_state=target_state, gender=gender, caption=caption, hashtags=hashtags)
+
+                add_user_role(RoleNames.ADVERTISER, user_id)
                 
-                console_log('new_task', new_task)
                 
                 return new_task
             
@@ -261,6 +263,8 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
                 return task
             else:
                 new_task = EngagementTask.create_task(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee=fee, payment_status=payment_status, goal=goal, account_link=account_link, engagements_count=engagements_count)
+
+                add_user_role(RoleNames.ADVERTISER, user_id)
                 
                 return new_task
         else:
