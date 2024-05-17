@@ -224,10 +224,15 @@ class Trendit3User(db.Model):
         user_social_links = self.social_links
         social_links = {
             'google_id': user_social_links.google_id if user_social_links else None,
+            'google_verified': user_social_links.google_verified if user_social_links else None,
             'facebook_id': user_social_links.facebook_id if user_social_links else None,
+            'facebook_verified': user_social_links.facebook_verified if user_social_links else None,
             'instagram_id': user_social_links.instagram_id if user_social_links else None,
+            'instagram_verified': user_social_links.instagram_verified if user_social_links else None,
             'tiktok_id': user_social_links.tiktok_id if user_social_links else None,
+            'tiktok_verified': user_social_links.tiktok_verified if user_social_links else None,
             'x_id': user_social_links.x_id if user_social_links else None,
+            'x_verified': user_social_links.x_verified if user_social_links else None,
         }
         
         
