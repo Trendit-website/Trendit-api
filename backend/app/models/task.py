@@ -53,7 +53,8 @@ class Task(db.Model):
     
     trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
     trendit3_user = db.relationship('Trendit3User', backref=db.backref('tasks', lazy='dynamic'))
-    medias = db.relationship('Media', secondary='task_medias', backref=db.backref('tasks', lazy='dynamic'), cascade="all, delete-orphan", single_parent=True)
+    
+    media = db.relationship('Media', backref='task', lazy=True, cascade="all, delete-orphan", single_parent=True)
     
     @property
     def total_performances(self) -> int:

@@ -326,9 +326,10 @@ class Profile(db.Model):
     phone = db.Column(db.String(120), nullable=True)
     birthday = db.Column(db.Date, nullable=True)
     profile_picture_id = db.Column(db.Integer(), db.ForeignKey('media.id'), nullable=True)
-    
     trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id', ondelete='CASCADE'), nullable=False,)
+    
     trendit3_user = db.relationship('Trendit3User', back_populates="profile")
+    profile_picture = db.relationship('Media', backref='profile_picture')
     
     def __repr__(self):
         return f'<profile ID: {self.id}, name: {self.firstname}>'

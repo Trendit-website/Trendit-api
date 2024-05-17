@@ -23,16 +23,16 @@ cloudinary.config(
     api_secret = Config.CLOUDINARY_API_SECRET 
 )
 
-def save_media(media_file):
+def save_media(media_file) -> Media:
     """
     Saves a media file (image or video) to Cloudinary and the database.
-    and then return the media id after adding the media to Media Table
+    and then return the media instance after adding the media to Media Table
 
     Args:
         media_file: The media file object to be uploaded.
 
     Returns:
-        int: The ID of the saved media in the database.
+        Media: The Media instance of the saved media in the database.
 
     Raises:
         ValueError: If the file type is not supported.
@@ -76,4 +76,4 @@ def save_media(media_file):
     db.session.commit()
     media_id = newMedia.id
     
-    return media_id
+    return newMedia

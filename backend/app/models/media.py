@@ -8,6 +8,7 @@ class Media(db.Model):
     filename = db.Column(db.String(128), nullable=False)
     media_path = db.Column(db.String(256), nullable=True) # False
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=True)
 
     def __repr__(self):
         return f"<Media {self.id}, Filename: {self.filename}>"

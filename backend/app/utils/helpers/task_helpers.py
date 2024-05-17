@@ -211,7 +211,9 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
         hashtags = data.get('hashtags', '')
         media = request.files.get('media', '')
         
-        console_log('platform', platform)
+        # Get multiple media files
+        media_files = request.files.getlist('media')
+        
         console_log('media', media)
         
         goal = data.get('goal','')
@@ -220,36 +222,28 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
         engagements_count_str = data.get('engagements_count', '')
         engagements_count = int(engagements_count_str) if engagements_count_str and engagements_count_str.isdigit() else 0
         
-        console_log('posts_count', posts_count)
         
         task = None
         if task_id_key:
             task = fetch_task(task_id_key)
         
-        if not media:
-            media_id = None
-        elif media and media.filename != '':
-            try:
-                console_log('media filename', media.filename)
-                media_id = save_media(media)
-                console_log('media_id', media_id)
-            except Exception as e:
-                current_app.logger.error(f"An error occurred while saving media for Task: {str(e)}")
-                return None
-        elif task and task.media_id:
-            media_id = task.media_id
-        else:
-            media_id = None
+        #save media files
+        task_media = []
+        if media_files:
+            for media_file in media_files:
+                media = save_media(media_file)
+                task_media.append(media)
+        elif not media_files and task:
+            task_media = task.media
+        
         
         if task_type == 'advert':
             if task:
-                task.update(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee=fee, media_id=media_id, payment_status=payment_status, posts_count=posts_count, target_country=target_country, target_state=target_state, gender=gender, caption=caption, hashtags=hashtags)
-                
-                console_log('task', task)
+                task.update(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee=fee, media=task_media, payment_status=payment_status, posts_count=posts_count, target_country=target_country, target_state=target_state, gender=gender, caption=caption, hashtags=hashtags)
                 
                 return task
             else:
-                new_task = AdvertTask.create_task(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee=fee, payment_status=payment_status, posts_count=posts_count, target_country=target_country, target_state=target_state, gender=gender, caption=caption, hashtags=hashtags)
+                new_task = AdvertTask.create_task(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee=fee, payment_status=payment_status, posts_count=posts_count, target_country=target_country, target_state=target_state, gender=gender, caption=caption, hashtags=hashtags, media=task_media)
 
                 add_user_role(RoleNames.ADVERTISER, user_id)
                 
@@ -258,7 +252,7 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
             
         elif task_type == 'engagement':
             if task:
-                task.update(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee=fee, media_id=media_id, payment_status=payment_status, goal=goal, account_link=account_link, engagements_count=engagements_count)
+                task.update(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee=fee, media=task_media, payment_status=payment_status, goal=goal, account_link=account_link, engagements_count=engagements_count)
                 
                 return task
             else:
