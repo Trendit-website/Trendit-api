@@ -170,21 +170,21 @@ class ProfileController:
             
             if isinstance(profile_picture, FileStorage) and profile_picture.filename != '':
                 try:
-                    profile_picture_id = save_media(profile_picture) # This saves image file, saves the path in db and return the id of the image
+                    profile_picture = save_media(profile_picture) # This saves image file, saves the path in db and return the id of the image
                 except Exception as e:
                     current_app.logger.error(f"An error occurred while profile image: {str(e)}")
                     return error_response(f"An error occurred saving profile image: {str(e)}", 400)
             elif profile_picture == '' and current_user:
                 if user_profile.profile_picture_id:
-                    profile_picture_id = user_profile.profile_picture_id
+                    profile_picture = user_profile.profile_picture
                 else:
-                    profile_picture_id = None
+                    profile_picture = None
             else:
-                profile_picture_id = None
+                profile_picture = None
             
             # update user details
             current_user.update(username=username)
-            user_profile.update(firstname=firstname, lastname=lastname, gender=gender, phone=phone, profile_picture_id=profile_picture_id, birthday=birthday)
+            user_profile.update(firstname=firstname, lastname=lastname, gender=gender, phone=phone, profile_picture=profile_picture, birthday=birthday)
             user_wallet.update(currency_name=currency_info.get('name', user_wallet.currency_name), currency_code=currency_info.get('code', user_wallet.currency_code), currency_symbol=currency_info.get('symbol', user_wallet.currency_symbol))
             user_address.update(country=country, state=state, local_government=local_government)
             
