@@ -95,7 +95,7 @@ class Task(db.Model):
 
     def get_task_media(self) -> list[str]:
         media_paths = []
-        for media in self.medias:
+        for media in self.media:
             media_paths.append(media.get_path())
         return media_paths if media_paths else None
     
