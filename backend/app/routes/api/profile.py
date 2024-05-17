@@ -44,3 +44,10 @@ def verify_email_edit():
 @jwt_required()
 def bank_details():
     return ProfileController.bank_details()
+
+
+# user membership status
+@api.route("profile/membership-status", methods=['GET', 'POST'])
+@jwt_required()
+def membership_status():
+    return ProfileController.membership_status()

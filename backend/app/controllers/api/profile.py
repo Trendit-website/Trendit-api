@@ -397,3 +397,25 @@ class ProfileController:
         
         return api_response
 
+
+    @staticmethod
+    def membership_status():
+        try:
+            current_user_id = get_jwt_identity()
+            current_user = Trendit3User.query.filter(Trendit3User.id == current_user_id).first()
+            
+            if not current_user:
+                return error_response("user not found", 404)
+            
+            membership_status = current_user.is_membership_paid
+            
+            extra_data = { 'membership_status': membership_status }
+            
+            api_response = success_response("membership status fetched", 200, extra_data)
+        except Exception as e:
+            log_exception("An unexpected error occurred. Our developers are already looking into it.", 500)
+            api_response = error_response("couldn't fetch membership status", 200, extra_data)
+        
+        return api_response
+    
+    
