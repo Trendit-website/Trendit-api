@@ -370,7 +370,7 @@ class ProfileController:
                 bank_name = data.get('bank_name', '')
                 account_no = data.get('account_no', '')
                 account_name = data.get('account_name', '')
-                bank_code = get_bank_code(bank_name)
+                bank_code = get_bank_code(bank_name, current_user.address.country)
                 
                 if primary_bank:
                     primary_bank.update(bank_name=bank_name, bank_code=bank_code, account_no=account_no, account_name=account_name)

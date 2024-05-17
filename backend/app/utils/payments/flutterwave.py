@@ -355,8 +355,6 @@ def get_banks(country:str = None) -> list:
         response.raise_for_status()  # raise an exception if the request failed
         response_data = response.json()
         
-        console_log('response_data', response_data)
-        
         if 'status' in response_data and response_data['status'] == 'success':
             supported_banks = response_data['data']
         else:
@@ -373,7 +371,7 @@ def create_bank_name_to_code_mapping(country : str = None) -> dict:
     """This will give you a dictionary mapping bank names to their codes"""
     supported_banks = get_banks(country)
     mapping = {bank['name'].lower(): bank['code'] for bank in supported_banks}
-    console_log('mapping', mapping)
+    console_log('mapping', mapping[:15])
     
     return mapping
 
