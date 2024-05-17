@@ -194,8 +194,6 @@ def get_task_by_key(task_key):
 
 def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
     try:
-        console_log('data', data)
-        
         user_id = int(get_jwt_identity())
         task_type = data.get('task_type', '')
         platform = data.get('platform', '').lower()
@@ -209,12 +207,9 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
         gender = data.get('gender', '')
         caption = data.get('caption', '')
         hashtags = data.get('hashtags', '')
-        media = request.files.get('media', '')
         
         # Get multiple media files
         media_files = request.files.getlist('media')
-        
-        console_log('media', media)
         
         goal = data.get('goal','')
         account_link = data.get('account_link', '')
