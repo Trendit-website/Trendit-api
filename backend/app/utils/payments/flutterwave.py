@@ -371,7 +371,7 @@ def create_bank_name_to_code_mapping(country : str = None) -> dict:
     """This will give you a dictionary mapping bank names to their codes"""
     supported_banks = get_banks(country)
     mapping = {bank['name'].lower(): bank['code'] for bank in supported_banks}
-    console_log('mapping', mapping[:15])
+    console_log('mapping', mapping)
     
     return mapping
 
