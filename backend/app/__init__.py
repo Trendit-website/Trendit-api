@@ -82,27 +82,27 @@ def create_app(config_name=Config.ENV):
     app.register_blueprint(debugger_bp)
     
     
-    def createSOcials ():
-        try:
-            users = Trendit3User.query.all()
+    # def createSOcials ():
+    #     try:
+    #         users = Trendit3User.query.all()
             
-            for user in users:
-                if not user.social_ids:
-                    user_social_ids = SocialIDs(trendit3_user=user)
-                    db.session.add(user_social_ids)
-                if not user.social_links:
-                    user_social_links = SocialLinks(trendit3_user=user)
-                    db.session.add(user_social_links)
+    #         for user in users:
+    #             if not user.social_ids:
+    #                 user_social_ids = SocialIDs(trendit3_user=user)
+    #                 db.session.add(user_social_ids)
+    #             if not user.social_links:
+    #                 user_social_links = SocialLinks(trendit3_user=user)
+    #                 db.session.add(user_social_links)
             
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            log_exception()
-        finally:
-            db.session.close()
+    #         db.session.commit()
+    #     except Exception as e:
+    #         db.session.rollback()
+    #         log_exception()
+    #     finally:
+    #         db.session.close()
     
     with app.app_context():
         create_roles()  # Create roles for trendit3
-        createSOcials()
+        # createSOcials()
     
     return app

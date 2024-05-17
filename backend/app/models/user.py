@@ -250,11 +250,11 @@ class Trendit3User(db.Model):
 class SocialIDs(db.Model):
     
     id = db.Column(db.Integer(), primary_key=True)
-    google_id = db.Column(db.String(200), nullable=True)
-    facebook_id = db.Column(db.String(200), nullable=True)
-    instagram_id = db.Column(db.String(200), nullable=True)
-    tiktok_id = db.Column(db.String(200), nullable=True)
-    x_id = db.Column(db.String(200), nullable=True)
+    google_id = db.Column(db.String(200), default="", nullable=True)
+    facebook_id = db.Column(db.String(200), default="", nullable=True)
+    instagram_id = db.Column(db.String(200), default="", nullable=True)
+    tiktok_id = db.Column(db.String(200), default="", nullable=True)
+    x_id = db.Column(db.String(200), default="", nullable=True)
     
     trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id', ondelete='CASCADE'), nullable=False,)
     trendit3_user = db.relationship('Trendit3User', back_populates="social_ids")
@@ -279,15 +279,15 @@ class SocialIDs(db.Model):
 class SocialLinks(db.Model):
     
     id = db.Column(db.Integer(), primary_key=True)
-    google_id = db.Column(db.String(200), nullable=True)
+    google_id = db.Column(db.String(200), default="", nullable=True)
     google_verified = db.Column(db.Boolean, default=False)
-    facebook_id = db.Column(db.String(200), nullable=True)
+    facebook_id = db.Column(db.String(200), default="", nullable=True)
     facebook_verified = db.Column(db.Boolean, default=False)
-    instagram_id = db.Column(db.String(200), nullable=True)
+    instagram_id = db.Column(db.String(200), default="", nullable=True)
     instagram_verified = db.Column(db.Boolean, default=False)
-    tiktok_id = db.Column(db.String(200), nullable=True)
+    tiktok_id = db.Column(db.String(200), default="", nullable=True)
     tiktok_verified = db.Column(db.Boolean, default=False)
-    x_id = db.Column(db.String(200), nullable=True)
+    x_id = db.Column(db.String(200), default="", nullable=True)
     x_verified = db.Column(db.Boolean, default=False)
     
     trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id', ondelete='CASCADE'), nullable=False,)
