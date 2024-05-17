@@ -41,7 +41,7 @@ def supported_banks():
 
 
 
-@api.route("/banks/verify/account", methods=['GET'])
+@api.route("/banks/verify/account", methods=['POST'])
 @jwt_required()
 def verify_bank_account():
     try:
