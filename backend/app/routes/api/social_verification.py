@@ -4,7 +4,7 @@ from . import api
 from app.controllers.api import SocialVerificationController
 
 
-@api.route('/verified_socials', method=["POST"])
+@api.route('/verified_socials', methods=["POST"])
 @jwt_required()
 def get_verified_socials():
     return SocialVerificationController.get_verified_social_media()
