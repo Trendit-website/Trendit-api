@@ -52,6 +52,27 @@ class AdminUsersController:
             logging.exception("An exception occurred trying to get user:\n", str(e))
             return error_response('Error getting user', 500)
         
+    
+    @staticmethod
+    def get_user_by_email():
+        try:
+            data = request.get_json()
+            email = data.get("email")
+            # user = Trendit3User.query.get(email)
+            user = Trendit3User.query.filter_by(email=email).first()
+            if user is None:
+                return error_response('User not found', 404)
+            user_dict = user.to_dict()
+            extra_data = {
+                'user': user_dict
+            }
+
+            return success_response('User fetched successfully', 200, extra_data)
+        
+        except Exception as e:
+            logging.exception("An exception occurred trying to get user:\n", str(e))
+            return error_response('Error getting user', 500)
+        
     @staticmethod
     def delete_user(user_id: int):
         try:
