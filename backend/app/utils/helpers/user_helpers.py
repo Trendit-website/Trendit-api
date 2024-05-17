@@ -10,11 +10,31 @@ These functions assist with tasks such as:
 @link: https://github.com/zeddyemy
 @package: Trendit³
 '''
-from app.extensions import db
-from app.models.user import Trendit3User, Address, Profile
-from app.models.notification import MessageStatus, MessageType, UserMessageStatus, Notification
-from app.utils.helpers.basic_helpers import generate_random_string
+from enum import Enum
 
+from ...extensions import db
+from ...models.role import Role, RoleNames
+from ...models.user import Trendit3User, Address, Profile
+from ...models.notification import MessageStatus, MessageType, UserMessageStatus, Notification
+from ...utils.helpers.basic_helpers import generate_random_string
+
+
+def add_user_role(role_name: Enum, user_id: int):
+    try:
+        user = Trendit3User.query.get(user_id)
+        if not user:
+            raise Exception("User not found")
+        
+        role = Role.query.filter_by(name=role_name).first()
+        if not role:
+            raise Exception("Role not valid")
+        
+        if role not in user.roles:
+            user.roles.append(role)
+            db.session.commit()
+        
+    except Exception as e:
+        raise e
 
 def get_user_info(user_id: int) -> dict:
     '''Gets profile details of a particular user'''
