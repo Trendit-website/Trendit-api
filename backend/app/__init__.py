@@ -83,23 +83,7 @@ def create_app(config_name=Config.ENV):
     app.register_blueprint(debugger_bp)
     
     
-    def addUserADVERTISERRole ():
-        try:
-            users = Trendit3User.query.all()
-            
-            for user in users:
-                if user.tasks:
-                    add_user_role(RoleNames.ADVERTISER, user.id)
-            
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            log_exception()
-        finally:
-            db.session.close()
-    
     with app.app_context():
         create_roles()  # Create roles for trendit3
-        addUserADVERTISERRole()
     
     return app
