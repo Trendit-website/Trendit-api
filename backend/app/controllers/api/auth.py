@@ -287,7 +287,10 @@ class AuthController:
         
         try:
             data = request.get_json()
-            email_username = data.get('email_username').lower()
+            email_username = data.get('email_username')
+            if '@' in email_username:
+                email_username = email_username.lower()
+            
             pwd = data.get('password')
             
             # get user from db with the email/username.

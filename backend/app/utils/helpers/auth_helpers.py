@@ -42,9 +42,9 @@ def generate_six_digit_code():
 
 
 
-def send_2fa_code(user_obj, two_factor_method, six_digit_code):
+def send_2fa_code(user, two_factor_method, six_digit_code):
     if two_factor_method == 'email':
-        send_code_to_email(user_obj.email, six_digit_code, code_type='2FA') # send 2FA code to user's email
+        send_code_to_email(user.email, six_digit_code, code_type='2FA') # send 2FA code to user's email
     
     elif two_factor_method == 'phone':
         # TODO: Implement Logic to send code to user's phone number. (For later when the platform grows)
