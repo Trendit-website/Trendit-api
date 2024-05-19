@@ -248,7 +248,17 @@ class TaskPerformance(db.Model):
     
     @classmethod
     def create_task_performance(cls, user_id, task_id, task_type, reward_money, proof_screenshot_id, account_name, status):
-        task = cls(user_id=user_id, task_id=task_id, task_type=task_type, reward_money=reward_money, proof_screenshot_id=proof_screenshot_id, account_name=account_name, status=status)
+        the_task_key = generate_random_string(20)
+        counter = 1
+        max_attempts = 6  # maximum number of attempts to create a unique task_key
+        
+        while cls.query.filter_by(key=the_task_key).first() is not None:
+            if counter > max_attempts:
+                raise ValueError(f"Unable to create a unique task after {max_attempts} attempts.")
+            the_task_key = f"{generate_random_string(20)}-{generate_random_string(4)}-{counter}"
+            counter += 1
+        
+        task = cls(user_id=user_id, task_id=task_id, key=the_task_key, task_type=task_type, reward_money=reward_money, proof_screenshot_id=proof_screenshot_id, account_name=account_name, status=status)
         
         db.session.add(task)
         db.session.commit()
