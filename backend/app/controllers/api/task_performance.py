@@ -78,6 +78,7 @@ class TaskPerformanceController:
             performedTask = TaskPerformance.query.filter_by(user_id=current_user_id, task_id=task_id).filter(not_(TaskPerformance.status == 'pending')).first()
             
             console_log('performedTask', performedTask)
+            console_log('performedTask status', performedTask.status)
             if performedTask:
                 return error_response(f"Task already performed and cannot be repeated", 409)
             
@@ -154,8 +155,13 @@ class TaskPerformanceController:
                 .order_by(TaskPerformance.started_at.desc()) \
                 .paginate(page=page, per_page=tasks_per_page, error_out=False)
             
+            console_log("pagination", pagination)
+            
             performed_tasks = pagination.items
+            console_log("Performed Task", performed_tasks)
+            
             current_performed_tasks = [performed_task.to_dict() for performed_task in performed_tasks]
+            console_log("current_performed_tasks", current_performed_tasks)
             extra_data = {
                 'total': pagination.total,
                 "current_page": pagination.page,
