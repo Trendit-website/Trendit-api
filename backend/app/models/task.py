@@ -180,6 +180,8 @@ class AdvertTask(Task):
             'gender': self.gender,
             'caption': self.caption,
             'hashtags': self.hashtags,
+            'date_created': self.date_created,
+            'updated_at': self.updated_at,
             'creator': {
                 'id': self.trendit3_user_id,
                 'username': self.trendit3_user.username,
@@ -219,6 +221,8 @@ class EngagementTask(Task):
             'goal': self.goal,
             'account_link': self.account_link,
             'engagements_count': self.engagements_count,
+            'date_created': self.date_created,
+            'updated_at': self.updated_at,
             'creator': {
                 'id': self.trendit3_user_id,
                 'username': self.trendit3_user.username,
