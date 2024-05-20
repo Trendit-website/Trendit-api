@@ -75,6 +75,8 @@ class TaskPerformanceController:
             
             task_id = task.id
             
+            console_log('current_user_id', current_user_id)
+            
             performedTask = TaskPerformance.query.filter_by(user_id=current_user_id, task_id=task_id).filter(not_(TaskPerformance.status == 'pending')).first()
             
             console_log('performedTask', performedTask)
