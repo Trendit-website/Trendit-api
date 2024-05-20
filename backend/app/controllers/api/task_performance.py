@@ -66,6 +66,9 @@ class TaskPerformanceController:
             
             task_id_key = data.get('task_id_key', '')
             
+            if not task_id_key:
+                return error_response("task key or id must be provided", 400)
+            
             task = fetch_task(task_id_key)
             if task is None:
                 return error_response('Task not found', 404)
