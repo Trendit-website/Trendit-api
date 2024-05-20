@@ -164,7 +164,7 @@ def initiate_task(task: Task, status='pending') -> dict:
         
         
         # Create a new TaskPerformance instance
-        initiated_task = TaskPerformance.create_task_performance(user_id=current_user_id, task_id=task.id, task_type=task.task_type, reward_money=0.0, proof_screenshot_id=None, account_name='', status=status)
+        initiated_task = TaskPerformance.create_task_performance(user_id=current_user_id, task_id=task.id, task_type=task.task_type, reward_money=0.0, proof_screenshot=None, account_name='', status=status)
         
         # Mark the task as assigned
         task.total_allocated += 1
@@ -301,7 +301,7 @@ def save_performed_task(data, pt_id=None, status='pending'):
                 raise Exception("Error saving Screenshot.")
         elif screenshot == '' and task:
             if performed_task.proof_screenshot_id:
-                proof_screenshot = performed_task.proof_screenshot_id
+                proof_screenshot = performed_task.proof_screenshot
             else:
                 raise Exception("No screenshot provided.")
         else:
