@@ -242,7 +242,7 @@ class TaskPerformance(db.Model):
     date_completed = db.Column(db.DateTime, nullable=True)
     
     proof_screenshot_id = db.Column(db.Integer(), db.ForeignKey('media.id'), nullable=True)
-    proof_screenshot = db.relationship('Media', backref='profile_picture')
+    proof_screenshot = db.relationship('Media', backref='proof_screenshot')
     
     task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)  # either an AdvertTask id or an EngagementTask id
     task = db.relationship('Task', backref=db.backref('performances', lazy='dynamic'))
