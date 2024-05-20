@@ -97,6 +97,8 @@ class TaskPerformanceController:
         except Exception as e:
             log_exception("An exception occurred trying to create performed tasks", e)
             return success_response(f'Error performing task: {e}', 500)
+        finally:
+            db.session.close()
         
         return api_response
     
