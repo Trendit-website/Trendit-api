@@ -4,7 +4,7 @@ from flask_jwt_extended import get_jwt_identity
 
 from ...extensions import db
 from ...models import TaskPerformance, Task
-from ...utils.helpers.task_helpers import save_performed_task
+from ...utils.helpers.task_helpers import update_performed_task
 from ...utils.helpers.response_helpers import error_response, success_response
 from ...utils.helpers.basic_helpers import generate_random_string, console_log
 
@@ -72,7 +72,7 @@ class AdminTaskPerformanceController:
             if performed_task is None:
                 return error_response('Performed task not found', 404)
             
-            updated_performed_task = save_performed_task(data, pt_id, 'pending')
+            updated_performed_task = update_performed_task(data, pt_id, 'pending')
             if updated_performed_task is None:
                 return error_response('Error updating performed task', 500)
             
