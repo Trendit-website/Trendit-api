@@ -17,6 +17,7 @@ from ..extensions import db
 from ..models import Media
 from ..models.role import Role
 from ..models.payment import TransactionType
+from enum import Enum
 from config import Config
 
 # temporary user
@@ -281,19 +282,25 @@ class SocialIDs(db.Model):
             'x_id': self.x_id,
         }
 
+class SocialLinksStatus(Enum):
+    IDLE = 'idle'
+    PENDING = 'pending'
+    VERIFIED = 'verified'
+    REJECTED = 'rejected'
+
 class SocialLinks(db.Model):
     
     id = db.Column(db.Integer(), primary_key=True)
     google_id = db.Column(db.String(200), default="", nullable=True)
-    google_verified = db.Column(db.Boolean, default=False)
+    google_verified = db.Column(db.Enum(SocialLinksStatus), default=SocialLinksStatus.IDLE)
     facebook_id = db.Column(db.String(200), default="", nullable=True)
-    facebook_verified = db.Column(db.Boolean, default=False)
+    facebook_verified = db.Column(db.Enum(SocialLinksStatus), default=SocialLinksStatus.IDLE)
     instagram_id = db.Column(db.String(200), default="", nullable=True)
-    instagram_verified = db.Column(db.Boolean, default=False)
+    instagram_verified = db.Column(db.Enum(SocialLinksStatus), default=SocialLinksStatus.IDLE)
     tiktok_id = db.Column(db.String(200), default="", nullable=True)
-    tiktok_verified = db.Column(db.Boolean, default=False)
+    tiktok_verified = db.Column(db.Enum(SocialLinksStatus), default=SocialLinksStatus.IDLE)
     x_id = db.Column(db.String(200), default="", nullable=True)
-    x_verified = db.Column(db.Boolean, default=False)
+    x_verified = db.Column(db.Enum(SocialLinksStatus), default=SocialLinksStatus.IDLE)
     
     trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id', ondelete='CASCADE'), nullable=False,)
     trendit3_user = db.relationship('Trendit3User', back_populates="social_links")

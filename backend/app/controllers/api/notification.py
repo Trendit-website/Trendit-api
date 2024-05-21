@@ -7,7 +7,7 @@ from flask_jwt_extended.exceptions import JWTDecodeError
 from ...extensions import db
 
 from app.models.notification import MessageStatus, MessageType, UserMessageStatus, Notification, SocialVerification, SocialVerificationStatus
-from app.models.user import Trendit3User, SocialLinks
+from app.models.user import Trendit3User, SocialLinks, SocialLinksStatus
 from app.utils.helpers.basic_helpers import console_log, log_exception
 from app.utils.helpers.user_helpers import get_notifications, mark_as_read
 from app.utils.helpers.response_helpers import *
@@ -201,11 +201,11 @@ class NotificationController:
 
             # Define field mapping
             field_mapping = {
-                'facebook': 'facebook_id',
-                'tiktok': 'tiktok_id',
-                'instagram': 'instagram_id',
-                'x': 'x_id'
-            }
+                    'facebook': ['facebook_verified', 'facebook_id'],
+                    'tiktok': ['tiktok_verified', 'tiktok_id'],
+                    'instagram': ['instagram_verified', 'instagram_id'],
+                    'x': ['x_verified', 'x_id']
+                }
 
             # Check if social media type is valid
             if not field_mapping.get(type):
@@ -213,11 +213,12 @@ class NotificationController:
 
             # Initialize social links if absent
             if user.social_links is None:
-                kwargs = {key: '' for key in field_mapping.values()}
+                kwargs = {key: False for key in field_mapping.values()}
                 user.social_links = SocialLinks(**kwargs)
-
+            
             # Set the corresponding social media link
-            setattr(user.social_links, field_mapping[type], link)
+            setattr(user.social_links, field_mapping[type][1], link)
+            setattr(user.social_links, field_mapping[type][0], SocialLinksStatus.PENDING)
 
             # Send verification notification
             SocialVerification.send_notification(

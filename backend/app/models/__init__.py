@@ -11,7 +11,7 @@ from ..models.media import Media
 from ..models.membership import Membership
 from ..models.item import Item, LikeLog, Share, Comment
 from ..models.payment import Payment, Transaction, Wallet, Withdrawal, TransactionType
-from ..models.user import Trendit3User, Address, Profile, ReferralHistory, TempUser, OneTimeToken, BankAccount, Recipient, SocialIDs, SocialLinks
+from ..models.user import Trendit3User, Address, Profile, ReferralHistory, TempUser, OneTimeToken, BankAccount, Recipient, SocialIDs, SocialLinks, SocialLinksStatus
 from ..models.task import Task, AdvertTask, EngagementTask, TaskStatus, TaskPaymentStatus, TaskPerformance
 from ..models.notification import UserMessageStatus, Notification, user_notification, SocialVerificationStatus, SocialVerification
 from ..models.settings import UserSettings, NotificationPreference, SecuritySetting, UserPreference

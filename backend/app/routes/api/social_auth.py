@@ -78,3 +78,23 @@ def gg_signup_callback():
 def welcome():
     send_async_other_email(current_app._get_current_object(), user_email='chrisdev0000@gmail.com', email_type='welcome')
     return success_response('email sent', 200)
+
+
+@api.route('/app/gg_login')
+def gg_login_app():
+    return SocialAuthController.google_login_app()
+
+
+@api.route('/app/gg_login_callback')
+def gg_login_callback_app():
+    return SocialAuthController.google_login_callback_app()
+
+
+@api.route('/app/gg_signup')
+def gg_signup_app():
+    return SocialAuthController.google_signup_app()
+
+
+@api.route('/app/gg_signup_callback')
+def gg_signup_callback_app():
+    return SocialAuthController.google_signup_callback_app()

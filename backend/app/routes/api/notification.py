@@ -35,9 +35,3 @@ def broadcast_message():
 @jwt_required()
 def global_search():
     return NotificationController.global_search()
-
-
-@api.route('/send_social_verification_request', methods=["POST"])
-@jwt_required()
-def notify_admin():
-    return NotificationController.send_social_verification_request()

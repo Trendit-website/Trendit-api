@@ -39,13 +39,13 @@ class SocialVerificationController:
                 return success_response(msg, 200, extra_data=extra_data)
             
             verified_social_media = {
-                'facebook_verified': social_links.facebook_verified,
+                'facebook_verified': social_links.facebook_verified.value,
                 'facebook_link': social_links.facebook_id,
-                'tiktok_verified': social_links.tiktok_verified,
+                'tiktok_verified': social_links.tiktok_verified.value,
                 'tiktok_link': social_links.tiktok_id,
-                'instagram_verified': social_links.instagram_verified,
+                'instagram_verified': social_links.instagram_verified.value,
                 'instagram_link': social_links.instagram_id,
-                'x_verified': social_links.x_verified,
+                'x_verified': social_links.x_verified.value,
                 'x_link': social_links.x_id,
             }
 
