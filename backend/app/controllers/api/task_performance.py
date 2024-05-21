@@ -36,13 +36,15 @@ class TaskPerformanceController:
             random_task = generate_random_task(task_type, filter_value)
             
             # Initiate task performance
-            Initiated_task = initiate_task(random_task)
+            initiated_task = initiate_task(random_task)
             
             console_log("initiated task for performance", initiate_task)
-            console_log("Key initiated task", initiate_task.key)
+            
+            if initiated_task:
+                console_log("Key initiated task", initiated_task.key)
             
             msg = f'An {task_type.capitalize()} task for {filter_value} generated successfully.'
-            extra_data = {'generated_task': Initiated_task}
+            extra_data = {'generated_task': initiated_task}
             
             api_response = success_response(msg, 200, extra_data)
         except PendingTaskError as e:
