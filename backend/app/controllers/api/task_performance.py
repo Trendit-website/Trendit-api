@@ -6,7 +6,7 @@ from flask_jwt_extended import get_jwt_identity
 from ...extensions import db
 from ...models import Trendit3User
 from ...models.task import TaskPerformance
-from ...utils.helpers.task_helpers import save_performed_task, fetch_task, generate_random_task, initiate_task, fetch_performed_task
+from ...utils.helpers.task_helpers import update_performed_task, fetch_task, generate_random_task, initiate_task, fetch_performed_task
 from ...utils.helpers.response_helpers import error_response, success_response
 from ...utils.helpers.basic_helpers import console_log, log_exception
 from ...exceptions import PendingTaskError, NoUnassignedTaskError
@@ -96,7 +96,7 @@ class TaskPerformanceController:
                 console_log('performedTask status', performedTask.status)
                 return error_response(f"Task already performed and cannot be repeated", 409)
             
-            new_performed_task = save_performed_task(data, status='in_review')
+            new_performed_task = update_performed_task(data, status='in_review')
             
             if new_performed_task is None:
                 return error_response('Error performing task', 500)
@@ -106,7 +106,8 @@ class TaskPerformanceController:
             
             api_response = success_response(msg, 201, extra_data)
         except ValueError as e:
-            log_exception("An exception occurred trying to create performed tasks", e)
+            msg = f'error occurred performing task: {str(e)}'
+            log_exception("An exception occurred trying to perform task", e)
             return success_response(str(e), 404)
         except Exception as e:
             log_exception("An exception occurred trying to create performed tasks", e)
@@ -248,7 +249,7 @@ class TaskPerformanceController:
             if performed_task.user_id != current_user_id:
                 return error_response('You are not authorized to update this performed task', 401)
             
-            updated_performed_task = save_performed_task(data, performed_task.id, 'pending')
+            updated_performed_task = update_performed_task(data, performed_task.id, 'pending')
             if updated_performed_task is None:
                 return error_response('Error updating performed task', 500)
             

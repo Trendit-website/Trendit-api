@@ -256,7 +256,7 @@ class TaskPerformance(db.Model):
     
     @classmethod
     def create_task_performance(cls, user_id, task_id, task_type, reward_money, proof_screenshot, account_name, status):
-        the_task_key = generate_random_string(20)
+        the_task_key = f"{generate_random_string(20)}_pt"
         counter = 1
         max_attempts = 6  # maximum number of attempts to create a unique task_key
         
