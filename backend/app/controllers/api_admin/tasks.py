@@ -115,13 +115,14 @@ class AdminTaskController:
     @staticmethod
     def approve_task(task_id: int):
         try:
-            task = Task.query.get(task_id).to_dict()
+            task = Task.query.get(task_id)
+            task_dict = task.to_dict()
             if task is None:
                 return error_response('Task not found', 404)
                         
-            task_description = task.get('caption', '')
-            task_time = task.get('date_created')
-            task_type = task.get('task_type')
+            task_description = task_dict.get('caption', '')
+            task_time = task_dict.get('date_created')
+            task_type = task_dict.get('task_type')
             task.status = TaskStatus.APPROVED
             db.session.commit()
             
