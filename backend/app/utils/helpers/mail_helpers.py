@@ -121,6 +121,7 @@ def send_async_other_email(app, user_email, email_type, task_type, task_time, ta
                 task_time=task_time,
                 task_description=task_description
             )
+            print(task_description, task_time, task_type)
             msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
 
         elif email_type == 'task_rejected':
