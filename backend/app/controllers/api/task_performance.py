@@ -52,11 +52,14 @@ class TaskPerformanceController:
         except NoUnassignedTaskError as e:
             api_response = error_response(f'{e}', 206)
         except ValueError as e:
+            db.session.rollback()
             api_response = error_response(f'{e}', 400)
         except AttributeError as e:
+            db.session.rollback()
             log_exception("An exception occurred generating random task", e)
             api_response = error_response(f'{e}', 500)
         except Exception as e:
+            db.session.rollback()
             log_exception("An exception occurred generating random task for the user", e)
             api_response = error_response(f'An error occurred generating random task: {e}', 500)
         
