@@ -38,6 +38,9 @@ class TaskPerformanceController:
             # Initiate task performance
             Initiated_task = initiate_task(random_task)
             
+            console_log("initiated task for performance", initiate_task)
+            console_log("Key initiated task", initiate_task.key)
+            
             msg = f'An {task_type.capitalize()} task for {filter_value} generated successfully.'
             extra_data = {'generated_task': Initiated_task}
             
@@ -65,6 +68,8 @@ class TaskPerformanceController:
             data = request.form.to_dict()
             
             task_id_key = data.get('task_id_key', '')
+            
+            console_log("task_id_key", task_id_key)
             
             if not task_id_key:
                 return error_response("task key or id must be provided", 400)

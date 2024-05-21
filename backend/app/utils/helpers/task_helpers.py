@@ -273,6 +273,8 @@ def save_performed_task(data, pt_id=None, status='pending'):
         task_id_key = data.get('task_id_key', '')
         task = fetch_task(task_id_key)
         
+        console_log("task from save_performed_task()", task)
+        
         if task is None:
             raise ValueError("Task not found.")
         
@@ -289,6 +291,8 @@ def save_performed_task(data, pt_id=None, status='pending'):
             performed_task = TaskPerformance.query.get(pt_id)
         else:
             performed_task = TaskPerformance.query.filter_by(user_id=user_id, task_id=task_id, status='pending').first()
+            
+        console_log("performed_task before it's performance", performed_task)
             
         if screenshot.filename != '':
             try:
