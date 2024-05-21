@@ -4,7 +4,7 @@ from flask_jwt_extended import get_jwt_identity
 
 from app.extensions import db
 from app.models.task import TaskPerformance, Task
-from app.utils.helpers.task_helpers import save_performed_task
+from app.utils.helpers.task_helpers import update_performed_task
 from app.utils.helpers.response_helpers import error_response, success_response
 from app.utils.helpers.basic_helpers import generate_random_string, console_log
 from app.models.task import TaskStatus, TaskPaymentStatus
