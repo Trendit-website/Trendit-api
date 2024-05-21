@@ -4,7 +4,6 @@ from flask_jwt_extended import get_jwt_identity
 
 from app.extensions import db
 from app.models.user import TempUser, Trendit3User
-from app.utils.helpers.task_helpers import save_performed_task
 from app.utils.helpers.response_helpers import error_response, success_response
 from app.utils.helpers.basic_helpers import generate_random_string, console_log
 
