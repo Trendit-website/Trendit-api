@@ -41,7 +41,7 @@ class TaskPerformanceController:
             console_log("initiated task for performance", initiate_task)
             
             if initiated_task:
-                console_log("Key initiated task", initiated_task.key)
+                console_log("Key initiated task", initiated_task['key'])
             
             msg = f'An {task_type.capitalize()} task for {filter_value} generated successfully.'
             extra_data = {'generated_task': initiated_task}
