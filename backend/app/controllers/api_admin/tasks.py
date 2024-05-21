@@ -115,16 +115,26 @@ class AdminTaskController:
     @staticmethod
     def approve_task(task_id: int):
         try:
-            task = Task.query.get(task_id)
+            task = Task.query.get(task_id).to_dict()
             if task is None:
                 return error_response('Task not found', 404)
+                        
+            task_description = task.get('caption', '')
+            task_time = task.get('date_created')
+            task_type = task.get('task_type')
             task.status = TaskStatus.APPROVED
             db.session.commit()
             
             email = Trendit3User.query.get(task.trendit3_user_id).email
 
             try:
-                send_other_emails(email, email_type='task_approved') # send email
+                send_other_emails(
+                    email, 
+                    email_type='task_approved',
+                    task_description=task_description,
+                    task_time=task_time,
+                    task_type=task_type
+                ) # send email
             except Exception as e:
                 return error_response('Error occurred sending Email', 500)
             
