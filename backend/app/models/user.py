@@ -225,15 +225,15 @@ class Trendit3User(db.Model):
         user_social_links = self.social_links
         social_links = {
             'google_id': user_social_links.google_id if user_social_links else None,
-            'google_verified': user_social_links.google_verified if user_social_links else None,
+            'google_verified': str(user_social_links.google_verified) if user_social_links else None,
             'facebook_id': user_social_links.facebook_id if user_social_links else None,
-            'facebook_verified': user_social_links.facebook_verified if user_social_links else None,
+            'facebook_verified': str(user_social_links.facebook_verified) if user_social_links else None,
             'instagram_id': user_social_links.instagram_id if user_social_links else None,
-            'instagram_verified': user_social_links.instagram_verified if user_social_links else None,
+            'instagram_verified': str(user_social_links.instagram_verified) if user_social_links else None,
             'tiktok_id': user_social_links.tiktok_id if user_social_links else None,
-            'tiktok_verified': user_social_links.tiktok_verified if user_social_links else None,
+            'tiktok_verified': str(user_social_links.tiktok_verified) if user_social_links else None,
             'x_id': user_social_links.x_id if user_social_links else None,
-            'x_verified': user_social_links.x_verified if user_social_links else None,
+            'x_verified': str(user_social_links.x_verified) if user_social_links else None,
         }
         
         
@@ -316,15 +316,15 @@ class SocialLinks(db.Model):
     def to_dict(self):
         return {
             'google_id': self.google_id,
-            'google_verified': self.google_verified,
+            'google_verified': str(self.google_verified),
             'facebook_id': self.facebook_id,
-            'facebook_verified': self.facebook_verified,
+            'facebook_verified': str(self.facebook_verified),
             'instagram_id': self.instagram_id,
-            'instagram_verified': self.instagram_verified,
+            'instagram_verified': str(self.instagram_verified),
             'tiktok_id': self.tiktok_id,
-            'tiktok_verified': self.tiktok_verified,
+            'tiktok_verified': str(self.tiktok_verified),
             'x_id': self.x_id,
-            'x_verified': self.x_verified
+            'x_verified': str(self.x_verified)
         }
 
 

@@ -77,6 +77,7 @@ class TaskPerformanceController:
             
             console_log('current_user_id', current_user_id)
             
+            # check if user has a performed task already done
             performedTask = TaskPerformance.query.filter_by(user_id=current_user_id, task_id=task_id).filter(not_(TaskPerformance.status == 'pending')).first()
             
             console_log('performedTask', performedTask)
@@ -163,7 +164,7 @@ class TaskPerformanceController:
             console_log("pagination", pagination)
             
             performed_tasks = pagination.items
-            console_log("Performed Task", performed_tasks)
+            console_log(f"{status} Task", performed_tasks)
             
             current_performed_tasks = [performed_task.to_dict() for performed_task in performed_tasks]
             console_log("current_performed_tasks", current_performed_tasks)
