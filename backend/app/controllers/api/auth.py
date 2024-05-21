@@ -471,6 +471,7 @@ class AuthController:
         try:
             data = request.get_json()
             reset_token = data.get('reset_token', '')
+            pwd = data.get('old_password', '')
             new_password = data.get('new_password')
             hashed_pwd = generate_password_hash(new_password, "pbkdf2:sha256")
             
@@ -492,7 +493,10 @@ class AuthController:
             # Reset token is valid, update user password
             # get user from db with the email.
             user = get_trendit3_user(token_data['email'])
-            console_log('user', user)
+            
+            if not user.verify_password(pwd):
+                return error_response('Old Password is incorrect', 401)
+            
             user.update(thePassword=hashed_pwd)
             
             

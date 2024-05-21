@@ -180,6 +180,8 @@ class AdvertTask(Task):
             'gender': self.gender,
             'caption': self.caption,
             'hashtags': self.hashtags,
+            'date_created': self.date_created,
+            'updated_at': self.updated_at,
             'creator': {
                 'id': self.trendit3_user_id,
                 'username': self.trendit3_user.username,
@@ -219,6 +221,8 @@ class EngagementTask(Task):
             'goal': self.goal,
             'account_link': self.account_link,
             'engagements_count': self.engagements_count,
+            'date_created': self.date_created,
+            'updated_at': self.updated_at,
             'creator': {
                 'id': self.trendit3_user_id,
                 'username': self.trendit3_user.username,
@@ -237,18 +241,32 @@ class TaskPerformance(db.Model):
     started_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     date_completed = db.Column(db.DateTime, nullable=True)
     
-    proof_screenshot_id = db.Column(db.Integer, db.ForeignKey('media.id'), nullable=True)
+    proof_screenshot_id = db.Column(db.Integer(), db.ForeignKey('media.id'), nullable=True)
+    proof_screenshot = db.relationship('Media', backref='proof_screenshot')
+    
     task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)  # either an AdvertTask id or an EngagementTask id
+    task = db.relationship('Task', backref=db.backref('performances', lazy='dynamic'))
+    
     user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
     trendit3_user = db.relationship('Trendit3User', backref=db.backref('performed_tasks', lazy='dynamic'))
-    task = db.relationship('Task', backref=db.backref('performances', lazy='dynamic'))
+    
     
     def __repr__(self):
         return f'<ID: {self.id}, User ID: {self.user_id}, Task ID: {self.task_id}, Task Type: {self.task_type}, Status: {self.status}>'
     
     @classmethod
-    def create_task_performance(cls, user_id, task_id, task_type, reward_money, proof_screenshot_id, account_name, status):
-        task = cls(user_id=user_id, task_id=task_id, task_type=task_type, reward_money=reward_money, proof_screenshot_id=proof_screenshot_id, account_name=account_name, status=status)
+    def create_task_performance(cls, user_id, task_id, task_type, reward_money, proof_screenshot, account_name, status):
+        the_task_key = generate_random_string(20)
+        counter = 1
+        max_attempts = 6  # maximum number of attempts to create a unique task_key
+        
+        while cls.query.filter_by(key=the_task_key).first() is not None:
+            if counter > max_attempts:
+                raise ValueError(f"Unable to create a unique task after {max_attempts} attempts.")
+            the_task_key = f"{generate_random_string(20)}-{generate_random_string(4)}-{counter}"
+            counter += 1
+        
+        task = cls(user_id=user_id, task_id=task_id, key=the_task_key, task_type=task_type, reward_money=reward_money, proof_screenshot=proof_screenshot, account_name=account_name, status=status)
         
         db.session.add(task)
         db.session.commit()

@@ -66,16 +66,23 @@ class TaskPerformanceController:
             
             task_id_key = data.get('task_id_key', '')
             
+            if not task_id_key:
+                return error_response("task key or id must be provided", 400)
+            
             task = fetch_task(task_id_key)
             if task is None:
                 return error_response('Task not found', 404)
             
             task_id = task.id
             
+            console_log('current_user_id', current_user_id)
+            
             performedTask = TaskPerformance.query.filter_by(user_id=current_user_id, task_id=task_id).filter(not_(TaskPerformance.status == 'pending')).first()
             
             console_log('performedTask', performedTask)
+            
             if performedTask:
+                console_log('performedTask status', performedTask.status)
                 return error_response(f"Task already performed and cannot be repeated", 409)
             
             new_performed_task = save_performed_task(data, status='in_review')
@@ -93,6 +100,8 @@ class TaskPerformanceController:
         except Exception as e:
             log_exception("An exception occurred trying to create performed tasks", e)
             return success_response(f'Error performing task: {e}', 500)
+        finally:
+            db.session.close()
         
         return api_response
     
@@ -151,8 +160,13 @@ class TaskPerformanceController:
                 .order_by(TaskPerformance.started_at.desc()) \
                 .paginate(page=page, per_page=tasks_per_page, error_out=False)
             
+            console_log("pagination", pagination)
+            
             performed_tasks = pagination.items
+            console_log("Performed Task", performed_tasks)
+            
             current_performed_tasks = [performed_task.to_dict() for performed_task in performed_tasks]
+            console_log("current_performed_tasks", current_performed_tasks)
             extra_data = {
                 'total': pagination.total,
                 "current_page": pagination.page,
