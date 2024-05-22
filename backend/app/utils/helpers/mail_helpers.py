@@ -158,4 +158,4 @@ def send_async_other_email(app, user_email, email_type, task_type, task_time, ta
 
 
 def send_other_emails(user_email, task_type, task_time, task_description, email_type='membership', amount=None, admin_login_code=''):
-    Thread(target=send_async_other_email, args=(current_app._get_current_object(), user_email, email_type, amount, admin_login_code, task_type, task_time, task_description)).start()
+    Thread(target=send_async_other_email, args=(current_app._get_current_object(), user_email, email_type, task_type, task_time, task_description, amount, admin_login_code)).start()
