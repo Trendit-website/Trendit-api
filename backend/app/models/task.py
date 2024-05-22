@@ -160,7 +160,7 @@ class AdvertTask(Task):
     hashtags = db.Column(db.Text, nullable=False)
     
     __mapper_args__ = {
-        'polymorphic_identity': 'advert_task'
+        'polymorphic_identity': 'advert'
     }
     
     def __repr__(self):
@@ -210,7 +210,7 @@ class EngagementTask(Task):
     engagements_count = db.Column(db.Integer, nullable=False)
     
     __mapper_args__ = {
-        'polymorphic_identity': 'engagement_task'
+        'polymorphic_identity': 'engagement'
     }
     
     def __repr__(self):
