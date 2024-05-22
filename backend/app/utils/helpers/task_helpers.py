@@ -242,7 +242,6 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
 
                 add_user_role(RoleNames.ADVERTISER, user_id)
                 
-                
                 return new_task
             
         elif task_type == 'engagement':
