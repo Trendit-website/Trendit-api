@@ -40,10 +40,10 @@ def get_advertiser_tasks():
 def get_advertiser_single_task(task_id_key):
     return TaskController.get_advertiser_single_task(task_id_key)
 
-@api.route('/user/tasks/<task_id_key>/activities', methods=['GET'])
+@api.route('/user/tasks/activities', methods=['GET'])
 @jwt_required()
-def get_single_task_activities(task_id_key):
-    return TaskController.get_single_task_activities(task_id_key)
+def get_advertisers_tasks_activities(task_id_key):
+    return TaskController.get_advertisers_tasks_activities(task_id_key)
 
 @api.route('/user/tasks/<task_id_key>/performances', methods=['GET'])
 @jwt_required()

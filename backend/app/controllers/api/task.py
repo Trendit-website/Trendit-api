@@ -216,6 +216,45 @@ class TaskController:
     
     
     @staticmethod
+    def get_advertisers_tasks_activities():
+        try:
+            current_user_id = int(get_jwt_identity())
+            current_user = Trendit3User.query.get(current_user_id)
+            
+            if not current_user:
+                return error_response(f"user not found", 404)
+            
+            page = request.args.get("page", 1, type=int)
+            
+            pagination = Task.query.filter_by(trendit3_user_id=current_user_id) \
+                .order_by(Task.date_created.desc()) \
+                .paginate(page=page, per_page=10, error_out=False)
+                
+            for task in pagination.items:
+                pagination = TaskPerformance.query.filter_by(task_id=task.id) \
+                .order_by(TaskPerformance.started_at.desc()) \
+                .paginate(page=page, per_page=10, error_out=False)
+            
+            task_performances = pagination.items
+            current_activities = []
+            extra_data = {
+                'total': pagination.total,
+                "current_page": pagination.page,
+                "total_pages": pagination.pages,
+                "activities": current_activities,
+            }
+            
+            if not task_performances:
+                return success_response(f'No one has performed this task yet', 200, extra_data)
+            
+            
+        except Exception as e:
+            api_response = error_response("An unexpected error occurred. Our developers are looking into this.", 500)
+            log_exception("An exception occurred trying to get task:", e)
+        
+        return api_response
+    
+    @staticmethod
     def get_advertiser_total_task():
         try:
             current_user_id = int(get_jwt_identity())

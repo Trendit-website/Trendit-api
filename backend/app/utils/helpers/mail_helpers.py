@@ -148,5 +148,5 @@ def send_async_other_email(app, user_email, email_type, amount=None, admin_login
             console_log('EXCEPTION SENDING MAIL', f'An error occurred while sending the {email_type} email type: {str(e)}')
 
 
-def send_other_emails(user_email, email_type='membership', amount=None, admin_login_code=''):
+def send_other_emails(user_email, email_type='membership', amount=None, admin_login_code=None):
     Thread(target=send_async_other_email, args=(current_app._get_current_object(), user_email, email_type, amount, admin_login_code)).start()
