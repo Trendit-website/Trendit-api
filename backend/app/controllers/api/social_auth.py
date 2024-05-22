@@ -561,7 +561,7 @@ class SocialAuthController:
             
                 if not user:
                     error_response('Google Account is incorrect or doesn\'t exist', 401)
-                    return redirect(f'https://app.trendit3.com/login?error=Google_Account_is_incorrect_or_doesnt_exist')
+                    return redirect(f'https://blaziod.github.io/login?error=Google_Account_is_incorrect_or_doesnt_exist')
                 
                 # # Check if user has enabled 2FA
                 # user_settings = user.user_settings
@@ -581,21 +581,21 @@ class SocialAuthController:
 
                 success_response(msg, 200)
 
-                return redirect(f'https://app.trendit3.com/login?access_token={access_token}')
+                return redirect(f'https://blaziod.github.io/login?access_token={access_token}')
         
         except UnsupportedMediaType as e:
             db.session.close()
             logging.exception(f"An UnsupportedMediaType exception occurred: {e}")
             error_response(f"{str(e)}", 415)
             
-            return redirect(f'https://app.trendit3.com/login?error=UnsupportedMediaType')
+            return redirect(f'https://blaziod.github.io/login?error=UnsupportedMediaType')
             
         except Exception as e:
             db.session.close()
             logging.exception(f"An exception occurred trying to login: {e}")
             error_response(f'An Unexpected error occurred processing the request.', 500)
             
-            return redirect(f'https://app.trendit3.com/login?error=An_Unexpected_error_occurred_processing_the_request')
+            return redirect(f'https://blaziod.github.io/login?error=An_Unexpected_error_occurred_processing_the_request')
 
 
     @staticmethod
@@ -634,11 +634,11 @@ class SocialAuthController:
                 # referral_code = user_data['referral_code']
                 if not email:
                     error_response('Email is required', 400)
-                    return redirect(f'https://app.trendit3.com/?error=Email_is_required')
+                    return redirect(f'https://blaziod.github.io/?error=Email_is_required')
 
                 if Trendit3User.query.filter_by(email=email).first():
                     error_response('Email already taken', 409)
-                    return redirect(f'https://app.trendit3.com/?error=User_already_exists')
+                    return redirect(f'https://blaziod.github.io/?error=User_already_exists')
                 
                 # if referral_code and not Trendit3User.query.filter_by(username=referral_code).first():
                 #     return error_response('Referral code is invalid', 404)
@@ -701,29 +701,29 @@ class SocialAuthController:
                 #     referrer = get_trendit3_user(referral_code)
                 #     referral_history = ReferralHistory.create_referral_history(email=email, status='pending', trendit3_user=referrer, date_joined=new_user.date_joined)
                 
-                return redirect(f'https://app.trendit3.com/?access_token={access_token}')
+                return redirect(f'https://blaziod.github.io/?access_token={access_token}')
             
             else:
                 error_response('Error occurred processing the request. Response from google was not ok', 500)
-                return redirect(f'https://app.trendit3.com/?error=Error_occurred_processing_the_request')
+                return redirect(f'https://blaziod.github.io/?error=Error_occurred_processing_the_request')
                 
         except IntegrityError as e:
             db.session.rollback()
             log_exception('Integrity Error:', e)
             error_response(f'User already exists: {str(e)}', 409)
-            return redirect(f'https://app.trendit3.com/?error=User_already_exists')
+            return redirect(f'https://blaziod.github.io/?error=User_already_exists')
         
         except (DataError, DatabaseError) as e:
             db.session.rollback()
             log_exception('Database error occurred during registration', e)
             error_response('Error interacting with the database.', 500)
-            return redirect(f'https://app.trendit3.com/?error=Error_interacting_with_the_database')
+            return redirect(f'https://blaziod.github.io/?error=Error_interacting_with_the_database')
             
         except Exception as e:
             db.session.rollback()
             log_exception('An error occurred during registration', e)
             error_response(f'An error occurred while processing the request: {str(e)}', 500)
-            return redirect(f'https://app.trendit3.com/?error=An_error_occurred_while_processing_the_request')
+            return redirect(f'https://blaziod.github.io/?error=An_error_occurred_while_processing_the_request')
             
         finally:
             db.session.close()

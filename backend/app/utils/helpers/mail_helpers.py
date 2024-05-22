@@ -81,7 +81,7 @@ def send_url_to_email (user_email: str, url: str, code_type:str = 'pwd_reset'):
 
 
 # SEND OTHER EMAILS LIKE WELCOME MAIL, CREDIT ALERT, ETC
-def send_async_other_email(app, user_email, email_type, amount=None, admin_login_code=None):
+def send_async_other_email(app, user_email, email_type, task_type, task_time, task_description, amount=None, admin_login_code=None):
     """
     Sends an email asynchronously.
 
@@ -112,7 +112,16 @@ def send_async_other_email(app, user_email, email_type, amount=None, admin_login
 
         elif email_type == 'task_approved':
             subject = 'Task Approved'
-            template = render_template("email/task_approved.html", redirect_link='https://app.trendit3.com/', user_email=user_email, username=username)
+            template = render_template(
+                "email/task_approved.html", 
+                redirect_link='https://app.trendit3.com/', 
+                user_email=user_email, 
+                username=username,
+                task_type=task_type,
+                task_time=task_time,
+                task_description=task_description
+            )
+            print(task_description, task_time, task_type)
             msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
 
         elif email_type == 'task_rejected':
@@ -148,5 +157,5 @@ def send_async_other_email(app, user_email, email_type, amount=None, admin_login
             console_log('EXCEPTION SENDING MAIL', f'An error occurred while sending the {email_type} email type: {str(e)}')
 
 
-def send_other_emails(user_email, email_type='membership', amount=None, admin_login_code=None):
-    Thread(target=send_async_other_email, args=(current_app._get_current_object(), user_email, email_type, amount, admin_login_code)).start()
+def send_other_emails(user_email, task_type, task_time, task_description, email_type='membership', amount=None, admin_login_code=''):
+    Thread(target=send_async_other_email, args=(current_app._get_current_object(), user_email, email_type, amount, admin_login_code, task_type, task_time, task_description)).start()

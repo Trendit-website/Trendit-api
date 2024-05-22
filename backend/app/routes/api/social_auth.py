@@ -25,6 +25,7 @@ def fb_signup():
 def fb_signup_callback():
     return SocialAuthController.fb_signup_callback()
 
+
 @api.route('/facebook_login')
 def fb_login():
     return SocialAuthController.fb_login()
@@ -73,6 +74,7 @@ def gg_signup():
 @api.route('/gg_signup_callback')
 def gg_signup_callback():
     return SocialAuthController.google_signup_callback()
+
 
 @api.route('/welcome_email')
 def welcome():
