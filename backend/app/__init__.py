@@ -85,8 +85,8 @@ def create_app(config_name=Config.ENV):
 
 
     # Swagger setup
-    SWAGGER_URL = '/swagger'
-    API_URL = '/spec'
+    SWAGGER_URL = '/api/docs'
+    API_URL = 'http://petstore.swagger.io/v2/swagger.json'
     swaggerui_blueprint = get_swaggerui_blueprint(
         SWAGGER_URL,
         API_URL,
