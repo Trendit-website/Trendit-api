@@ -1,7 +1,7 @@
 import logging
 from flask import request, jsonify
 from flask_jwt_extended import get_jwt_identity
-from flask_sqlalchemy import desc
+
 from app.extensions import db
 from app.utils.helpers.response_helpers import error_response, success_response
 from app.utils.helpers.basic_helpers import generate_random_string, console_log
@@ -20,7 +20,7 @@ class TransactionController:
             page = request.args.get('page', default=1, type=int)
             per_page = request.args.get('per_page', default=20, type=int)
             
-            transactions = Transaction.query.order_by(desc(Transaction.created_at)).paginate(page=page, per_page=per_page, error_out=False)
+            transactions = Transaction.query.order_by(Transaction.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
             transaction_list = [transaction.to_dict() for transaction in transactions.items]
             
             extra_data = {
