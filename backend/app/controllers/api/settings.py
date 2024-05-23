@@ -397,10 +397,17 @@ class ManageSettingsController:
                 return error_response(f"user not found", 404)
             
             data = request.get_json()
+            old_password = data.get('old_password', '')
             new_password = data.get('new_password', '')
+            
+            if not old_password:
+                return error_response("Current Password not provided", 400)
             
             if not new_password:
                 return error_response("New password field cannot be empty", 400)
+            
+            if not current_user.verify_password(old_password):
+                return error_response('Old Password is incorrect', 401)
             
             hashed_pwd = generate_password_hash(new_password, "pbkdf2:sha256")
             current_user.update(thePassword=hashed_pwd)

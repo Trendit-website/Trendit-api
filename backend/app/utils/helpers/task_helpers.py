@@ -242,7 +242,6 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
 
                 add_user_role(RoleNames.ADVERTISER, user_id)
                 
-                
                 return new_task
             
         elif task_type == 'engagement':
@@ -261,7 +260,6 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
     except Exception as e:
         log_exception(f"An exception occurred trying to save Task {data.get('task_type')}", e)
         db.session.rollback()
-        console_log('sys excInfo', sys.exc_info())
         return None
 
 

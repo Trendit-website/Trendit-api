@@ -56,6 +56,11 @@ class Task(db.Model):
     
     media = db.relationship('Media', backref='task', lazy=True, cascade="all, delete-orphan", single_parent=True)
     
+    __mapper_args__ = {
+        'polymorphic_on': task_type,
+        'polymorphic_identity': 'task'
+    }
+    
     @property
     def total_performances(self) -> int:
         """Returns the total number times the task has been performed."""
@@ -144,6 +149,8 @@ class Task(db.Model):
 
 
 class AdvertTask(Task):
+    __tablename__ = 'advert_task'
+    
     id = db.Column(db.Integer, db.ForeignKey('task.id'), primary_key=True)
     posts_count = db.Column(db.Integer, nullable=False)
     target_country = db.Column(db.String(120), nullable=False)
@@ -151,6 +158,10 @@ class AdvertTask(Task):
     gender = db.Column(db.String(120), nullable=False)
     caption = db.Column(db.Text, nullable=False)
     hashtags = db.Column(db.Text, nullable=False)
+    
+    __mapper_args__ = {
+        'polymorphic_identity': 'advert'
+    }
     
     def __repr__(self):
         return f'<ID: {self.id}, User ID: {self.trendit3_user_id}, Platform: {self.platform}, Posts Count: {self.posts_count}>'
@@ -191,10 +202,16 @@ class AdvertTask(Task):
 
 
 class EngagementTask(Task):
+    __tablename__ = 'engagement_task'
+    
     id = db.Column(db.Integer, db.ForeignKey('task.id'), primary_key=True)
     goal = db.Column(db.String(80), nullable=False)
     account_link = db.Column(db.String(120), nullable=False)
     engagements_count = db.Column(db.Integer, nullable=False)
+    
+    __mapper_args__ = {
+        'polymorphic_identity': 'engagement'
+    }
     
     def __repr__(self):
         return f'<ID: {self.id}, User ID: {self.trendit3_user_id}, Goal: {self.goal}, Platform: {self.platform}>'
