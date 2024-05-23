@@ -32,5 +32,11 @@ class Pricing(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
 
+
+    def update(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+        db.session.commit()
+
     def __repr__(self):
         return f'<Pricing: {self.item_name} - ${self.price}>'

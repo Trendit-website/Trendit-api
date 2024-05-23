@@ -155,6 +155,7 @@ class SocialVerification(db.Model):
         return {
             'id': self.id,
             'status': self.status.value,
+            'sender_id': self.sender_id,
             'type': self.type,
             'created_at': self.createdAt,
             'updated_at': self.updatedAt,

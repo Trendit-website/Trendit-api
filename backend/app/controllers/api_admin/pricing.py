@@ -11,7 +11,7 @@ It includes methods for getting prices, adding pricing, updating pricing and del
 from flask import request
 
 from ...extensions import db
-from ...models import Pricing
+from ...models import Pricing, PricingCategory
 from ...utils.helpers.basic_helpers import console_log
 from ...utils.helpers.response_helpers import error_response, success_response
 
@@ -30,6 +30,7 @@ class PricingController:
                     "price_earn": item.price_earn,
                     "price_pay": item.price_pay,
                     "description": item.description,
+                    "category": item.category.value,
                     "created_at": str(item.created_at),  # Convert to string
                     "updated_at": str(item.updated_at)  # Convert to string
                 }
@@ -53,12 +54,13 @@ class PricingController:
             item_name = data.get('item_name')
             price_pay = data.get('price_pay')
             price_earn = data.get('price_earn')
+            price_category = data.get('category')
             price_description = data.get('price_description')
 
             if not item_name or not price_pay or not price_earn or not price_description:
                 return error_response('Item name, price_pay, price_description and price_earn are required', 400)
 
-            pricing = Pricing(item_name=item_name, price_pay=price_pay, price_earn=price_earn, description=price_description)
+            pricing = Pricing(item_name=item_name, price_pay=price_pay, price_earn=price_earn, price_category=PricingCategory[price_category], description=price_description)
             db.session.add(pricing)
             db.session.commit()
             db.session.close()
@@ -76,6 +78,7 @@ class PricingController:
             item_name = data.get('item_name')
             price_pay = data.get('price_pay')
             price_earn = data.get('price_earn')
+            price_category = data.get('category')
             price_description = data.get('price_description')
 
             if not item_name:
@@ -88,14 +91,17 @@ class PricingController:
             
             if price_pay:
                 pricing.price_pay = price_pay
-                db.session.commit()
 
             if price_earn:
-                pricing.price_earn = price_earn
-                db.session.commit()
+                pricing.price_earn = price_earn                
 
             if price_description:
-                pricing.description = price_description                
+                pricing.description = price_description
+
+            if price_category in [cat.value for cat in list(PricingCategory)]:
+                pricing.category = PricingCategory[price_category]
+
+            db.session.commit()
             
             db.session.close()
 
