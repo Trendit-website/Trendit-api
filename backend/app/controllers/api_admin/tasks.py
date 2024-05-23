@@ -1,7 +1,7 @@
 import logging
 from flask import request, jsonify
 from flask_jwt_extended import get_jwt_identity
-from flask_sqlalchemy import desc
+
 from app.extensions import db
 from app.models.task import TaskPerformance, Task
 from app.utils.helpers.task_helpers import update_performed_task
@@ -19,7 +19,7 @@ class AdminTaskController:
             page = request.args.get('page', 1, type=int)
             per_page = request.args.get('per_page', 15, type=int)
             
-            tasks = Task.query.order_by(Task.date_created).paginate(page=page, per_page=per_page, error_out=False)
+            tasks = Task.query.order_by(Task.date_created.desc()).paginate(page=page, per_page=per_page, error_out=False)
             
             if page > tasks.pages:
                 return success_response('No content', 204, {'tasks': []})
