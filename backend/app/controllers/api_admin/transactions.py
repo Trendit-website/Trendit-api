@@ -47,7 +47,7 @@ class TransactionController:
             page = request.args.get('page', default=1, type=int)
             per_page = request.args.get('per_page', default=20, type=int)
             
-            transactions = Transaction.query.filter_by(id=user_id).paginate(page=page, per_page=per_page, error_out=False)
+            transactions = Transaction.query.filter_by(id=user_id).order_by(Transaction.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
             transaction_list = [transaction.to_dict() for transaction in transactions.items]
             
             extra_data = {
@@ -82,7 +82,7 @@ class TransactionController:
             page = request.args.get('page', default=1, type=int)
             per_page = request.args.get('per_page', default=20, type=int)
             
-            transactions = Transaction.query.filter_by(id=user_id, transaction_type=transaction_map[transaction_type]).paginate(page=page, per_page=per_page, error_out=False)
+            transactions = Transaction.query.filter_by(id=user_id, transaction_type=transaction_map[transaction_type]).order_by(Transaction.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
             transaction_list = [transaction.to_dict() for transaction in transactions.items]
             
             extra_data = {

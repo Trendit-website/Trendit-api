@@ -21,7 +21,7 @@ class SocialVerificationController:
                 page = request.args.get('page', default=1, type=int)
                 per_page = request.args.get('per_page', default=20, type=int)
                 
-                social_verification_requests = SocialVerification.query.paginate(page=page, per_page=per_page, error_out=False)
+                social_verification_requests = SocialVerification.query.order_by(SocialVerification.createdAt.desc()).paginate(page=page, per_page=per_page, error_out=False)
                 social_verification_list = [social_verification.to_dict() for social_verification in social_verification_requests.items]
                 
                 extra_data = {
