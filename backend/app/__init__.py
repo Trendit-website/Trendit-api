@@ -10,11 +10,13 @@ sets up CORS, configures logging, registers blueprints and defines additional ap
 @Copyright © 2024 Emmanuel Olowu
 '''
 
-from flask import Flask
+from flask import Flask, jsonify
 from flask_moment import Moment
 from flask_migrate import Migrate
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
+from flask_swagger import swagger
+from flask_swagger_ui import get_swaggerui_blueprint
 from celery import Celery
 
 from app.models.user import Trendit3User
@@ -80,6 +82,27 @@ def create_app(config_name=Config.ENV):
     
     from .utils.debugging import debugger as debugger_bp
     app.register_blueprint(debugger_bp)
+
+
+    # Swagger setup
+    SWAGGER_URL = '/api/docs'
+    API_URL = 'http://petstore.swagger.io/v2/swagger.json'
+    swaggerui_blueprint = get_swaggerui_blueprint(
+        SWAGGER_URL,
+        API_URL,
+        config={
+            'app_name': "Trendit³ API"
+        }
+    )
+    app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
+
+    @app.route('/spec')
+    def spec():
+        swag = swagger(app)
+        swag['info']['title'] = "Your API"
+        swag['info']['description'] = "API documentation"
+        swag['info']['version'] = "1.0.0"
+        return jsonify(swag)
     
     
     with app.app_context():

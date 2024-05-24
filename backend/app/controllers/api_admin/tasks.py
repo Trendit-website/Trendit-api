@@ -19,7 +19,7 @@ class AdminTaskController:
             page = request.args.get('page', 1, type=int)
             per_page = request.args.get('per_page', 15, type=int)
             
-            tasks = Task.query.paginate(page=page, per_page=per_page, error_out=False)
+            tasks = Task.query.order_by(Task.date_created.desc()).paginate(page=page, per_page=per_page, error_out=False)
             
             if page > tasks.pages:
                 return success_response('No content', 204, {'tasks': []})
