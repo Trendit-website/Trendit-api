@@ -231,9 +231,9 @@ class TaskController:
             if task.trendit3_user_id != current_user_id:
                 return error_response("You are not authorized to delete this Ad", 401)
             
-            extra_data = {'task': task.to_dict()}
+            task.delete()
             
-            api_response = success_response("Task deleted successfully", 200, extra_data)
+            api_response = success_response("Task deleted successfully", 200)
         except Exception as e:
             api_response = error_response("An unexpected error occurred. Our developers are looking into this.", 500)
             log_exception("An exception occurred trying to delete task:", e)
