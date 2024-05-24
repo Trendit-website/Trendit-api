@@ -42,7 +42,6 @@ def get_advertiser_single_task(task_id_key):
 
 @api.route('/user/tasks/<task_id_key>', methods=['DELETE'])
 @jwt_required()
-@roles_required(['Advertiser'])
 def advertiser_delete_task(task_id_key):
     return TaskController.advertiser_delete_task(task_id_key)
 
@@ -59,7 +58,6 @@ def get_task_performances(task_id_key):
 
 @api.route('/user/tasks/total', methods=['GET'])
 @jwt_required()
-@roles_required(['Advertiser'])
 def get_advertiser_total_task():
     return TaskController.get_advertiser_total_task()
 
