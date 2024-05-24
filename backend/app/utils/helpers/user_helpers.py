@@ -10,9 +10,10 @@ These functions assist with tasks such as:
 @link: https://github.com/zeddyemy
 @package: Trendit³
 '''
-from werkzeug.datastructures import FileStorage
-from threading import Thread
 from enum import Enum
+from threading import Thread
+from flask import current_app
+from werkzeug.datastructures import FileStorage
 
 from ...extensions import db
 from ...models.role import Role, RoleNames
@@ -23,29 +24,30 @@ from ...utils.helpers.basic_helpers import console_log, log_exception
 from ...utils.helpers.basic_helpers import generate_random_string
 
 
-def async_save_profile_pic(user: Trendit3User, media_file):
-    try:
-        user_profile = user.profile
-        if isinstance(media_file, FileStorage) and media_file.filename != '':
-            try:
-                profile_picture = save_media(media_file) # This saves image file, saves the path in db and return the Media instance
-            except Exception as e:
-                log_exception(f"An error occurred saving profile image: {str(e)}")
-        elif profile_picture == '' and user:
-            if user_profile.profile_picture_id:
-                profile_picture = user_profile.profile_picture
+def async_save_profile_pic(app, user: Trendit3User, media_file):
+    with app.app_context():
+        try:
+            user_profile = user.profile
+            if isinstance(media_file, FileStorage) and media_file.filename != '':
+                try:
+                    profile_picture = save_media(media_file) # This saves image file, saves the path in db and return the Media instance
+                except Exception as e:
+                    log_exception(f"An error occurred saving profile image: {str(e)}")
+            elif profile_picture == '' and user:
+                if user_profile.profile_picture_id:
+                    profile_picture = user_profile.profile_picture
+                else:
+                    profile_picture = None
             else:
                 profile_picture = None
-        else:
-            profile_picture = None
-        
-        user_profile.update(profile_picture=profile_picture)
-    except Exception as e:
-        log_exception()
-        raise e
+            
+            user_profile.update(profile_picture=profile_picture)
+        except Exception as e:
+            log_exception()
+            raise e
 
 def save_profile_pic(user: Trendit3User, media_file: FileStorage):
-    Thread(target=async_save_profile_pic, args=(user, media_file)).start()
+    Thread(target=async_save_profile_pic, args=(current_app._get_current_object(), user, media_file)).start()
 
 def add_user_role(role_name: Enum, user_id: int):
     try:

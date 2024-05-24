@@ -193,26 +193,27 @@ def get_task_by_key(task_key):
     return task
 
 
-def async_save_task_media_files(task_id_key: str | int, media_files):
-    try:
-        task = fetch_task(task_id_key)
-        
-        #save media files
-        task_media = []
-        if media_files:
-            for media_file in media_files:
-                media = save_media(media_file)
-                task.media.append(media)
-        elif not media_files and task:
-            task.media = task.media
-        
-        db.session.commit()
-    except Exception as e:
-        log_exception()
-        raise e
+def async_save_task_media_files(app, task_id_key: str | int, media_files):
+    with app.app_context():
+        try:
+            task = fetch_task(task_id_key)
+            
+            #save media files
+            task_media = []
+            if media_files:
+                for media_file in media_files:
+                    media = save_media(media_file)
+                    task.media.append(media)
+            elif not media_files and task:
+                task.media = task.media
+            
+            db.session.commit()
+        except Exception as e:
+            log_exception("an exception occurred saving task media")
+            raise e
 
 def save_task_media_files(task_id_key: str | int, media_files):
-    Thread(target=async_save_task_media_files, args=(task_id_key, media_files)).start()
+    Thread(target=async_save_task_media_files, args=(current_app._get_current_object(), task_id_key, media_files)).start()
 
 def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
     try:
