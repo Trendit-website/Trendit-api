@@ -1,7 +1,7 @@
 import sys
 from threading import Thread
-from flask import request, jsonify, current_app
-from sqlalchemy import func, or_
+from flask import request, current_app
+from sqlalchemy import func
 from flask_jwt_extended import get_jwt_identity
 from datetime import datetime, timedelta
 

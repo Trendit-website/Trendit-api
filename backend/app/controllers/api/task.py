@@ -216,6 +216,31 @@ class TaskController:
     
     
     @staticmethod
+    def advertiser_delete_task(task_id_key):
+        try:
+            current_user_id = int(get_jwt_identity())
+            current_user = Trendit3User.query.get(current_user_id)
+            
+            if not current_user:
+                return error_response(f"user not found", 404)
+            
+            task = fetch_task(task_id_key)
+            if not task:
+                return error_response("Task not found", 404)
+            
+            if task.trendit3_user_id != current_user_id:
+                return error_response("You are not authorized to delete this Ad", 401)
+            
+            extra_data = {'task': task.to_dict()}
+            
+            api_response = success_response("Task deleted successfully", 200, extra_data)
+        except Exception as e:
+            api_response = error_response("An unexpected error occurred. Our developers are looking into this.", 500)
+            log_exception("An exception occurred trying to delete task:", e)
+        
+        return api_response
+    
+    @staticmethod
     def get_advertisers_tasks_activities():
         try:
             current_user_id = int(get_jwt_identity())

@@ -40,6 +40,12 @@ def get_advertiser_tasks():
 def get_advertiser_single_task(task_id_key):
     return TaskController.get_advertiser_single_task(task_id_key)
 
+@api.route('/user/tasks/<task_id_key>', methods=['DELETE'])
+@jwt_required()
+@roles_required(['Advertiser'])
+def advertiser_delete_task(task_id_key):
+    return TaskController.advertiser_delete_task(task_id_key)
+
 @api.route('/user/tasks/activities', methods=['GET'])
 @jwt_required()
 def get_advertisers_tasks_activities(task_id_key):
