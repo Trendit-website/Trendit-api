@@ -70,11 +70,11 @@ def delete_account():
     return AuthController.delete_account()
 
 
-@api.route('/check-username', methods=['GET'])
+@api.route('/check-username', methods=['POST'])
 def username_check():
     return AuthController.username_check()
 
-@api.route('/check-email', methods=['GET'])
+@api.route('/check-email', methods=['POST'])
 def email_check():
     return AuthController.email_check()
 
