@@ -48,12 +48,15 @@ def verify_bank_account():
         data = request.get_json()
         
         account_no = data.get('account_no')
-        bank_name = data.get('bank_name')
+        bank_name = data.get('bank_name', '').lower()
         bank_code = get_bank_code(bank_name)
         
         account_info = flutterwave_verify_bank_account(account_no, bank_code)
         
         api_response = success_response("account verified", 200, {"account_info": account_info})
+    except AttributeError as e:
+        log_exception("AttributeError verifying bank account", e)
+        api_response = error_response(f"make sure bank name and bank code is provided", 400)
     except requests.exceptions.RequestException as e:
         log_exception("RequestException verifying bank account", e)
         api_response = error_response(f"Request Failed: {str(e)}", 500)
