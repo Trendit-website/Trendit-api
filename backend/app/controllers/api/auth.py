@@ -566,7 +566,7 @@ class AuthController:
     def username_check():
         try:
             data = request.get_json()
-            username = data.get('username', '').lower()
+            username = data.get('username', '')
             if not username:
                 return error_response("username parameter is required in request's body.", 400)
             
