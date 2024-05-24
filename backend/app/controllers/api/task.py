@@ -700,7 +700,9 @@ class TaskController:
             payment_method = request.args.get('payment_method', 'trendit_wallet')
             current_user_id = get_jwt_identity()
             
-            console_log('payment_method', payment_method)
+            media_files = request.files.getlist('media')
+            if len(media_files) > 5:
+                return error_response("You can only upload five media files", 400)
             
             if payment_method == 'payment_gateway':
                 callback_url = request.headers.get('CALLBACK-URL')
