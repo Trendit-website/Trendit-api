@@ -8,7 +8,7 @@ It includes methods for checking username, checking email, signing up, resending
 @package: Trendit³
 '''
 
-import logging
+import logging, json
 from datetime import timedelta
 from flask import request, make_response
 from sqlalchemy.exc import ( IntegrityError, DataError, DatabaseError, InvalidRequestError, )
@@ -575,6 +575,9 @@ class AuthController:
             
             api_response = success_response(f"{username} is available", 200)
             
+        except json.JSONDecodeError as e:
+            log_exception("JSONDecodeError occurred trying to check username", e)
+            api_response = error_response(f"Invalid or no JSON object. {str(e)}", 400)
         except UnsupportedMediaType as e:
             log_exception("An exception occurred checking username", e)
             api_response = error_response("username parameter is required in request's body", 415)
