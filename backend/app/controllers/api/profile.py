@@ -13,7 +13,7 @@ from ...utils.helpers.location_helpers import get_currency_info
 from app.utils.helpers.basic_helpers import console_log, log_exception
 from app.utils.helpers.user_helpers import get_user_info
 from app.utils.helpers.media_helpers import save_media
-from app.utils.helpers.user_helpers import is_username_exist, is_email_exist
+from app.utils.helpers.user_helpers import is_username_exist, is_email_exist, save_profile_pic
 from app.utils.helpers.auth_helpers import send_code_to_email, generate_six_digit_code
 from ...utils.helpers.bank_helpers import get_bank_code
 from app.utils.helpers.response_helpers import *
@@ -84,23 +84,11 @@ class ProfileController:
                 return error_response('Username already Taken', 409)
             
             
-            if isinstance(profile_picture, FileStorage) and profile_picture.filename != '':
-                try:
-                    profile_picture = save_media(profile_picture) # This saves image file, saves the path in db and return the id of the image
-                except Exception as e:
-                    current_app.logger.error(f"An error occurred while profile image: {str(e)}")
-                    return error_response(f"An error occurred saving profile image: {str(e)}", 400)
-            elif profile_picture == '' and current_user:
-                if user_profile.profile_picture_id:
-                    profile_picture = user_profile.profile_picture
-                else:
-                    profile_picture = None
-            else:
-                profile_picture = None
+            save_profile_pic(current_user, profile_picture)
             
             # update user details
             current_user.update(username=username)
-            user_profile.update(firstname=firstname, lastname=lastname, gender=gender, phone=phone, profile_picture=profile_picture, birthday=birthday)
+            user_profile.update(firstname=firstname, lastname=lastname, gender=gender, phone=phone, birthday=birthday)
             user_wallet.update(currency_name=currency_info.get('name', user_wallet.currency_name), currency_code=currency_info.get('code', user_wallet.currency_code), currency_symbol=currency_info.get('symbol', user_wallet.currency_symbol))
             user_address.update(country=country, state=state, local_government=local_government)
             
@@ -168,23 +156,11 @@ class ProfileController:
                 return error_response('Username already Taken', 409)
             
             
-            if isinstance(profile_picture, FileStorage) and profile_picture.filename != '':
-                try:
-                    profile_picture = save_media(profile_picture) # This saves image file, saves the path in db and return the id of the image
-                except Exception as e:
-                    current_app.logger.error(f"An error occurred while profile image: {str(e)}")
-                    return error_response(f"An error occurred saving profile image: {str(e)}", 400)
-            elif profile_picture == '' and current_user:
-                if user_profile.profile_picture_id:
-                    profile_picture = user_profile.profile_picture
-                else:
-                    profile_picture = None
-            else:
-                profile_picture = None
+            save_profile_pic(current_user, profile_picture)
             
             # update user details
             current_user.update(username=username)
-            user_profile.update(firstname=firstname, lastname=lastname, gender=gender, phone=phone, profile_picture=profile_picture, birthday=birthday)
+            user_profile.update(firstname=firstname, lastname=lastname, gender=gender, phone=phone, birthday=birthday)
             user_wallet.update(currency_name=currency_info.get('name', user_wallet.currency_name), currency_code=currency_info.get('code', user_wallet.currency_code), currency_symbol=currency_info.get('symbol', user_wallet.currency_symbol))
             user_address.update(country=country, state=state, local_government=local_government)
             

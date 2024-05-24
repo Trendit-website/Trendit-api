@@ -1,4 +1,5 @@
 import sys
+from threading import Thread
 from flask import request, jsonify, current_app
 from sqlalchemy import func, or_
 from flask_jwt_extended import get_jwt_identity
@@ -192,6 +193,27 @@ def get_task_by_key(task_key):
     return task
 
 
+def async_save_task_media_files(task_id_key: str | int, media_files):
+    try:
+        task = fetch_task(task_id_key)
+        
+        #save media files
+        task_media = []
+        if media_files:
+            for media_file in media_files:
+                media = save_media(media_file)
+                task.media.append(media)
+        elif not media_files and task:
+            task.media = task.media
+        
+        db.session.commit()
+    except Exception as e:
+        log_exception()
+        raise e
+
+def save_task_media_files(task_id_key: str | int, media_files):
+    Thread(target=async_save_task_media_files, args=(task_id_key, media_files)).start()
+
 def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
     try:
         user_id = int(get_jwt_identity())
@@ -222,31 +244,25 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
         if task_id_key:
             task = fetch_task(task_id_key)
         
-        #save media files
-        task_media = []
-        if media_files:
-            for media_file in media_files:
-                media = save_media(media_file)
-                task_media.append(media)
-        elif not media_files and task:
-            task_media = task.media
-        
-        
         if task_type == 'advert':
             if task:
-                task.update(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee=fee, media=task_media, payment_status=payment_status, posts_count=posts_count, target_country=target_country, target_state=target_state, gender=gender, caption=caption, hashtags=hashtags)
+                task.update(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee=fee, payment_status=payment_status, posts_count=posts_count, target_country=target_country, target_state=target_state, gender=gender, caption=caption, hashtags=hashtags)
+                
+                save_task_media_files(task.id, media_files) #save media files
                 
                 return task
             else:
-                new_task = AdvertTask.create_task(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee=fee, payment_status=payment_status, posts_count=posts_count, target_country=target_country, target_state=target_state, gender=gender, caption=caption, hashtags=hashtags, media=task_media)
+                new_task = AdvertTask.create_task(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee=fee, payment_status=payment_status, posts_count=posts_count, target_country=target_country, target_state=target_state, gender=gender, caption=caption, hashtags=hashtags)
 
                 add_user_role(RoleNames.ADVERTISER, user_id)
+                
+                save_task_media_files(new_task.id, media_files) #save media files
                 
                 return new_task
             
         elif task_type == 'engagement':
             if task:
-                task.update(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee=fee, media=task_media, payment_status=payment_status, goal=goal, account_link=account_link, engagements_count=engagements_count)
+                task.update(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee=fee, payment_status=payment_status, goal=goal, account_link=account_link, engagements_count=engagements_count)
                 
                 return task
             else:
