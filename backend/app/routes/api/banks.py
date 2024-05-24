@@ -5,7 +5,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from . import api
 from ...models import Trendit3User
 from ...utils.payments.flutterwave import get_banks, get_bank_code, flutterwave_verify_bank_account
-from ...utils.helpers.basic_helpers import log_exception
+from ...utils.helpers.basic_helpers import log_exception, console_log
 from ...utils.helpers.response_helpers import error_response, success_response
 
 
@@ -48,6 +48,7 @@ def verify_bank_account():
         data = request.get_json()
         
         account_no = data.get('account_no')
+        console_log("bank name", data.get('bank_name', ''))
         bank_name = data.get('bank_name', '').lower()
         bank_code = get_bank_code(bank_name)
         
