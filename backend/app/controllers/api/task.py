@@ -9,7 +9,7 @@ from ...models import Task, AdvertTask, EngagementTask, TaskPaymentStatus, TaskS
 from ...utils.helpers.task_helpers import save_task, get_tasks_dict_grouped_by_field, fetch_task, get_aggregated_task_counts_by_field, fetch_performed_task
 from ...utils.helpers.response_helpers import error_response, success_response
 from ...utils.helpers.basic_helpers import console_log, log_exception
-from ...utils.payments.utils import initialize_payment, debit_wallet
+from ...utils.payments.utils import initialize_payment, debit_wallet, credit_wallet
 
 
 
@@ -359,7 +359,7 @@ class TaskController:
                 return error_response(f"user not found", 404)
             
             data = request.get_json()
-            status = data.get("status", 'reject')
+            status = data.get("status", "")
             pt_id_key = data.get("performed_task_id_key")
             
             if not status or not pt_id_key:
@@ -378,6 +378,11 @@ class TaskController:
             status_val = "completed" if status == "accept" else "rejected"
             
             performed_task.update(status=status_val)
+            
+            if status_val == "completed":
+                user_id = performed_task.user_id
+                credit_wallet(user_id, performed_task.reward_money)
+            
             extra_data = {"performed_task": performed_task.to_dict()}
             
             api_response = success_response(f"Performed Task {status}ed", 200, extra_data)
