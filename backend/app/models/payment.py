@@ -186,7 +186,7 @@ class Wallet(db.Model):
     __tablename__ = "wallet"
 
     id = db.Column(db.Integer(), primary_key=True)
-    _balance = db.Column(db.Numeric(10, 2), default=00.00, nullable=True)
+    _balance = db.Column(db.Numeric(10, 2), default=0.00, nullable=True)
     currency_name = db.Column(db.String(), default='Naira', nullable=True)
     currency_code = db.Column(db.String(), default='NGN', nullable=True)
     currency_symbol = db.Column(db.String(), default=str('₦'), nullable=True)
@@ -198,11 +198,16 @@ class Wallet(db.Model):
     
     @property
     def balance(self):
-        return float(self._wallet_balance)
+        return self._balance
 
     @balance.setter
     def balance(self, value):
-        self._balance = round(value, 2)
+        if isinstance(value, (int, float)):
+            value = round(value, 2)
+        elif isinstance(value, str):
+            value = round(float(value), 2)
+        self._balance = value
+    
     
     def __repr__(self):
         return f'<ID: {self.id}, Balance: {self.balance}, Currency Name: {self.currency_name}, Symbol: {self.currency_symbol}>'
