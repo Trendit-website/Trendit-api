@@ -42,3 +42,15 @@ def approve_task(task_id):
 @roles_required('Junior Admin')
 def reject_task(task_id):
     return AdminTaskController.reject_task(task_id)
+
+
+@bp.route('/tasks/performances', methods=['POST'])
+@roles_required('Junior Admin')
+def get_task_performances():
+    return AdminTaskController.get_task_performances()
+
+
+@bp.route('/tasks/verify-performance', methods=['POST'])
+@roles_required('Junior Admin')
+def verify_task_performance():
+    return AdminTaskController.verify_performed_task()

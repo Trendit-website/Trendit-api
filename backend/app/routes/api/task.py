@@ -65,7 +65,7 @@ def get_advertiser_total_task():
 @jwt_required()
 @roles_required('Advertiser')
 def verify_task_performance():
-    return TaskController.verify_task_performance()
+    return TaskController.verify_performed_task()
 
 
 # ADVERT TASKS
