@@ -14,13 +14,13 @@ def get_all_users():
 @bp.route('/user/<int:user_id>', methods=['POST'])
 @roles_required('Junior Admin')
 def get_user(user_id):
-    return AdminUsersController.get_user(user_id)
+    return AdminUsersController.get_user_by_id(user_id)
 
 
-@bp.route('/user_by_email', methods=['POST'])
+@bp.route('/get_user', methods=['POST'])
 @roles_required('Junior Admin')
 def get_user_by_email():
-    return AdminUsersController.get_user_by_email()
+    return AdminUsersController.get_user()
 
 
 @bp.route('/delete-user/<int:user_id>', methods=['DELETE'])

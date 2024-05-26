@@ -36,7 +36,7 @@ class AdminUsersController:
         
     
     @staticmethod
-    def get_user(user_id: int):
+    def get_user_by_id(user_id: int):
         try:
             user = Trendit3User.query.get(user_id)
             if user is None:
@@ -53,14 +53,25 @@ class AdminUsersController:
         
     
     @staticmethod
-    def get_user_by_email():
+    def get_user():
         try:
             data = request.get_json()
+            user_id = data.get("id")
             email = data.get("email")
-            # user = Trendit3User.query.get(email)
-            user = Trendit3User.query.filter_by(email=email).first()
+            username = data.get("username")
+            
+            user = None
+            
+            if user_id:
+                user = Trendit3User.query.get(user_id)
+            elif email:
+                user = Trendit3User.query.filter_by(email=email).first()
+            elif username:
+                user = Trendit3User.query.filter_by(username=username).first()
+
             if user is None:
                 return error_response('User not found', 404)
+            
             user_dict = user.to_dict()
             extra_data = {
                 'user': user_dict
@@ -71,6 +82,7 @@ class AdminUsersController:
         except Exception as e:
             logging.exception("An exception occurred trying to get user:\n", str(e))
             return error_response('Error getting user', 500)
+
         
     @staticmethod
     def delete_user(user_id: int):
