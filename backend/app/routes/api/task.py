@@ -52,7 +52,7 @@ def get_advertisers_tasks_activities(task_id_key):
 
 @api.route('/user/tasks/<task_id_key>/performances', methods=['GET'])
 @jwt_required()
-@roles_required(['Advertiser'])
+@roles_required('Advertiser')
 def get_task_performances(task_id_key):
     return TaskController.get_task_performances(task_id_key)
 
@@ -63,7 +63,7 @@ def get_advertiser_total_task():
 
 @api.route('/user/tasks/verify-performances', methods=['POST'])
 @jwt_required()
-@roles_required(['Advertiser'])
+@roles_required('Advertiser')
 def verify_task_performance():
     return TaskController.verify_task_performance()
 

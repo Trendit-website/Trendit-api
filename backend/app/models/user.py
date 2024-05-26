@@ -234,6 +234,12 @@ class Trendit3User(db.Model):
             'tiktok_verified': user_social_links.tiktok_verified.value if user_social_links else None,
             'x_id': user_social_links.x_id if user_social_links else None,
             'x_verified': user_social_links.x_verified.value if user_social_links else None,
+            # 'threads_id': user_social_links.threads_id if user_social_links else None,
+            # 'threads_verified': user_social_links.threads_verified.value if user_social_links else None,
+            # 'youtube_id': user_social_links.youtube_id if user_social_links else None,
+            # 'youtube_verified': user_social_links.youtube_verified.value if user_social_links else None,
+            # 'spotify_id': user_social_links.spotify_id if user_social_links else None,
+            # 'spotify_verified': user_social_links.spotify_verified.value if user_social_links else None,
         }
         
         
@@ -301,6 +307,12 @@ class SocialLinks(db.Model):
     tiktok_verified = db.Column(db.Enum(SocialLinksStatus), default=SocialLinksStatus.IDLE)
     x_id = db.Column(db.String(200), default="", nullable=True)
     x_verified = db.Column(db.Enum(SocialLinksStatus), default=SocialLinksStatus.IDLE)
+    # threads_id = db.Column(db.String(200), default="", nullable=True)
+    # threads_verified = db.Column(db.Enum(SocialLinksStatus), default=SocialLinksStatus.IDLE)
+    # youtube_id = db.Column(db.String(200), default="", nullable=True)
+    # youtube_verified = db.Column(db.Enum(SocialLinksStatus), default=SocialLinksStatus.IDLE)
+    # spotify_id = db.Column(db.String(200), default="", nullable=True)
+    # spotify_verified = db.Column(db.Enum(SocialLinksStatus), default=SocialLinksStatus.IDLE)
     
     trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id', ondelete='CASCADE'), nullable=False,)
     trendit3_user = db.relationship('Trendit3User', back_populates="social_links")
@@ -324,7 +336,13 @@ class SocialLinks(db.Model):
             'tiktok_id': self.tiktok_id,
             'tiktok_verified': str(self.tiktok_verified),
             'x_id': self.x_id,
-            'x_verified': str(self.x_verified)
+            'x_verified': str(self.x_verified),
+            'threads_id': self.threads_id,
+            'threads_verified': str(self.threads_verified),
+            'youtube_id': self.youtube_id,
+            'youtube_verified': str(self.youtube_verified),
+            'spotify_id': self.spotify_id,
+            'spotify_verified': str(self.spotify_verified),
         }
 
 
