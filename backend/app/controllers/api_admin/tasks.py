@@ -184,13 +184,9 @@ class AdminTaskController:
             logging.exception("An exception occurred trying to get task:\n", str(e))
             return error_response('Error getting task', 500)
     
-    
     @staticmethod
-    def get_task_performances():
+    def get_task_performances(task_id_key):
         try:
-
-            data = request.json()
-            task_id_key = data.get("task_id_key", "")
             
             task = fetch_task(task_id_key)
             if not task:

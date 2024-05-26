@@ -44,10 +44,10 @@ def reject_task(task_id):
     return AdminTaskController.reject_task(task_id)
 
 
-@bp.route('/tasks/performances', methods=['POST'])
+@bp.route('/tasks/<task_id_key>/performances', methods=['POST'])
 @roles_required('Junior Admin')
-def get_task_performances():
-    return AdminTaskController.get_task_performances()
+def get_task_performances(task_id_key):
+    return AdminTaskController.get_task_performances(task_id_key)
 
 
 @bp.route('/tasks/verify-performance', methods=['POST'])
