@@ -12,6 +12,7 @@ These functions assist with tasks such:
 @link: https://github.com/zeddyemy
 @package: Trendit³
 '''
+from decimal import Decimal
 from datetime import datetime
 import requests, logging
 from flask import json
@@ -154,6 +155,7 @@ def debit_wallet(user_id: int, amount: int, payment_type=None) -> float:
     if user is None:
         raise ValueError("User not found.")
     
+    amount = Decimal(amount)
     wallet = user.wallet
 
     if wallet is None:
@@ -181,7 +183,7 @@ def debit_wallet(user_id: int, amount: int, payment_type=None) -> float:
         raise e
 
 
-def credit_wallet(user_id: int, amount: int) -> float:
+def credit_wallet(user_id: int, amount: int | float | Decimal) -> float:
     user = Trendit3User.query.get(user_id)
     
     if user is None:
@@ -195,7 +197,7 @@ def credit_wallet(user_id: int, amount: int) -> float:
 
     try:
         # Credit the wallet
-        wallet.balance += amount
+        wallet.balance += Decimal(amount)
         db.session.commit()
         return wallet.balance
     except Exception as e:
