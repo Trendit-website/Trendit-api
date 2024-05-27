@@ -38,7 +38,6 @@ class TaskPerformanceController:
             # Initiate task performance
             initiated_task = initiate_task(random_task)
             
-            console_log("initiated task for performance", initiate_task)
             
             if initiated_task:
                 console_log("Key initiated task", initiated_task['key'])
