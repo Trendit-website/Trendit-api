@@ -286,11 +286,8 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
 def update_performed_task(data, pt_id=None, status='pending'):
     try:
         user_id = int(get_jwt_identity())
-        
         task_id_key = data.get('task_id_key', '')
         task = fetch_task(task_id_key)
-        
-        console_log("task from update_performed_task()", task)
         
         if task is None:
             raise ValueError("Task not found.")
@@ -309,7 +306,6 @@ def update_performed_task(data, pt_id=None, status='pending'):
         else:
             performed_task = TaskPerformance.query.filter_by(user_id=user_id, task_id=task_id, status='pending').first()
         
-        console_log("performed_task before it's performance", performed_task)
         
         if not performed_task:
             raise ValueError("Couldn't find Task you are trying to perform")
