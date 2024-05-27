@@ -318,7 +318,8 @@ class TaskPerformance(db.Model):
         
         return task_dict
         
-    def to_dict(self):
+    def to_dict(self, add_task=True):
+        task = {'task': self.get_task(),} if add_task else {'task_key': self.task.key} # optionally include task info in dict
         return {
             'id': self.id,
             'key': self.key,
@@ -326,11 +327,13 @@ class TaskPerformance(db.Model):
             'proof_screenshot_path': self.get_proof_screenshot(),
             'account_name': self.account_name,
             'status': self.status,
+            'started_at': self.started_at,
             'date_completed': self.date_completed,
             'user': {
                 'id': self.user_id,
                 'username': self.trendit3_user.username,
-                'email': self.trendit3_user.email
+                'email': self.trendit3_user.email,
+                'profile_picture': self.trendit3_user.profile.profile_pic,
             },
-            'task': self.get_task(),
+            **task,
         }

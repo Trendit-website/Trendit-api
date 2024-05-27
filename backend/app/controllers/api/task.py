@@ -329,7 +329,7 @@ class TaskController:
                 .paginate(page=page, per_page=per_page, error_out=False)
             
             task_performances = pagination.items
-            current_task_performances = [task_performance.to_dict() for task_performance in task_performances]
+            current_task_performances = [task_performance.to_dict(add_task=False) for task_performance in task_performances]
             extra_data = {
                 'total': pagination.total,
                 "current_page": pagination.page,
