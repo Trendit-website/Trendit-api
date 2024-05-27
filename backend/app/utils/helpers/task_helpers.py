@@ -314,6 +314,9 @@ def update_performed_task(data, pt_id=None, status='pending'):
         if not performed_task:
             raise ValueError("Couldn't find Task you are trying to perform")
             
+        if screenshot == '':
+            raise ValueError("No screenshot provided.")
+        
         if screenshot.filename != '':
             try:
                 proof_screenshot = save_media(screenshot)
