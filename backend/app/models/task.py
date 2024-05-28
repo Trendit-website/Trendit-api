@@ -319,7 +319,7 @@ class TaskPerformance(db.Model):
         return task_dict
         
     def to_dict(self, add_task=True):
-        task = {'task': self.get_task(),} if add_task else {'task_key': self.task.key} # optionally include task info in dict
+        task = {'task': self.get_task(),} if add_task else {'task_key': self.task.task_key} # optionally include task info in dict
         return {
             'id': self.id,
             'key': self.key,
