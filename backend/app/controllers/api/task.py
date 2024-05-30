@@ -747,7 +747,7 @@ class TaskController:
             api_response = error_response(f"TypeError occurred: {str(e)}", 400)
         except Exception as e:
             log_exception("An exception occurred creating Task", e)
-            api_response = error_response("Error creating new task", 500)
+            api_response = error_response('Error creating new task. Our developers are already looking into it.', 500)
         
         return api_response
 
@@ -767,6 +767,6 @@ class TaskController:
             
         except Exception as e:
             log_exception("An exception occurred getting task metrics", e)
-            api_response = error_response("Error getting task metrics", 500)
+            api_response = error_response('Error getting task metrics. Our developers are already looking into it.', 500)
         
         return api_response
