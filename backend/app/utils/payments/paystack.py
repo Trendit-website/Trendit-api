@@ -5,14 +5,13 @@
 """
 
 import requests, hmac, hashlib
-from flask import json, request, jsonify
+from flask import json, request
 from sqlalchemy.exc import ( DataError, DatabaseError )
 
 from ...extensions import db
 from ...models import Payment, Transaction, TransactionType, Withdrawal, Trendit3User, TaskPaymentStatus, BankAccount, Recipient
-from ...utils.helpers.payment_helpers import initialize_payment, credit_wallet, initiate_transfer
+from .wallet import credit_wallet
 from ...utils.helpers.basic_helpers import console_log, log_exception, generate_random_string
-from ...utils.helpers.response_helpers import error_response, success_response
 from ...utils.helpers.task_helpers import get_task_by_key
 from ...utils.helpers.mail_helpers import send_other_emails
 from .exceptions import TransactionMissingError, CreditWalletError, SignatureError

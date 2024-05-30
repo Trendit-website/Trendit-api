@@ -11,7 +11,8 @@ from app.utils.helpers.response_helpers import error_response, success_response
 from app.utils.helpers.basic_helpers import generate_random_string, console_log, log_exception
 from app.models.user import Trendit3User
 from ...utils.helpers.mail_helpers import send_other_emails
-from ...utils.payments.utils import initialize_payment, debit_wallet, credit_wallet
+from ...utils.payments.utils import initialize_payment
+from ...utils.payments.wallet import debit_wallet, credit_wallet
 
 
 class AdminTaskController:

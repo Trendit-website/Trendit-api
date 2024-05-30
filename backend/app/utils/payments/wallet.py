@@ -1,0 +1,69 @@
+'''
+@author: Emmanuel Olowu
+@link: https://github.com/zeddyemy
+@package: Trendit³
+'''
+from decimal import Decimal
+
+from ...extensions import db
+from ...models import Payment, Transaction, TransactionType, Withdrawal, Trendit3User
+from ...utils.helpers.basic_helpers import console_log, log_exception, generate_random_string
+from ...utils.helpers.mail_helpers import send_other_emails
+
+
+def debit_wallet(user_id: int, amount: int, payment_type=None) -> float:
+    user = Trendit3User.query.get(user_id)
+    
+    if user is None:
+        raise ValueError("User not found.")
+    
+    amount = Decimal(amount)
+    wallet = user.wallet
+
+    if wallet is None:
+        raise ValueError("User does not have a wallet.")
+
+    current_balance = wallet.balance
+    if current_balance < amount:
+        raise ValueError("Insufficient balance.")
+
+    
+    try:
+        # Debit the wallet
+        wallet.balance -= amount
+        key = generate_random_string(16)
+        payment = Payment(key=key, amount=amount, payment_type=payment_type, payment_method='wallet', status='complete', trendit3_user=user)
+        transaction = Transaction(key=key, amount=amount, transaction_type=TransactionType.DEBIT, status='complete', trendit3_user=user)
+        
+        db.session.add(payment, transaction)
+        db.session.commit()
+        send_other_emails(user.email, email_type='debit', amount=amount) # send debit alert to user's mail
+        return wallet.balance
+    except Exception as e:
+        # Handle the exception appropriately (rollback, log the error, etc.)
+        db.session.rollback()
+        raise e
+
+
+def credit_wallet(user_id: int, amount: int | float | Decimal) -> float:
+    user = Trendit3User.query.get(user_id)
+    
+    if user is None:
+        raise ValueError("User not found.")
+    
+    wallet = user.wallet
+
+    if wallet is None:
+        raise ValueError("User does not have a wallet.")
+
+
+    try:
+        # Credit the wallet
+        wallet.balance += Decimal(amount)
+        db.session.commit()
+        return wallet.balance
+    except Exception as e:
+        # Handle the exception appropriately (rollback, log the error, etc.)
+        db.session.rollback()
+        raise e
+

@@ -80,7 +80,7 @@ class PaymentController:
         except Exception as e:
             db.session.rollback()
             logging.exception(f"An exception occurred during payment verification {str(e)}")
-            return error_response('An error occurred while processing the request.', 500)
+            return error_response('An unexpected error. Our developers are already looking into it.', 500)
         finally:
             db.session.close()
         
@@ -160,7 +160,7 @@ class PaymentController:
             return success_response('Payment history fetched successfully', 200, extra_data)
         except Exception as e:
             logging.exception(f"An exception occurred during fetching payment history. {str(e)}") # Log the error details for debugging
-            return error_response("An error occurred while processing the request", 500)
+            return error_response('An unexpected error. Our developers are already looking into it.', 500)
 
 
     @staticmethod
@@ -207,7 +207,7 @@ class PaymentController:
         except Exception as e:
             log_exception("An exception occurred processing the withdrawal request", e)
             db.session.rollback()
-            api_response = error_response(f'Error: {str(e)}', 500)
+            api_response = error_response('An unexpected error. Our developers are already looking into it.', 500)
         
         return api_response
 
@@ -290,7 +290,7 @@ class PaymentController:
         except Exception as e:
             db.session.rollback()
             logging.exception(f"An unexpected exception occurred during withdrawal verification: {str(e)}")
-            return error_response(f"An unexpected error occurred while processing the request: {str(e)}", 500)
+            return error_response('An unexpected error. Our developers are already looking into it.', 500)
         finally:
             db.session.close()
         
@@ -328,16 +328,15 @@ class PaymentController:
             current_user_id = int(get_jwt_identity())
             user = Trendit3User.query.get(current_user_id)
             user_wallet = user.wallet
+            
+            user_wallet_dict = user_wallet.to_dict()
+            user_wallet_dict.pop("id")
+            user_wallet_dict.pop("user_id")
 
-            extra_data = {
-                "balance": user_wallet.balance if user_wallet else None,
-                'currency_name': user_wallet.currency_name if user_wallet else None,
-                'currency_code': user_wallet.currency_code if user_wallet else None,
-                'currency_symbol': user_wallet.currency_symbol if user_wallet else None
-            }
+            extra_data = user_wallet_dict
 
             return success_response(f'Balanced fetched successfully', 200, extra_data)
         
         except Exception as e:
             logging.exception(f"An exception occurred while fetching user's wallet balance: {str(e)}")
-            return error_response(f"An error occurred while processing the request: {str(e)}", 500)
+            return error_response('An unexpected error. Our developers are already looking into it.', 500)

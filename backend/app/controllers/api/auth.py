@@ -69,7 +69,7 @@ class AuthController:
         except Exception as e:
             db.session.rollback()
             logging.exception(f"An exception occurred during registration. {e}") # Log the error details for debugging
-            api_response = error_response('Error occurred processing the request.', 500)
+            api_response = error_response('An unexpected error. Our developers are already looking into it.', 500)
         
         return api_response
 
@@ -132,7 +132,7 @@ class AuthController:
         except Exception as e:
             db.session.rollback()
             log_exception('Exception occurred during registration', e)
-            return error_response(f'An error occurred while processing the request: {str(e)}', 500)
+            return error_response('An unexpected error. Our developers are already looking into it.', 500)
         finally:
             db.session.close()
 
@@ -277,7 +277,7 @@ class AuthController:
         except Exception as e:
             db.session.rollback()
             log_exception('An error occurred during registration', e)
-            return error_response(f'An error occurred while processing the request: {str(e)}', 500)
+            return error_response('An unexpected error. Our developers are already looking into it.', 500)
         finally:
             db.session.close()
     
@@ -347,7 +347,7 @@ class AuthController:
             api_response = success_response(f"{str(e)}", 415)
         except Exception as e:
             logging.exception(f"An exception occurred trying to login: {e}")
-            api_response = success_response(f'An Unexpected error occurred processing the request.', 500)
+            api_response = error_response('An unexpected error. Our developers are already looking into it.', 500)
         finally:
             db.session.close()
         
@@ -458,7 +458,7 @@ class AuthController:
             
         except Exception as e:
             log_exception(f"An exception occurred processing the request", e)
-            api_response = error_response('An error occurred while processing the request.', 500)
+            api_response = error_response('An unexpected error. Our developers are already looking into it.', 500)
         finally:
             db.session.close()
         
@@ -487,7 +487,7 @@ class AuthController:
                 return error_response("This reset URL has expired. Please request a new one.", 401)
             except Exception as e:
                 log_exception("An exception occurred decoding token", e)
-                return error_response("An unexpected error occurred processing the request.", 500)
+                return error_response('An unexpected error. Our developers are already looking into it.', 500)
             
             
             # Reset token is valid, update user password
@@ -510,8 +510,8 @@ class AuthController:
             api_response = error_response(f"Invalid or expired reset URL", 401)
         except Exception as e:
             db.session.rollback()
-            logging.exception(f"An exception occurred processing the request: {e}")
-            api_response = error_response('An error occurred while processing the request.', 500)
+            log_exception(f"An exception occurred processing the request", e)
+            api_response = error_response('An unexpected error. Our developers are already looking into it.', 500)
         finally:
             db.session.close()
         
@@ -554,7 +554,7 @@ class AuthController:
         except Exception as e:
             db.session.rollback()
             log_exception("An exception occurred processing request", e)
-            api_response = error_response('An unexpected error occurred while processing the request.', 500)
+            api_response = error_response('An unexpected error. Our developers are already looking into it.', 500)
         finally:
             db.session.close()
         
@@ -583,7 +583,7 @@ class AuthController:
             api_response = error_response("username parameter is required in request's body", 415)
         except Exception as e:
             log_exception("An exception occurred checking username", e)
-            api_response = error_response("An error occurred while processing the request.", 500)
+            api_response = error_response('An unexpected error. Our developers are already looking into it.', 500)
         
         return api_response
     
@@ -606,7 +606,7 @@ class AuthController:
             api_response = error_response("email parameter is required in request's body.", 415)
         except Exception as e:
             log_exception("An exception occurred checking email", e)
-            api_response = error_response("An error occurred while processing the request.", 500)
+            api_response = error_response('An unexpected error. Our developers are already looking into it.', 500)
 
         return api_response
     
@@ -646,6 +646,6 @@ class AuthController:
         except Exception as e:
             db.session.rollback()
             log_exception('An error occurred assigning user roles', e)
-            return error_response(f'An error occurred while processing the request: {str(e)}', 500)
+            return error_response('An unexpected error. Our developers are already looking into it.', 500)
         finally:
             db.session.close()

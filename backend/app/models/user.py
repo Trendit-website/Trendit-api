@@ -182,36 +182,22 @@ class Trendit3User(db.Model):
         
         address_info = {}
         if self.address:
-            address_info.update({
-                'country': self.address.country,
-                'state': self.address.state,
-                'local_government': self.address.local_government
-            })
+            address_info = self.address.to_dict()
+            address_info.pop("id")
         
         profile_data = {}
         if self.profile:
-            profile_data.update({
-                'firstname': self.profile.firstname,
-                'lastname': self.profile.lastname,
-                'gender': self.profile.gender,
-                'phone': self.profile.phone,
-                'birthday': self.profile.birthday,
-                'profile_picture': self.profile.profile_pic,
-                'referral_link': self.profile.referral_link,
-            })
+            profile_data = self.profile.to_dict()
+            profile_data.pop("id")
         
         bank_details = {}
         primary_bank = BankAccount.query.filter_by(trendit3_user_id=self.id, is_primary=True).first()
         if primary_bank:
             bank_details.update(primary_bank.to_dict())
         
-        user_wallet = self.wallet
-        wallet_info = {
-            'balance': user_wallet.balance if user_wallet else None,
-            'currency_name': user_wallet.currency_name if user_wallet else None,
-            'currency_code': user_wallet.currency_code if user_wallet else None,
-            'currency_symbol': user_wallet.currency_symbol if user_wallet else None,
-        }
+        user_wallet = self.wallet.to_dict()
+        user_wallet.pop("id")
+        wallet_info = user_wallet
         
         user_social_ids = self.social_ids
         social_ids = {
@@ -423,8 +409,6 @@ class Address(db.Model):
             'country': self.country,
             'state': self.state,
             'local_government': self.local_government,
-            'currency': self.currency_code,
-            'user_id': self.trendit3_user_id
         }
 
 

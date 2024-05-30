@@ -5,18 +5,16 @@
 """
 
 import requests, hmac, hashlib
-from flask import json, request, jsonify
-from flask_jwt_extended import get_jwt_identity
+from flask import json, request
 from sqlalchemy.exc import ( DataError, DatabaseError )
 
 from ...extensions import db
 from ...models import Payment, Transaction, TransactionType, Withdrawal, Trendit3User, TaskPaymentStatus, BankAccount
 from ...utils.helpers.basic_helpers import console_log, log_exception, generate_random_string
-from ...utils.helpers.response_helpers import error_response, success_response
 from ...utils.helpers.task_helpers import get_task_by_key
 from ...utils.helpers.mail_helpers import send_other_emails
 from .exceptions import TransactionMissingError, CreditWalletError, SignatureError
-from . import credit_user_wallet
+from .wallet import credit_wallet
 from .paystack import headers as paystack_headers
 from config import Config
 
@@ -141,7 +139,7 @@ def verify_flutterwave_payment(data):
                     elif payment_type == 'credit-wallet':
                         # Credit user's wallet
                         try:
-                            credit_user_wallet(user_id, amount)
+                            credit_wallet(user_id, amount)
                         except ValueError as e:
                             raise CreditWalletError(f'Error crediting wallet. Please Try To Verify Again: {e}')
                         
@@ -253,7 +251,7 @@ def flutterwave_webhook():
                     elif payment_type == 'credit-wallet':
                         # Credit user's wallet
                         try:
-                            credit_user_wallet(user_id, amount)
+                            credit_wallet(user_id, amount)
                             send_other_emails(trendit3_user.email, email_type='credit', amount=amount) # send credit alert to user's email
                         except ValueError as e:
                             raise ValueError(f'Error crediting wallet: {e}')
@@ -290,13 +288,13 @@ def flutterwave_webhook():
                 "status_code": 404
             }
     except SignatureError as e:
-        fund_wallet = credit_user_wallet(user_id, amount) if data['event'] == 'charge.completed' else False
+        fund_wallet = credit_wallet(user_id, amount) if data['event'] == 'charge.completed' else False
         raise e
     except (DataError, DatabaseError) as e:
-        fund_wallet = credit_user_wallet(user_id, amount) if data['event'] == 'charge.completed' else False
+        fund_wallet = credit_wallet(user_id, amount) if data['event'] == 'charge.completed' else False
         raise e
     except Exception as e:
-        fund_wallet = credit_user_wallet(user_id, amount) if data['event'] == 'charge.completed' else False
+        fund_wallet = credit_wallet(user_id, amount) if data['event'] == 'charge.completed' else False
         raise e
     
     return result

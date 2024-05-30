@@ -4,6 +4,7 @@ from enum import Enum
 
 from ..extensions import db
 from ..utils.helpers.basic_helpers import generate_random_string
+from ..utils.payments.rates import convert_amount
 
 
 class Payment(db.Model):
@@ -30,6 +31,9 @@ class Payment(db.Model):
     def __repr__(self):
         return f'<ID: {self.id}, Amount: {self.amount}, Payment Method: {self.payment_method}, Payment Type: {self.payment_type}>'
     
+    @property
+    def currency_code(self):
+        return self.trendit3_user.wallet.currency_code
     
     @classmethod
     def create_payment_record(cls, key, amount, payment_type, payment_method, status, trendit3_user):
@@ -54,7 +58,7 @@ class Payment(db.Model):
         return {
             'id': self.id,
             'key': self.key,
-            'amount': self.amount,
+            'amount': convert_amount(self.amount, self.currency_code),
             'payment_type': self.payment_type,
             'payment_method': self.payment_method,
             'status': self.status,
@@ -90,6 +94,10 @@ class Transaction(db.Model):
     trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
     trendit3_user = db.relationship('Trendit3User', backref=db.backref('transactions', lazy='dynamic'))
     
+    @property
+    def currency_code(self):
+        return self.trendit3_user.wallet.currency_code
+    
     def __repr__(self):
         return f'<ID: {self.id}, Transaction Reference: {self.key}, Transaction Type: {self.transaction_type}, Status: {self.status}>'
     
@@ -116,7 +124,7 @@ class Transaction(db.Model):
         return {
             'id': self.id,
             'key': self.key,
-            'amount': self.amount,
+            'amount': convert_amount(self.amount, self.currency_code),
             'transaction_type': str(self.transaction_type.value),
             'description': self.description,
             'status': self.status,
@@ -238,7 +246,7 @@ class Wallet(db.Model):
         user_info = {'user': self.trendit3_user.to_dict(),} if user else {'user_id': self.trendit3_user_id} # optionally include user info in dict
         return {
             'id': self.id,
-            'balance': self.balance,
+            'balance': convert_amount(self.balance, self.currency_code),
             'currency_name': self.currency_name,
             'currency_code': self.currency_code,
             'currency_symbol': self.currency_symbol,

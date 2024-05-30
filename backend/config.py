@@ -90,6 +90,11 @@ class Config:
     CELERY_ACCEPT_CONTENT = ['application/json']
     CELERY_TASK_SERIALIZER = 'json'
     CELERY_RESULT_SERIALIZER = 'json'
+    
+    #  ExchangeRate-API
+    EXCHANGE_RATE_API_KEY = os.environ.get('EXCHANGE_RATE_API_KEY') or "c997678ed19c3c9bb53ed2af"
+    EXCHANGE_RATE_API_URL = os.environ.get('EXCHANGE_RATE_API_KEY') or f"https://v6.exchangerate-api.com/v6/{EXCHANGE_RATE_API_KEY}/latest"
+    
 
 
     # Google config
