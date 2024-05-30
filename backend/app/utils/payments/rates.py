@@ -7,6 +7,7 @@ This module contains the functions for handling conversion rates of currencies
 '''
 
 import requests
+from decimal import Decimal
 from cachetools import cached, TTLCache
 
 from config import Config
@@ -29,6 +30,6 @@ def convert_amount(balance_in_naira, target_currency):
     exchange_rates = fetch_exchange_rates()
     
     if target_currency in exchange_rates:
-        converted_amount = balance_in_naira * exchange_rates[target_currency]
+        converted_amount = (balance_in_naira) * Decimal(exchange_rates[target_currency])
         return round(converted_amount, 2)
     return balance_in_naira  # Default to Naira if no rate is found
