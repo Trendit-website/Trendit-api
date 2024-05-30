@@ -55,8 +55,8 @@ def construct_payload(amount: int, callback_url: str, meta: dict, user: Trendit3
                 "name": user.full_name
             },
             "customizations": {
-                "title": "Pied Piper Payments",
-                "logo": "http://www.piedpiper.com/app/themes/joystick-v27/images/logo.png"
+                "title": "Trendit Media Ltd FLW",
+                "logo": "https://res.cloudinary.com/dvgthwhdn/image/upload/v1717080512/Media/ln8asniu1jleyalg7cmw.jpg"
             }
         }
     
