@@ -57,6 +57,10 @@ def construct_payload(amount: int, callback_url: str, meta: dict, user: Trendit3
             "customizations": {
                 "title": "Trendit Media Ltd FLW",
                 "logo": "https://res.cloudinary.com/dvgthwhdn/image/upload/v1717080512/Media/ln8asniu1jleyalg7cmw.jpg"
+            },
+            "configurations": {
+                "session_duration": 20, # Session timeout in minutes (maxValue: 1440 minutes)    
+                "max_retry_attempt": 5, # Max retry (int)
             }
         }
     
