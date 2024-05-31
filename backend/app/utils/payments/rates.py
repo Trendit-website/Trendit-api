@@ -32,7 +32,7 @@ def convert_amount(balance_in_naira, target_currency):
     converted_amount = balance_in_naira # Default to Naira if no rate is found
     
     if target_currency in exchange_rates:
-        converted_amount = (balance_in_naira) * Decimal(exchange_rates[target_currency])
+        converted_amount = Decimal(balance_in_naira) * Decimal(exchange_rates[target_currency])
     
     return round(converted_amount, 2)
 
