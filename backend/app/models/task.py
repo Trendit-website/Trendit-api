@@ -43,6 +43,11 @@ class Task(db.Model):
     platform = db.Column(db.String(80), nullable=False)
     fee = db.Column(db.Float, nullable=False)
     task_key = db.Column(db.String(120), unique=True, nullable=False)
+    target_country = db.Column(db.String(120), nullable=False)
+    target_state = db.Column(db.String(120), nullable=False)
+    religion = db.Column(db.String(120), nullable=False)
+    gender = db.Column(db.String(120), nullable=False)
+    
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     total_allocated = db.Column(db.Integer, default=0, nullable=True)
@@ -110,9 +115,6 @@ class Task(db.Model):
         if advert_task:
             advert_task_dict.update({
                 'posts_count': advert_task.posts_count,
-                'target_country': advert_task.target_country,
-                'target_state': advert_task.target_state,
-                'gender': advert_task.gender,
                 'caption': advert_task.caption,
                 'hashtags': advert_task.hashtags,
             })
@@ -132,6 +134,10 @@ class Task(db.Model):
             'platform': self.platform,
             'media_path': self.get_task_media(),
             'task_key': self.task_key,
+            'target_country': self.target_country,
+            'target_state': self.target_state,
+            'gender': self.gender,
+            'religion': self.religion,
             'payment_status': str(self.payment_status.value),
             'status': str(self.status.value),
             'total_allocated': self.total_allocated,
@@ -153,9 +159,6 @@ class AdvertTask(Task):
     
     id = db.Column(db.Integer, db.ForeignKey('task.id'), primary_key=True)
     posts_count = db.Column(db.Integer, nullable=False)
-    target_country = db.Column(db.String(120), nullable=False)
-    target_state = db.Column(db.String(120), nullable=False)
-    gender = db.Column(db.String(120), nullable=False)
     caption = db.Column(db.Text, nullable=False)
     hashtags = db.Column(db.Text, nullable=False)
     
@@ -189,6 +192,7 @@ class AdvertTask(Task):
             'target_country': self.target_country,
             'target_state': self.target_state,
             'gender': self.gender,
+            'religion': self.religion,
             'caption': self.caption,
             'hashtags': self.hashtags,
             'date_created': self.date_created,
@@ -238,6 +242,10 @@ class EngagementTask(Task):
             'goal': self.goal,
             'account_link': self.account_link,
             'engagements_count': self.engagements_count,
+            'target_country': self.target_country,
+            'target_state': self.target_state,
+            'gender': self.gender,
+            'religion': self.religion,
             'date_created': self.date_created,
             'updated_at': self.updated_at,
             'creator': {
