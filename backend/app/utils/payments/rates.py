@@ -14,7 +14,7 @@ from config import Config
 from ..helpers import console_log
 
 # Create a cache with a Time-To-Live (TTL) of 12 hour (43200 seconds)
-cache = TTLCache(maxsize=100, ttl=43200)
+cache = TTLCache(maxsize=100, ttl=864000)
 
 @cached(cache)
 def fetch_exchange_rates(base_currency="NGN"):
