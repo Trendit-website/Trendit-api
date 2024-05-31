@@ -231,15 +231,15 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
         religion = data.get('religion', task.religion if task else '')
         
         if task_type == 'advert':
-            caption = data.get('caption', task.caption if task else '')
-            hashtags = data.get('hashtags', task.hashtags if task else '')
-            posts_count_str = data.get('posts_count', task.posts_count_str if task else '')
+            caption = data.get('caption', task.caption if task and hasattr(task, "caption") else '')
+            hashtags = data.get('hashtags', task.hashtags if task and hasattr(task, "hashtags") else '')
+            posts_count_str = data.get('posts_count', task.posts_count if task and hasattr(task, "posts_count") else '')
             posts_count = int(posts_count_str) if posts_count_str and posts_count_str.isdigit() else 0
             
         if task_type == 'engagement':
-            goal = data.get('goal', task.goal if task else '')
-            account_link = data.get('account_link', task.account_link if task else '')
-            engagements_count_str = data.get('engagements_count', task.engagements_count_str if task else '')
+            goal = data.get('goal', task.goal if task and hasattr(task, "goal") else '')
+            account_link = data.get('account_link', task.account_link if task and hasattr(task, "account_link") else '')
+            engagements_count_str = data.get('engagements_count', task.engagements_count if task and hasattr(task, "engagements_count") else '')
             engagements_count = int(engagements_count_str) if engagements_count_str and engagements_count_str.isdigit() else 0
         
         # Get multiple media files
