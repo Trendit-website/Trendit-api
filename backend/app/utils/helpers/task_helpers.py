@@ -224,7 +224,8 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
         
         task_type = data.get('task_type', task.task_type if task else '')
         platform = data.get('platform', task.platform if task else '').lower()
-        fee = data.get('amount', task.fee if task else '')
+        fee = 20
+        fee_paid = data.get('amount', task.fee_paid if task else '')
         target_country = data.get('target_country', task.target_country if task else '')
         target_state = data.get('target_state', task.target_state if task else '')
         gender = data.get('gender', task.gender if task else '')
@@ -248,13 +249,13 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
         
         if task_type == 'advert':
             if task:
-                task.update(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee=fee, payment_status=payment_status, posts_count=posts_count, target_country=target_country, target_state=target_state, gender=gender, religion=religion, caption=caption, hashtags=hashtags)
+                task.update(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee_paid=fee_paid, fee=fee, payment_status=payment_status, posts_count=posts_count, target_country=target_country, target_state=target_state, gender=gender, religion=religion, caption=caption, hashtags=hashtags)
                 
                 save_task_media_files(task.id, media_files) #save media files
                 
                 return task
             else:
-                new_task = AdvertTask.create_task(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee=fee, payment_status=payment_status, posts_count=posts_count, target_country=target_country, target_state=target_state, gender=gender, religion=religion, caption=caption, hashtags=hashtags)
+                new_task = AdvertTask.create_task(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee_paid=fee_paid, fee=fee, payment_status=payment_status, posts_count=posts_count, target_country=target_country, target_state=target_state, gender=gender, religion=religion, caption=caption, hashtags=hashtags)
 
                 add_user_role(RoleNames.ADVERTISER, user_id)
                 
@@ -264,11 +265,11 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
             
         elif task_type == 'engagement':
             if task:
-                task.update(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee=fee, payment_status=payment_status, goal=goal, account_link=account_link, engagements_count=engagements_count, target_country=target_country, target_state=target_state, gender=gender, religion=religion)
+                task.update(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee_paid=fee_paid, fee=fee, payment_status=payment_status, goal=goal, account_link=account_link, engagements_count=engagements_count, target_country=target_country, target_state=target_state, gender=gender, religion=religion)
                 
                 return task
             else:
-                new_task = EngagementTask.create_task(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee=fee, payment_status=payment_status, goal=goal, account_link=account_link, engagements_count=engagements_count, target_country=target_country, target_state=target_state, gender=gender, religion=religion)
+                new_task = EngagementTask.create_task(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee_paid=fee_paid, fee=fee, payment_status=payment_status, goal=goal, account_link=account_link, engagements_count=engagements_count, target_country=target_country, target_state=target_state, gender=gender, religion=religion)
 
                 add_user_role(RoleNames.ADVERTISER, user_id)
                 

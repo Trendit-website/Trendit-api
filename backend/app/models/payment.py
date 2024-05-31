@@ -15,7 +15,7 @@ class Payment(db.Model):
 
     id = db.Column(db.Integer(), primary_key=True)
     key = db.Column(db.String(80), unique=True, nullable=False) # Unique identifier for the payments
-    amount = db.Column(db.Float(), nullable=False)
+    amount = db.Column(db.Numeric(10, 2), nullable=False)
     payment_type = db.Column(db.String(50), nullable=False)  # 'task-creation', 'membership-fee', 'credit-wallet' or 'product-fee'
     payment_method = db.Column(db.String(), nullable=False)  # 'wallet' or 'payment gateway(flutterwave)'
     status = db.Column(db.String(20), nullable=False, default="pending")  # Status of the payment request
@@ -81,7 +81,7 @@ class Transaction(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     key = db.Column(db.String(80), unique=True, nullable=False) # Unique identifier for the financial transaction
-    amount = db.Column(db.Float(), nullable=False)
+    amount = db.Column(db.Numeric(10, 2), nullable=False)
     transaction_type = db.Column(db.Enum(TransactionType), nullable=False)  # 'credit', 'debit', 'payment' or 'withdraw'
     description = db.Column(db.String(150), nullable=False)
     status = db.Column(db.String(80), nullable=False) # Status of the financial transaction
@@ -140,7 +140,7 @@ class Withdrawal(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     reference = db.Column(db.String(50), nullable=False) # Unique reference for the withdrawal request
-    amount = db.Column(db.Float, nullable=False)
+    amount = db.Column(db.Numeric(10, 2), nullable=False)
     bank_name = db.Column(db.String(100), nullable=False)
     account_no = db.Column(db.String(20), nullable=False)
     status = db.Column(db.String(20), nullable=False, default="pending")  # Status of the withdrawal request. 'pending' or 'completed'
