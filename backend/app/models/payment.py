@@ -4,7 +4,7 @@ from enum import Enum
 
 from ..extensions import db
 from ..utils.helpers.basic_helpers import generate_random_string
-from ..utils.payments.rates import convert_amount
+from ..utils.payments.rates import convert_amount, format_currency
 
 
 class Payment(db.Model):
@@ -246,7 +246,7 @@ class Wallet(db.Model):
         user_info = {'user': self.trendit3_user.to_dict(),} if user else {'user_id': self.trendit3_user_id} # optionally include user info in dict
         return {
             'id': self.id,
-            'balance': convert_amount(self.balance, self.currency_code),
+            'balance': format_currency(convert_amount(self.balance, self.currency_code)),
             'currency_name': self.currency_name,
             'currency_code': self.currency_code,
             'currency_symbol': self.currency_symbol,
