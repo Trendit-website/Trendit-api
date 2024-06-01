@@ -127,6 +127,8 @@ class Transaction(db.Model):
             'transaction_type': str(self.transaction_type.value),
             'description': self.description,
             'status': self.status,
+            'created_at': self.created_at,
+            'updated_at': self.updated_at,
             **user_info,
         }
 
