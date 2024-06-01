@@ -42,8 +42,7 @@ class TransactionController:
         """Get all transactions for a user"""
 
         try:
-            data = request.get_json()
-            # user_id = data.get('userId')
+            user_id =int(user_id)
             page = request.args.get('page', default=1, type=int)
             per_page = request.args.get('per_page', default=20, type=int)
             
@@ -69,8 +68,7 @@ class TransactionController:
         """Get user transactions by type (credit, debit, payment, withdrawal)"""
 
         try:
-            data = request.get_json()
-            # user_id = data.get('userId')
+            user_id = int(user_id)
             transaction_map = {
                 "credit": TransactionType.CREDIT,
                 "debit": TransactionType.DEBIT,
