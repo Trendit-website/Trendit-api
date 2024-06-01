@@ -103,7 +103,11 @@ class TransactionController:
 
         try:
             user = Trendit3User.query.get(user_id)
-            balance = user.balance
+            
+            if user is None:
+                return error_response('User not found', 404)
+            
+            balance = user.wallet_balance
 
             extra_data = {'balance': balance}
             return success_response('User balance fetched successfully', 200, extra_data)
