@@ -249,7 +249,7 @@ class AuthController:
                 referral.update(username=username, status='registered', date_joined=new_user.date_joined)
             
             # create access token.
-            access_token = create_access_token(identity=new_user.id, expires_delta=timedelta(minutes=1440), additional_claims={'type': 'access'})
+            access_token = create_access_token(identity=new_user.id, expires_delta=timedelta(minutes=131400), additional_claims={'type': 'access'})
             
             extra_data = {
                 'user_data': user_data,
@@ -315,7 +315,7 @@ class AuthController:
                 'two_factor_method': two_factor_method
             }
             if not user_settings or not two_factor_method:
-                access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=1440), additional_claims={'type': 'access'})
+                access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=131400), additional_claims={'type': 'access'})
                 user_data = user.to_dict()
                 extra_data = {'access_token':access_token, 'user_data':user_data}
                 msg = 'Logged in successfully'
@@ -401,7 +401,7 @@ class AuthController:
             
             # 2FA token is valid, log user in.
             # User authentication successful
-            access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=1440), additional_claims={'type': 'access'})
+            access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=131400), additional_claims={'type': 'access'})
             user_data = user.to_dict()
             extra_data = {'access_token':access_token, 'user_data':user_data}
             
