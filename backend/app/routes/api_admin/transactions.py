@@ -10,7 +10,7 @@ def get_all_transactions():
     return TransactionController.get_all_transactions()
 
 
-@bp.route('/user_transactions/<str:user_id>', methods=['POST'])
+@bp.route('/user_transactions/<user_id>', methods=['POST'])
 @roles_required('Junior Admin')
 def get_user_transactions(user_id):
     return TransactionController.get_user_transactions(user_id=user_id)
