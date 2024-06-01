@@ -38,3 +38,9 @@ def get_user_payment_transactions(user_id):
 @roles_required('Junior Admin')
 def get_user_withdrawal_transactions(user_id):
     return TransactionController.get_user_transactions_by_type(type='withdrawal', user_id=user_id)
+
+
+@bp.route('/user_balance/<int:user_id>', methods=['POST'])
+@roles_required('Junior Admin')
+def get_user_balance(user_id):
+    return TransactionController.get_user_balance(user_id=user_id)

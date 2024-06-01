@@ -95,3 +95,19 @@ class TransactionController:
         except Exception as e:
             logging.exception("An exception occurred trying to get user transactions by type:\n", str(e))
             return error_response('Error getting user transactions', 500)
+
+
+    @staticmethod
+    def get_user_balance(user_id=None):
+        """Get user's account balance"""
+
+        try:
+            user = Trendit3User.query.get(user_id)
+            balance = user.balance
+
+            extra_data = {'balance': balance}
+            return success_response('User balance fetched successfully', 200, extra_data)
+        
+        except Exception as e:
+            logging.exception("An exception occurred trying to get user balance:\n", str(e))
+            return error_response('Error getting user balance', 500)
