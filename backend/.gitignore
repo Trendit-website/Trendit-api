@@ -1,5 +1,7 @@
 **/__pycache__/
 .vscode/
 env/
+migrations/
+migrations-staging/
 migrations_local/
 migrations_live/
