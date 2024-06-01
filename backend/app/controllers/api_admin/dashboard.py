@@ -160,3 +160,20 @@ class AdminDashboardController:
         
 
 
+    @staticmethod
+    def admin_wallet():
+        try:
+            
+            pass
+
+            
+
+            # db.session.close()
+            # return success_response('User wallet data', 200, extra_data)
+        
+        except Exception as e:
+            console_log('Admin Wallet EXCEPTION', str(e))
+            current_app.logger.error(f"An error occurred fetching the Admin Wallet data: {str(e)}")
+            db.session.rollback()
+            db.session.close()
+            return error_response('An error occurred fetching the Admin Wallet data', 500)

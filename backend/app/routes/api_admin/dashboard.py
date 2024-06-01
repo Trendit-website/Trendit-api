@@ -27,3 +27,8 @@ def create_admin():
 @roles_required('Super Admin')
 def create_super_admin():
     return AdminDashboardController.create_admin(type=RoleNames.SUPER_ADMIN)
+
+@bp.route('/admin_wallet', methods=['POST'])
+@roles_required('Junior Admin')
+def admin_wallet():
+    return AdminDashboardController.admin_wallet()
