@@ -11,7 +11,7 @@ import random, string, logging, time
 from flask import current_app, abort, request
 from slugify import slugify
 
-from ...models import Item
+from ...models.item import Item
 from ...exceptions import UniqueSlugError
 
 

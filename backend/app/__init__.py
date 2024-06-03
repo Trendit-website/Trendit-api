@@ -64,9 +64,9 @@ def create_app(config_name=Config.ENV):
     # app.before_request(json_check)
     
     
-    # Block Postman requests in production
-    if app.config['ENV'] == 'production':
-        app.before_request(block_postman)
+    # # Block Postman requests in production
+    # if app.config['ENV'] == 'production':
+    #     app.before_request(block_postman)
     
     # Configure logging
     configure_logging(app)
