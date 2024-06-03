@@ -723,6 +723,8 @@ class TaskController:
                 
                 api_response = initialize_payment(current_user_id, data, payment_type='task-creation', meta_data={'task_key': new_task.task_key})
                 
+                console_log("api_response", api_response)
+                
                 new_task.update(authorization_url=api_response.get("authorization_url", ""))
                 
                 return api_response
