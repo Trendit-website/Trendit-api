@@ -31,7 +31,7 @@ from .utils.helpers.response_helpers import error_response
 from .utils.helpers.basic_helpers import log_exception
 from .utils.helpers.user_helpers import add_user_role
 from .utils.middleware import set_access_control_allows, check_emerge, json_check, ping_url
-from config import Config, configure_logging, config_by_name, block_postman
+from config import Config, configure_logging, config_by_name
 
 def block_postman():
     if request.headers.get('User-Agent') and 'Postman' in request.headers.get('User-Agent'):
