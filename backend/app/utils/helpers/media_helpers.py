@@ -23,13 +23,17 @@ cloudinary.config(
     api_secret = Config.CLOUDINARY_API_SECRET 
 )
 
+# Constants for file type validation
+IMAGE_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.webp', '.svg'}
+VIDEO_EXTENSIONS = {'.mp4', '.avi', '.mov', '.flv'}
+
 def save_media(media_file) -> Media:
     """
     Saves a media file (image or video) to Cloudinary and the database.
     and then return the media instance after adding the media to Media Table
 
     Args:
-        media_file: The media file object to be uploaded.
+        media_file (werkzeug.datastructures.FileStorage): The media file object to be uploaded.
 
     Returns:
         Media: The Media instance of the saved media in the database.
@@ -39,9 +43,9 @@ def save_media(media_file) -> Media:
     """
     
     # Generate a random string and append it to the original file name
-    rand_string = ''.join(random.choices(string.ascii_lowercase + string.digits, k=4))
+    rand_string = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
     media_name = secure_filename(media_file.filename) # Grab file name of the selected media
-    the_media_name, theMediaExt = os.path.splitext(os.path.basename(media_name)) # get the file name and extension
+    the_media_name, the_media_ext = os.path.splitext(os.path.basename(media_name)) # get the file name and extension
     new_media_name = f"{the_media_name}-{rand_string}"
     
     
@@ -52,9 +56,9 @@ def save_media(media_file) -> Media:
     
     
     # Check the file type and set the resource_type accordingly
-    if theMediaExt.lower() in ['.jpg', '.jpeg', '.png', '.webp', 'svg']:
+    if the_media_ext.lower() in IMAGE_EXTENSIONS:
         resource_type = "image"
-    elif theMediaExt.lower() in ['.mp4', '.avi', '.mov', '.flv']:
+    elif the_media_ext.lower() in VIDEO_EXTENSIONS:
         resource_type = "video"
     else:
         raise ValueError("Invalid file type")
@@ -65,15 +69,19 @@ def save_media(media_file) -> Media:
         resource_type = resource_type,
         public_id = new_media_name,
         folder = folder_path,
+        secure=True # Ensure HTTPS URL
     )
     # Get the URL of the uploaded media
-    original_media_path = upload_result['url']
+    original_media_path = upload_result['secure_url']
     
-    # Add the media properties to database
-    newMedia = Media(filename=media_name, media_path=original_media_path)
+    try:
+        # Add the media properties to database
+        new_media = Media(filename=media_name, media_path=original_media_path)
+        
+        db.session.add(new_media)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        raise e
     
-    db.session.add(newMedia)
-    db.session.commit()
-    media_id = newMedia.id
-    
-    return newMedia
+    return new_media
