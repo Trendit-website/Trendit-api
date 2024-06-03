@@ -11,8 +11,6 @@ It also includes a function to configure logging for the application.
 import os, secrets, logging
 from datetime import timedelta
 from celery import Celery
-from flask import request
-from app.utils.helpers.response_helpers import error_response
 
 
 
@@ -133,7 +131,3 @@ def configure_logging(app):
     handler.setFormatter(formatter)
     app.logger.addHandler(handler)
     app.logger.setLevel(logging.DEBUG)  # Set the desired logging level
-
-def block_postman():
-    if request.headers.get('User-Agent') and 'Postman' in request.headers.get('User-Agent'):
-        return error_response("Requests from Postman are not allowed in production.", 403)
