@@ -70,8 +70,8 @@ def create_app(config_name=Config.ENV):
     
     
     # Block Postman requests in production
-    if Config.ENV == 'production':
-        app.before_request(block_postman)
+    # if Config.ENV == 'production':
+    #     app.before_request(block_postman)
     
     # Configure logging
     configure_logging(app)
