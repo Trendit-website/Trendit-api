@@ -9,7 +9,7 @@ These functions assist with tasks such as generating success and error responses
 
 @app/utils/helpers/response_helpers.py
 """
-from flask import jsonify
+from flask import jsonify, make_response
 
 def error_response(msg, status_code, extra_data=None):
     '''
@@ -31,7 +31,10 @@ def error_response(msg, status_code, extra_data=None):
     if extra_data:
         response.update(extra_data)
     
-    return jsonify(response), status_code
+    response = make_response(response)
+    response.status_code = status_code
+    
+    return response
 
 def success_response(msg, status_code, extra_data=None):
     '''
@@ -53,4 +56,7 @@ def success_response(msg, status_code, extra_data=None):
     if extra_data:
         response.update(extra_data)
     
-    return jsonify(response), status_code
+    response = make_response(response)
+    response.status_code = status_code
+    
+    return response

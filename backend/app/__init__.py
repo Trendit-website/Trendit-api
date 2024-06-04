@@ -10,7 +10,7 @@ sets up CORS, configures logging, registers blueprints and defines additional ap
 @Copyright © 2024 Emmanuel Olowu
 '''
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_moment import Moment
 from flask_migrate import Migrate
 from flask_cors import CORS
@@ -27,17 +27,22 @@ from .models.payment import Payment, Transaction, Wallet, Withdrawal
 
 from .jobs import celery_app
 from .extensions import db, mail, limiter
+from .utils.helpers.response_helpers import error_response
 from .utils.helpers.basic_helpers import log_exception
 from .utils.helpers.user_helpers import add_user_role
 from .utils.middleware import set_access_control_allows, check_emerge, json_check, ping_url
 from config import Config, configure_logging, config_by_name
+
+def block_postman():
+    if request.headers.get('User-Agent') and 'Postman' in request.headers.get('User-Agent'):
+        return error_response("Requests from Postman are not allowed in production.", 403)
 
 def create_app(config_name=Config.ENV):
     '''
     Creates and configures the Flask application instance.
 
     Args:
-        config_class: The configuration class to use (Defaults to Config).
+        config_name: The configuration class to use (Defaults to Config).
 
     Returns:
         The Flask application instance.
@@ -58,10 +63,15 @@ def create_app(config_name=Config.ENV):
     # Use the after_request decorator to set Access-Control-Allow
     app.after_request(set_access_control_allows)
     
-    #app.before_request(ping_url)
+    # Before request hooks
     app.before_request(check_emerge)
+    #app.before_request(ping_url)
     # app.before_request(json_check)
     
+    
+    # Block Postman requests in production
+    # if Config.ENV == 'production':
+    #     app.before_request(block_postman)
     
     # Configure logging
     configure_logging(app)

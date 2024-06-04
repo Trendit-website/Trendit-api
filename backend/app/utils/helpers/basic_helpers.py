@@ -7,16 +7,12 @@ These functions perform common tasks that are used throughout the application.
 @link: https://github.com/zeddyemy
 @package: Trendit³
 '''
-import random, string, secrets, logging, time
-from threading import Thread
-from flask import current_app, abort, request, render_template, url_for
+import random, string, logging, time
+from flask import current_app, abort, request
 from slugify import slugify
-from flask_mail import Message
 
-from ...extensions import db
-from ...models import Item
+from ...models.item import Item
 from ...exceptions import UniqueSlugError
-from config import Config
 
 
 def paginate_results(request, results, result_per_page=10):

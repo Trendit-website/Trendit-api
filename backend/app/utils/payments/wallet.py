@@ -27,15 +27,16 @@ def debit_wallet(user_id: int, amount: int, payment_type=None) -> float:
     if current_balance < amount:
         raise ValueError("Insufficient balance.")
 
+    service_paid_for = "New Social Task Order" if payment_type == "task-creation" else "Product From The Marketplace"
     
     try:
         # Debit the wallet
         wallet.balance -= amount
         key = generate_random_string(16)
         payment = Payment(key=key, amount=amount, payment_type=payment_type, payment_method='wallet', status='complete', trendit3_user=user)
-        transaction = Transaction(key=key, amount=amount, transaction_type=TransactionType.DEBIT, status='complete', trendit3_user=user)
+        transaction = Transaction(key=key, amount=amount, transaction_type=TransactionType.DEBIT, status='complete', description=f'payment for {service_paid_for}', trendit3_user=user)
         
-        db.session.add(payment, transaction)
+        db.session.add_all([payment, transaction])
         db.session.commit()
         send_other_emails(user.email, email_type='debit', amount=amount) # send debit alert to user's mail
         return wallet.balance

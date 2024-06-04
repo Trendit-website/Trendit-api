@@ -54,6 +54,7 @@ class Task(db.Model):
     total_allocated = db.Column(db.Integer, default=0, nullable=True)
     total_success = db.Column(db.Integer, default=0, nullable=True)
     
+    authorization_url = db.Column(db.String(250), nullable=True, default="") # if payment for task is done with payment gateway
     payment_status = db.Column(db.Enum(TaskPaymentStatus), nullable=False)  # complete, pending, failed, abandoned
     status = db.Column(db.Enum(TaskStatus), default=TaskStatus.PENDING, nullable=False)  # approved, pending, declined
     
@@ -141,6 +142,7 @@ class Task(db.Model):
             'target_state': self.target_state,
             'gender': self.gender,
             'religion': self.religion,
+            'authorization_url': self.authorization_url,
             'payment_status': str(self.payment_status.value),
             'status': str(self.status.value),
             'total_allocated': self.total_allocated,
@@ -189,6 +191,7 @@ class AdvertTask(Task):
             'fee_paid': self.fee_paid,
             'media_path': self.get_task_media(),
             'task_key': self.task_key,
+            'authorization_url': self.authorization_url,
             'payment_status': str(self.payment_status.value),
             'status': str(self.status.value),
             'total_allocated': self.total_allocated,
@@ -242,6 +245,7 @@ class EngagementTask(Task):
             'fee_paid': self.fee_paid,
             'media_path': self.get_task_media(),
             'task_key': self.task_key,
+            'authorization_url': self.authorization_url,
             'payment_status': str(self.payment_status.value),
             'status': str(self.status.value),
             'total_allocated': self.total_allocated,

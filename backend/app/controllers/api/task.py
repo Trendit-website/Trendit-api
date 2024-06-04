@@ -716,13 +716,17 @@ class TaskController:
                     return error_response('callback URL not provided in the request headers', 400)
                 data['callback_url'] = callback_url # add callback url to data
                 
-                console_log('callback_url', callback_url)
                 
                 new_task = save_task(data)
                 if new_task is None:
                     return error_response('Error creating new task', 500)
                 
-                return initialize_payment(current_user_id, data, payment_type='task-creation', meta_data={'task_key': new_task.task_key})
+                api_response = initialize_payment(current_user_id, data, payment_type='task-creation', meta_data={'task_key': new_task.task_key})
+                
+                api_response_json = api_response.get_json()
+                new_task.update(authorization_url=api_response_json.get("authorization_url", ""))
+                
+                return api_response
             
             if payment_method == 'trendit_wallet':
                 # Debit the user's wallet
