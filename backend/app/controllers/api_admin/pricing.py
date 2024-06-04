@@ -13,6 +13,7 @@ from flask import request
 from ...extensions import db
 from ...models import Pricing, PricingCategory
 from ...utils.helpers.basic_helpers import console_log
+from ...utils.helpers.user_helpers import save_pricing_icon
 from ...utils.helpers.response_helpers import error_response, success_response
 
 
@@ -56,11 +57,21 @@ class PricingController:
             price_earn = data.get('price_earn')
             price_category = data.get('category')
             price_description = data.get('price_description')
+            icon = request.files.get('icon', '')
 
             if not item_name or not price_pay or not price_earn or not price_description:
                 return error_response('Item name, price_pay, price_description and price_earn are required', 400)
 
-            pricing = Pricing(item_name=item_name, price_pay=price_pay, price_earn=price_earn, price_category=PricingCategory[price_category], description=price_description)
+            pricing = Pricing(
+                item_name=item_name, 
+                price_pay=price_pay, 
+                price_earn=price_earn, 
+                price_category=PricingCategory[price_category], 
+                description=price_description
+            )
+
+            save_pricing_icon(pricing, icon)
+
             db.session.add(pricing)
             db.session.commit()
             db.session.close()
@@ -71,35 +82,30 @@ class PricingController:
             console_log("An error occurred while adding pricing", e)
             return error_response('An error occurred while adding pricing', 500)
         
+        
     @staticmethod
     def update_pricing():
         try:
-            data = request.get_json()
-            item_name = data.get('item_name')
-            price_pay = data.get('price_pay')
-            price_earn = data.get('price_earn')
-            price_category = data.get('category')
-            price_description = data.get('price_description')
+            data = request.form.to_dict()
+            id = data.get('id')
 
-            if not item_name:
-                return error_response('Item name and price are required', 400)
-
-            pricing = Pricing.query.filter_by(item_name=item_name).first()
+            pricing = Pricing.query.filter_by(id=id).first()
 
             if not pricing:
                 return error_response('Pricing not found', 404)
+
+            item_name = data.get('item_name', pricing.item_name if pricing else '')
+            price_pay = data.get('price_pay', pricing.price_pay if pricing else '')
+            price_earn = data.get('price_earn', pricing.price_earn if pricing else '')
+            price_description = data.get('price_description', pricing.description if pricing else '')
+            icon = request.files.get('icon', '')
+            price_category = data.get('category')
+
             
-            if price_pay:
-                pricing.price_pay = price_pay
-
-            if price_earn:
-                pricing.price_earn = price_earn                
-
-            if price_description:
-                pricing.description = price_description
-
             if price_category in [cat.value for cat in list(PricingCategory)]:
                 pricing.category = PricingCategory[price_category]
+
+            save_pricing_icon(pricing, icon)
 
             db.session.commit()
             

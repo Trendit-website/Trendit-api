@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 from enum import Enum
 
 from ..extensions import db
+from ..models import Media
 from config import Config
 
 
@@ -29,6 +30,8 @@ class Pricing(db.Model):
     category = db.Column(db.Enum(PricingCategory), nullable=False)
     price_earn = db.Column(db.Float, nullable=False) # price for the earners
     price_pay = db.Column(db.Float, nullable=False) # price for the advertisers
+    image_id = db.Column(db.Integer(), db.ForeignKey('media.id'), nullable=True)
+    price_icon = db.relationship('Media', backref='profile_picture')
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
 
@@ -36,7 +39,29 @@ class Pricing(db.Model):
     def update(self, **kwargs):
         for key, value in kwargs.items():
             setattr(self, key, value)
-        db.session.commit()
+        # db.session.commit()
 
     def __repr__(self):
         return f'<Pricing: {self.item_name} - ${self.price}>'
+
+    @property
+    def icon(self):
+        if self.profile_picture_id:
+            theImage = Media.query.get(self.profile_picture_id)
+            if theImage:
+                return theImage.get_path()
+            else:
+                return ''
+        else:
+            return ''
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'item_name': self.item_name,
+            'description': self.description,
+            'category': self.category,
+            'price_earn': self.price_earn,
+            'price_pay': self.price_pay,
+            'icon': self.icon
+        }

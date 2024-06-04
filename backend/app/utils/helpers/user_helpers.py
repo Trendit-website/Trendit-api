@@ -18,6 +18,7 @@ from werkzeug.datastructures import FileStorage
 from ...extensions import db
 from ...models.role import Role, RoleNames
 from ...models.user import Trendit3User, Address, Profile
+from ...models.pricing import Pricing
 from ...models.notification import MessageStatus, MessageType, UserMessageStatus, Notification
 from ...utils.helpers.media_helpers import save_media
 from ...utils.helpers.basic_helpers import console_log, log_exception
@@ -48,6 +49,35 @@ def async_save_profile_pic(app, user: Trendit3User, media_file):
 
 def save_profile_pic(user: Trendit3User, media_file: FileStorage):
     Thread(target=async_save_profile_pic, args=(current_app._get_current_object(), user, media_file)).start()
+
+
+# for pricing icon
+def async_save_pricing_icon(app, price: Pricing, media_file):
+    with app.app_context():
+        try:
+            # user_profile = user.profile
+            if isinstance(media_file, FileStorage) and media_file.filename != '':
+                try:
+                    price_icon = save_media(media_file) # This saves image file, saves the path in db and return the Media instance
+                except Exception as e:
+                    log_exception(f"An error occurred saving profile image: {str(e)}")
+            elif price_icon == '' and price:
+                if price.image_id:
+                    price_icon = price.image_id
+                else:
+                    price_icon = None
+            else:
+                price_icon = None
+            
+            price.update(price_icon=price_icon)
+        except Exception as e:
+            log_exception()
+            raise e
+
+def save_pricing_icon(price: Pricing, media_file: FileStorage):
+    Thread(target=async_save_pricing_icon, args=(current_app._get_current_object(), price, media_file)).start()
+
+
 
 def add_user_role(role_name: Enum, user_id: int):
     try:
