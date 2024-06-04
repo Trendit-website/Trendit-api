@@ -61,7 +61,7 @@ class PricingController:
             price_description = data.get('price_description')
             icon = request.files.get('icon', '')
 
-            if not item_name or not price_pay or not price_earn or not price_description or price_category:
+            if not item_name or not price_pay or not price_earn or not price_description or not price_category:
                 return error_response('Item name, price_category, price_pay, price_description and price_earn are required', 400)
 
             pricing = Pricing(
