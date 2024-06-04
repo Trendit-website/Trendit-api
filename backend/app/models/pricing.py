@@ -46,8 +46,8 @@ class Pricing(db.Model):
 
     @property
     def icon(self):
-        if self.profile_picture_id:
-            theImage = Media.query.get(self.profile_picture_id)
+        if self.image_id:
+            theImage = Media.query.get(self.image_id)
             if theImage:
                 return theImage.get_path()
             else:
