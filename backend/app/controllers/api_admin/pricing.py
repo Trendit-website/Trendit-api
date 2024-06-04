@@ -53,7 +53,7 @@ class PricingController:
     @staticmethod
     def add_pricing():
         try:
-            data = request.get_json()
+            data = request.form.to_dict()
             item_name = data.get('item_name')
             price_pay = data.get('price_pay')
             price_earn = data.get('price_earn')
