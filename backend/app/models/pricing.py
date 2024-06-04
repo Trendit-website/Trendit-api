@@ -31,7 +31,7 @@ class Pricing(db.Model):
     price_earn = db.Column(db.Float, nullable=False) # price for the earners
     price_pay = db.Column(db.Float, nullable=False) # price for the advertisers
     image_id = db.Column(db.Integer(), db.ForeignKey('media.id'), nullable=True)
-    price_icon = db.relationship('Media', backref='profile_picture')
+    price_icon = db.relationship('Media', backref='price_icon')
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
 
