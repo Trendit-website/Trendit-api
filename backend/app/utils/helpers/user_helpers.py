@@ -61,6 +61,7 @@ def async_save_pricing_icon(app, price: Pricing, media_file):
                     price_icon = save_media(media_file) # This saves image file, saves the path in db and return the Media instance
                 except Exception as e:
                     log_exception(f"An error occurred saving profile image: {str(e)}")
+                    
             elif price_icon == '' and price:
                 if price.image_id:
                     price_icon = price.image_id

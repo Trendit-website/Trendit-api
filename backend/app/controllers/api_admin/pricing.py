@@ -59,7 +59,7 @@ class PricingController:
             price_earn = data.get('price_earn')
             category = data.get('category')
             price_description = data.get('price_description')
-            icon = request.files.get('icon', '')
+            price_icon = request.files.get('icon', '')
 
             if not item_name or not price_pay or not price_earn or not price_description or not category:
                 return error_response('Item name, price_category, price_pay, price_description and price_earn are required', 400)
@@ -72,7 +72,7 @@ class PricingController:
                 description=price_description
             )
 
-            save_pricing_icon(pricing, icon)
+            save_pricing_icon(pricing, price_icon)
 
             db.session.add(pricing)
             db.session.commit()
