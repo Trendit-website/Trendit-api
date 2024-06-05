@@ -27,7 +27,7 @@ class Pricing(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     item_name = db.Column(db.String(100), nullable=False, unique=True)
     description = db.Column(db.String(250), nullable=False)
-    category = db.Column(db.Enum(PricingCategory), nullable=False)
+    category = db.Column(db.String(20), nullable=False) # advert or engagement
     price_earn = db.Column(db.Float, nullable=False) # price for the earners
     price_pay = db.Column(db.Float, nullable=False) # price for the advertisers
     image_id = db.Column(db.Integer(), db.ForeignKey('media.id'), nullable=True)

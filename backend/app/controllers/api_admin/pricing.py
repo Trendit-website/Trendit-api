@@ -64,11 +64,15 @@ class PricingController:
             if not item_name or not price_pay or not price_earn or not price_description or not category:
                 return error_response('Item name, price_category, price_pay, price_description and price_earn are required', 400)
 
+            if category not in ['advert', 'engagement']:
+                return error_response("category should be 'advert' or 'engagement'.", 400)
+            
             pricing = Pricing(
                 item_name=item_name, 
                 price_pay=price_pay, 
                 price_earn=price_earn, 
-                category=PricingCategory[category.upper()], 
+                # category=PricingCategory[category.upper()], 
+                category = category.lower(),
                 description=price_description
             )
 
