@@ -112,15 +112,27 @@ class PricingController:
             item_name = data.get('item_name', pricing.item_name if pricing else '')
             price_pay = data.get('price_pay', pricing.price_pay if pricing else '')
             price_earn = data.get('price_earn', pricing.price_earn if pricing else '')
-            price_description = data.get('price_description', pricing.description if pricing else '')
-            icon = request.files.get('icon', '')
-            price_category = data.get('category')
+            description = data.get('price_description', pricing.description if pricing else '')
+            # icon = request.files.get('icon', '')
+            category = data.get('category')
 
             
-            if price_category in [cat.value for cat in list(PricingCategory)]:
-                pricing.category = PricingCategory[price_category]
+            # if price_category in [cat.value for cat in list(PricingCategory)]:
+            #     pricing.category = PricingCategory[price_category]
 
-            save_pricing_icon(pricing, icon)
+            if category not in ['advert', 'engagement']:
+                return error_response("Category should be 'advert' or 'engagement'.", 400)
+            
+            pricing.update(
+                item_name=item_name, 
+                description=description, 
+                price_pay=price_pay, 
+                price_earn=price_earn,
+                category=category
+            )
+
+
+            # save_pricing_icon(pricing.id, icon)
 
             db.session.commit()
             
