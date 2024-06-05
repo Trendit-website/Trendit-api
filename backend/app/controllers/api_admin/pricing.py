@@ -66,25 +66,22 @@ class PricingController:
 
             if category not in ['advert', 'engagement']:
                 return error_response("Category should be 'advert' or 'engagement'.", 400)
-            
+
             pricing = Pricing(
-                item_name=item_name, 
-                price_pay=price_pay, 
-                price_earn=price_earn, 
-                # category=PricingCategory[category.upper()], 
-                category = category.lower(),
+                item_name=item_name,
+                price_pay=price_pay,
+                price_earn=price_earn,
+                category=category.lower(),
                 description=price_description
             )
 
-            
-
             db.session.add(pricing)
             db.session.flush()  # Ensure the instance is bound to the session and has an ID before using it
-            save_pricing_icon(pricing, price_icon)
-            db.session.commit()
-            db.session.close()
 
-            extra_data={'pricing_data': pricing.to_dict()}
+            save_pricing_icon(pricing.id, price_icon)
+            db.session.commit()
+
+            extra_data = {'pricing_data': pricing.to_dict()}
             api_response = success_response('Pricing added successfully', 200, extra_data)
         
         except (DataError, DatabaseError) as e:
@@ -93,8 +90,8 @@ class PricingController:
             api_response = error_response('Error connecting to the database.', 500)
         except Exception as e:
             db.session.rollback()
-            log_exception('An exception occurred updating user profile.', e)
-            api_response = error_response('An error occurred while updating user profile', 500)
+            log_exception('An exception occurred while adding pricing.', e)
+            api_response = error_response('An error occurred while adding pricing', 500)
         finally:
             db.session.close()
 

@@ -52,32 +52,32 @@ def save_profile_pic(user: Trendit3User, media_file: FileStorage):
 
 
 # for pricing icon
-def async_save_pricing_icon(app, price: Pricing, media_file):
+def async_save_pricing_icon(app, price_id, media_file):
     with app.app_context():
+        session = db.create_scoped_session()
         try:
-            # user_profile = user.profile
-            if isinstance(media_file, FileStorage) and media_file.filename != '':
-                try:
-                    price_icon = save_media(media_file) # This saves image file, saves the path in db and return the Media instance
-                except Exception as e:
-                    log_exception(f"An error occurred saving profile image: {str(e)}")
-                    
-            elif price_icon == '' and price:
-                if price.image_id:
-                    price_icon = price.image_id
+            price = session.query(Pricing).get(price_id)
+            if price:
+                if isinstance(media_file, FileStorage) and media_file.filename != '':
+                    try:
+                        price_icon = save_media(media_file)  # This saves image file, saves the path in db and return the Media instance
+                    except Exception as e:
+                        log_exception(f"An error occurred saving profile image: {str(e)}")
+                        price_icon = None
                 else:
                     price_icon = None
-            else:
-                price_icon = None
-            
-            price.update(price_icon=price_icon)
+
+                price.update(price_icon=price_icon)
+                session.commit()
         except Exception as e:
+            session.rollback()
             log_exception()
             raise e
+        finally:
+            session.close()
 
-def save_pricing_icon(price: Pricing, media_file: FileStorage):
-    Thread(target=async_save_pricing_icon, args=(current_app._get_current_object(), price, media_file)).start()
-
+def save_pricing_icon(price_id, media_file: FileStorage):
+    Thread(target=async_save_pricing_icon, args=(current_app._get_current_object(), price_id, media_file)).start()
 
 
 def add_user_role(role_name: Enum, user_id: int):
