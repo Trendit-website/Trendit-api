@@ -54,7 +54,7 @@ def save_profile_pic(user: Trendit3User, media_file: FileStorage):
 # for pricing icon
 def async_save_pricing_icon(app, price_id, media_file):
     with app.app_context():
-        session = db.create_scoped_session()
+        session = db.session()
         try:
             price = session.query(Pricing).get(price_id)
             if price:
