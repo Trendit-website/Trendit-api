@@ -76,9 +76,10 @@ class PricingController:
                 description=price_description
             )
 
-            save_pricing_icon(pricing, price_icon)
+            
 
             db.session.add(pricing)
+            save_pricing_icon(pricing, price_icon)
             db.session.commit()
             db.session.close()
 
