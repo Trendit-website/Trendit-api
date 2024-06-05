@@ -61,11 +61,11 @@ class PricingController:
             price_description = data.get('price_description')
             price_icon = request.files.get('icon', '')
 
-            if not item_name or not price_pay or not price_earn or not price_description or not category:
-                return error_response('Item name, price_category, price_pay, price_description and price_earn are required', 400)
+            if not all([item_name, price_pay, price_earn, price_description, category]):
+                return error_response('Item name, category, price_pay, price_description, and price_earn are required', 400)
 
             if category not in ['advert', 'engagement']:
-                return error_response("category should be 'advert' or 'engagement'.", 400)
+                return error_response("Category should be 'advert' or 'engagement'.", 400)
             
             pricing = Pricing(
                 item_name=item_name, 
@@ -79,6 +79,7 @@ class PricingController:
             
 
             db.session.add(pricing)
+            db.session.flush()  # Ensure the instance is bound to the session and has an ID before using it
             save_pricing_icon(pricing, price_icon)
             db.session.commit()
             db.session.close()
