@@ -22,23 +22,17 @@ from app.utils.helpers.response_helpers import *
 class ProfileController:
     @staticmethod
     def get_profile():
-        error = False
         
         try:
             current_user_id = get_jwt_identity()
             user_info = get_user_info(int(current_user_id))
             extra_data = {'user_profile': user_info}
+            api_response = success_response("User profile fetched successfully", 200, extra_data)
         except Exception as e:
-            error = True
-            msg = f'An error occurred while getting user profile: {e}'
-            # Log the error details for debugging
-            logging.exception("An exception occurred while getting user profile.")
-            status_code = 500
+            log_exception("An exception occurred while getting user profile.", e)
+            api_response = error_response("An unexpected error occurred. Our developers are already looking into it.", 500)
         
-        if error:
-            return error_response(msg, status_code)
-        else:
-            return success_response('User profile fetched successfully', 200, extra_data)
+        return api_response
 
 
     @staticmethod
@@ -171,12 +165,12 @@ class ProfileController:
             
         except (DataError, DatabaseError) as e:
             db.session.rollback()
-            log_exception('Database error occurred during registration', e)
             api_response = error_response('Error connecting to the database.', 500)
+            log_exception('Database error occurred during registration', e)
         except Exception as e:
             db.session.rollback()
+            api_response = error_response("An unexpected error occurred. Our developers are already looking into it.", 500)
             log_exception('An exception occurred updating user profile.', e)
-            api_response = error_response('An error occurred while updating user profile', 500)
         finally:
             db.session.close()
         
@@ -185,8 +179,6 @@ class ProfileController:
 
     @staticmethod
     def user_email_edit():
-        error = False
-        
         try:
             current_user_id = get_jwt_identity()
             current_user = Trendit3User.query.get(current_user_id)
@@ -213,21 +205,19 @@ class ProfileController:
                 'user_id': get_jwt_identity(),
                 'verification_code': verification_code
             }, expires_delta=expires)
-        except Exception as e:
-            error = True
-            msg = f'An error occurred trying to change the email: {e}'
-            status_code = 500
-            log_exception("An exception occurred changing the email.", e)
+            
+            extra_data = {'edit_email_token': edit_email_token}
+            api_response = success_response("Verification code sent successfully", 200, extra_data)
         
-        if error:
-            return error_response(msg, status_code)
-        else:
-            return success_response("Verification code sent successfully", 200, {'edit_email_token': edit_email_token})
+        except Exception as e:
+            log_exception("An exception occurred changing the email.", e)
+            api_response = error_response("An unexpected error occurred. Our developers are already looking into it.", 500)
+        
+        return api_response
 
 
     @staticmethod
     def verify_email_edit():
-        error = False
         try:
             data = request.get_json()
             edit_email_token = data.get('edit_email_token')
@@ -243,46 +233,38 @@ class ProfileController:
             if int(entered_code) == int(user_info['verification_code']):
                 current_user.email = new_email
                 db.session.commit()
-                
+                extra_data = {'user_email': current_user.email}
+                api_response = success_response("Email updated successfully", 201, extra_data)
             else:
-                error = True
-                msg = 'Verification code is incorrect'
-                status_code = 400
-        except Exception as e:
-            error = True
-            msg = f'An error occurred while changing your email.'
-            status_code = 500
-            logging.exception("An exception occurred changing your email.")
+                api_response = error_response("Verification code is incorrect", 400)
+        except (DataError, DatabaseError) as e:
             db.session.rollback()
+            api_response = error_response('Error interacting to the database.', 500)
+            log_exception('Database error occurred', e)
+        except Exception as e:
+            db.session.rollback()
+            api_response = error_response("An unexpected error occurred. Our developers are already looking into it.", 500)
+            log_exception("An exception occurred changing your email.", e)
         finally:
             db.session.close()
-        if error:
-            return error_response(msg, status_code)
-        else:
-            return success_response('Email updated successfully', 201, {'user_email': current_user.email})
+            
+        return api_response
 
 
     @staticmethod
     def get_profile_pic():
-        error = False
-        
         try:
             current_user_id = get_jwt_identity()
             user_info = get_user_info(current_user_id)
             extra_data = {
                 'profile_pic': user_info.get('profile_picture', '')
             }
+            api_response = success_response("profile pic fetched successfully", 200, extra_data)
         except Exception as e:
-            error = True
-            msg = f'An error occurred while getting profile pic: {e}'
-            # Log the error details for debugging
-            logging.exception("An exception occurred while getting user's profile pic.")
-            status_code = 500
+            log_exception("An exception occurred while getting user's profile pic.", e)
+            api_response = error_response("An unexpected error occurred. Our developers are already looking into it.", 500)
         
-        if error:
-            return error_response(msg, status_code)
-        else:
-            return success_response("profile pic fetched successfully", 200, extra_data)
+        return api_response
 
 
     @staticmethod
@@ -326,7 +308,7 @@ class ProfileController:
             api_response = error_response('Error connecting to the database.', 500)
         except Exception as e:
             db.session.rollback()
-            log_exception("An exception occurred while updating user's profile pic.", 3)
+            log_exception("An exception occurred updating user's profile pic.", 3)
             api_response = error_response('An unexpected error. Our developers are already looking into it.', 500)
         finally:
             db.session.close()
@@ -402,8 +384,8 @@ class ProfileController:
             
             api_response = success_response("membership status fetched", 200, extra_data)
         except Exception as e:
-            log_exception("An unexpected error occurred. Our developers are already looking into it.", 500)
-            api_response = error_response("couldn't fetch membership status", 200, extra_data)
+            log_exception("An Exception occurred checking membership status", 500)
+            api_response = error_response("An unexpected error occurred. Our developers are already looking into it.", 500)
         
         return api_response
     
