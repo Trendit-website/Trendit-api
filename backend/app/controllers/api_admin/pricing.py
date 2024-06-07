@@ -61,28 +61,27 @@ class PricingController:
             price_description = data.get('price_description')
             price_icon = request.files.get('icon', '')
 
-            if not item_name or not price_pay or not price_earn or not price_description or not category:
-                return error_response('Item name, price_category, price_pay, price_description and price_earn are required', 400)
+            if not all([item_name, price_pay, price_earn, price_description, category]):
+                return error_response('Item name, category, price_pay, price_description, and price_earn are required', 400)
 
             if category not in ['advert', 'engagement']:
-                return error_response("category should be 'advert' or 'engagement'.", 400)
-            
+                return error_response("Category should be 'advert' or 'engagement'.", 400)
+
             pricing = Pricing(
-                item_name=item_name, 
-                price_pay=price_pay, 
-                price_earn=price_earn, 
-                # category=PricingCategory[category.upper()], 
-                category = category.lower(),
+                item_name=item_name,
+                price_pay=price_pay,
+                price_earn=price_earn,
+                category=category.lower(),
                 description=price_description
             )
 
-            save_pricing_icon(pricing, price_icon)
-
             db.session.add(pricing)
-            db.session.commit()
-            db.session.close()
+            db.session.flush()  # Ensure the instance is bound to the session and has an ID before using it
 
-            extra_data={'pricing_data': pricing.to_dict()}
+            save_pricing_icon(pricing.id, price_icon)
+            db.session.commit()
+
+            extra_data = {'pricing_data': pricing.to_dict()}
             api_response = success_response('Pricing added successfully', 200, extra_data)
         
         except (DataError, DatabaseError) as e:
@@ -91,8 +90,8 @@ class PricingController:
             api_response = error_response('Error connecting to the database.', 500)
         except Exception as e:
             db.session.rollback()
-            log_exception('An exception occurred updating user profile.', e)
-            api_response = error_response('An error occurred while updating user profile', 500)
+            log_exception('An exception occurred while adding pricing.', e)
+            api_response = error_response('An error occurred while adding pricing', 500)
         finally:
             db.session.close()
 
@@ -113,15 +112,27 @@ class PricingController:
             item_name = data.get('item_name', pricing.item_name if pricing else '')
             price_pay = data.get('price_pay', pricing.price_pay if pricing else '')
             price_earn = data.get('price_earn', pricing.price_earn if pricing else '')
-            price_description = data.get('price_description', pricing.description if pricing else '')
-            icon = request.files.get('icon', '')
-            price_category = data.get('category')
+            description = data.get('price_description', pricing.description if pricing else '')
+            # icon = request.files.get('icon', '')
+            category = data.get('category')
 
             
-            if price_category in [cat.value for cat in list(PricingCategory)]:
-                pricing.category = PricingCategory[price_category]
+            # if price_category in [cat.value for cat in list(PricingCategory)]:
+            #     pricing.category = PricingCategory[price_category]
 
-            save_pricing_icon(pricing, icon)
+            if category not in ['advert', 'engagement']:
+                return error_response("Category should be 'advert' or 'engagement'.", 400)
+            
+            pricing.update(
+                item_name=item_name, 
+                description=description, 
+                price_pay=price_pay, 
+                price_earn=price_earn,
+                category=category
+            )
+
+
+            # save_pricing_icon(pricing.id, icon)
 
             db.session.commit()
             
