@@ -2,6 +2,7 @@ import logging
 from datetime import timedelta
 from flask import request, jsonify, current_app
 from werkzeug.datastructures import FileStorage
+from werkzeug.exceptions import BadRequestKeyError
 from sqlalchemy.exc import ( IntegrityError, DataError, DatabaseError, InvalidRequestError, )
 from flask_jwt_extended import create_access_token, decode_token, get_jwt_identity
 from flask_jwt_extended.exceptions import JWTDecodeError
@@ -286,7 +287,6 @@ class ProfileController:
 
     @staticmethod
     def update_profile_pic():
-        error = False
         
         try:
             current_user_id = get_jwt_identity()
@@ -296,7 +296,7 @@ class ProfileController:
                 return error_response("user not found", 404)
             
             user_profile = current_user.profile
-            profile_picture = request.files['profile_picture']
+            profile_picture = request.files.get('profile_picture', '')
             
             if profile_picture.filename != '':
                 try:
@@ -314,17 +314,24 @@ class ProfileController:
             
             user_profile.update(profile_picture_id=profile_picture_id)
             extra_data = {'profile_picture': user_profile.get_profile_img()}
-        except Exception as e:
-            error = True
-            msg = f'An error occurred updating profile pic: {e}'
-            status_code = 500
-            logging.exception("An exception occurred while updating user's profile pic.")
+            
+            api_response = success_response("profile pic updated successfully", 200, extra_data)
+        except BadRequestKeyError as e:
             db.session.rollback()
+            log_exception("An exception occurred while updating user's profile pic.", e)
+            api_response = error_response(f'{e} Make sure profile picture is sent properly', 400)
+        except (DataError, DatabaseError) as e:
+            db.session.rollback()
+            log_exception('Database error occurred during registration', e)
+            api_response = error_response('Error connecting to the database.', 500)
+        except Exception as e:
+            db.session.rollback()
+            log_exception("An exception occurred while updating user's profile pic.", 3)
+            api_response = error_response('An unexpected error. Our developers are already looking into it.', 500)
+        finally:
+            db.session.close()
         
-        if error:
-            return error_response(msg, status_code)
-        else:
-            return success_response("profile pic updated successfully", 200, extra_data)
+        return api_response
 
     
     @staticmethod
@@ -346,7 +353,8 @@ class ProfileController:
                 bank_name = data.get('bank_name', '')
                 account_no = data.get('account_no', '')
                 account_name = data.get('account_name', '')
-                bank_code = get_bank_code(bank_name, current_user.address.country)
+                user_country = current_user.address.country or "Nigeria"
+                bank_code = get_bank_code(bank_name, user_country)
                 
                 if primary_bank:
                     primary_bank.update(bank_name=bank_name, bank_code=bank_code, account_no=account_no, account_name=account_name)
@@ -358,16 +366,21 @@ class ProfileController:
             
             extra_data = {'bank_details': primary_bank.to_dict()  if primary_bank else None}
             api_response = success_response(msg, 200, extra_data)
+        except KeyError:
+            if request.method == 'POST':
+                db.session.rollback()
+            log_exception('KeyError Exception occurred with bank details', e)
+            api_response = error_response('Provide bank does not exist.', 500)
         except (DataError, DatabaseError) as e:
             if request.method == 'POST':
                 db.session.rollback()
-            log_exception('Database error occurred during registration', e)
+            log_exception('Database error occurred', e)
             api_response = error_response('Error interacting to the database.', 500)
         except Exception as e:
             if request.method == 'POST':
                 db.session.rollback()
             log_exception('An error occurred during registration', e)
-            api_response = error_response(f'An unexpected error occurred processing the request: {str(e)}', 500)
+            api_response = error_response('Error creating new task. Our developers are already looking into it.', 500)
         finally:
             db.session.close()
         

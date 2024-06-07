@@ -115,11 +115,12 @@ class ManageSettingsController:
             if not user_settings:
                 user_settings = UserSettings(trendit3_user_id=current_user_id)
                 db.session.add(user_settings)
+                db.session.commit()
             
             if not user_settings.security_setting:
                 user_settings.security_setting = SecuritySetting()
+                db.session.commit()
             
-            db.session.commit()
             
             security_setting = user_settings.security_setting
             

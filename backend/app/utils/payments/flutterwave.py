@@ -374,10 +374,11 @@ def create_bank_name_to_code_mapping(country : str = None) -> dict:
     return mapping
 
 def get_bank_code(bank_name: str, country: str | None = None):
-    bank_name_to_code_mapping = create_bank_name_to_code_mapping(country)
-    bank_code = bank_name_to_code_mapping[bank_name]
-    
     console_log('bank_name', bank_name)
+    
+    bank_name_to_code_mapping = create_bank_name_to_code_mapping(country)
+    bank_code = bank_name_to_code_mapping[bank_name.lower()]
+    
     console_log('bank_code', bank_code)
     
     return bank_code

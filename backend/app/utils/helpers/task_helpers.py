@@ -211,7 +211,7 @@ def async_save_task_media_files(app, task_id_key: str | int, media_files):
             
             db.session.commit()
         except Exception as e:
-            log_exception("an exception occurred saving task media")
+            log_exception("an exception occurred saving task media", e)
             raise e
 
 def save_task_media_files(task_id_key: str | int, media_files):

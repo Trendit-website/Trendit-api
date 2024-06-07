@@ -10,12 +10,14 @@ These functions assist with tasks such as saving media files to Cloudinary and a
 import os, random, string
 from datetime import date
 from werkzeug.utils import secure_filename
+from werkzeug.datastructures import FileStorage
 import cloudinary
 import cloudinary.uploader
 
 from app.extensions import db
 from app.models import Media
 from config import Config
+from .basic_helpers import console_log, log_exception, generate_random_string
 
 cloudinary.config( 
     cloud_name = Config.CLOUDINARY_CLOUD_NAME, 
@@ -27,7 +29,54 @@ cloudinary.config(
 IMAGE_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.webp', '.svg'}
 VIDEO_EXTENSIONS = {'.mp4', '.avi', '.mov', '.flv'}
 
-def save_media(media_file) -> Media:
+def get_folder_path():
+    """Generate the folder path based on the current date."""
+    year = str(date.today().year)
+    month = str(date.today().month).zfill(2)
+    return f"{year}/{month}"
+
+def validate_file_extension(extension):
+    """Validate the file extension and determine resource type."""
+    if extension.lower() in IMAGE_EXTENSIONS:
+        return "image"
+    elif extension.lower() in VIDEO_EXTENSIONS:
+        return "video"
+    else:
+        raise ValueError("Invalid file type")
+
+def upload_to_cloudinary(media_file: FileStorage, new_media_name, folder_path, resource_type):
+    """Upload the media file to Cloudinary."""
+    try:
+        # Read the file content into memory
+        media_file.stream.seek(0)
+        file_content = media_file.read()
+        media_file.stream.seek(0)  # Reset stream position after reading
+        
+        return cloudinary.uploader.upload(
+            media_file,
+            resource_type=resource_type,
+            public_id=new_media_name,
+            folder=folder_path,
+        )
+    except Exception as e:
+        log_exception("Cloudinary upload failed", e)
+        raise e
+    
+
+def save_media_to_db(media_name: str, original_media_path: str):
+    """Save the media record to the database."""
+    try:
+        new_media = Media(filename=media_name, media_path=original_media_path)
+        db.session.add(new_media)
+        db.session.commit()
+        return new_media
+    except Exception as e:
+        db.session.rollback()
+        log_exception("Database commit failed", e)
+        raise e
+
+
+def save_media(media_file: FileStorage) -> Media:
     """
     Saves a media file (image or video) to Cloudinary and the database.
     and then return the media instance after adding the media to Media Table
@@ -42,46 +91,26 @@ def save_media(media_file) -> Media:
         ValueError: If the file type is not supported.
     """
     
+    if not isinstance(media_file, FileStorage):
+        raise ValueError("Invalid media file")
+    
     # Generate a random string and append it to the original file name
-    rand_string = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
+    rand_string = generate_random_string(8)
     media_name = secure_filename(media_file.filename) # Grab file name of the selected media
     the_media_name, the_media_ext = os.path.splitext(os.path.basename(media_name)) # get the file name and extension
     new_media_name = f"{the_media_name}-{rand_string}"
     
     
-    # create the path were image will be stored
-    year = (str(date.today().year))
-    month = (str(date.today().month).zfill(2))
-    folder_path = f"{year}/{month}"
+    folder_path = get_folder_path() # create the path were image will be stored
+    resource_type = validate_file_extension(the_media_ext) # Check the file type and set the resource_type accordingly
     
-    
-    # Check the file type and set the resource_type accordingly
-    if the_media_ext.lower() in IMAGE_EXTENSIONS:
-        resource_type = "image"
-    elif the_media_ext.lower() in VIDEO_EXTENSIONS:
-        resource_type = "video"
-    else:
-        raise ValueError("Invalid file type")
     
     # Upload the media to Cloudinary
-    upload_result = cloudinary.uploader.upload(
-        media_file,
-        resource_type = resource_type,
-        public_id = new_media_name,
-        folder = folder_path,
-        secure=True # Ensure HTTPS URL
-    )
-    # Get the URL of the uploaded media
-    original_media_path = upload_result['secure_url']
+    upload_result = upload_to_cloudinary(media_file, new_media_name, folder_path, resource_type)
     
-    try:
-        # Add the media properties to database
-        new_media = Media(filename=media_name, media_path=original_media_path)
-        
-        db.session.add(new_media)
-        db.session.commit()
-    except Exception as e:
-        db.session.rollback()
-        raise e
+    original_media_path = upload_result['secure_url'] # Get the URL of the uploaded media
+    
+    # Add the media properties to database
+    new_media = save_media_to_db(media_name, original_media_path)
     
     return new_media
