@@ -30,17 +30,10 @@ class SocialVerificationController:
             social_links = user.social_links
 
             if not social_links:
-                extra_data = {
-                    'socials': {
-                        'facebook': False,
-                        'tiktok': False,
-                        'instagram': False,
-                        'x': False
-                    }
-                }
-                return success_response(msg, 200, extra_data=extra_data)
+                social_links = SocialLinks(trendit3_user_id=user_id)
+                db.session.add(social_links)
             
-            verified_social_media = {
+            extra_data = {
                 'socials': {
                     'facebook_verified': social_links.facebook_verified.value,
                     'facebook_link': social_links.facebook_id,
@@ -53,7 +46,7 @@ class SocialVerificationController:
                 }
             }
 
-            return success_response(msg, 200, verified_social_media)
+            return success_response(msg, 200, extra_data)
 
         except ValueError as ve:
             logging.error(f"ValueError occurred: {ve}")
