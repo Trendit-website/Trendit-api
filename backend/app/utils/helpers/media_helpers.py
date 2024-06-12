@@ -7,7 +7,7 @@ These functions assist with tasks such as saving media files to Cloudinary and a
 @link: https://github.com/zeddyemy
 @package: Trendit³
 '''
-import os, random, string
+import os
 from datetime import date
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
@@ -47,11 +47,6 @@ def validate_file_extension(extension):
 def upload_to_cloudinary(media_file: FileStorage, new_media_name, folder_path, resource_type):
     """Upload the media file to Cloudinary."""
     try:
-        # Read the file content into memory
-        media_file.stream.seek(0)
-        file_content = media_file.read()
-        media_file.stream.seek(0)  # Reset stream position after reading
-        
         return cloudinary.uploader.upload(
             media_file,
             resource_type=resource_type,
@@ -103,7 +98,6 @@ def save_media(media_file: FileStorage) -> Media:
     
     folder_path = get_folder_path() # create the path were image will be stored
     resource_type = validate_file_extension(the_media_ext) # Check the file type and set the resource_type accordingly
-    
     
     # Upload the media to Cloudinary
     upload_result = upload_to_cloudinary(media_file, new_media_name, folder_path, resource_type)

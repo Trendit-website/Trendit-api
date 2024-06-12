@@ -72,7 +72,7 @@ class SocialAuthController:
         
         except Exception as e:
             msg = f'An error occurred while logging in through facebook: {e}'
-            logging.exception("An error occured while logging in through facebook ")
+            log_exception("An error occurred while logging in through facebook ", e)
             status_code = 500
             return error_response(msg, status_code)
         
@@ -130,7 +130,7 @@ class SocialAuthController:
                 try:
                     send_other_emails(email, email_type='welcome')  # send Welcome message to user's email
                 except Exception as e:
-                    logging.exception(f"Error sending Email: {str(e)}")
+                    log_exception(f"Error sending Email", e)
                     return error_response(f'An error occurred while sending the verification email: {str(e)}', 500)
 
                 db.session.close()
@@ -175,7 +175,7 @@ class SocialAuthController:
         
         except Exception as e:
             msg = f'An error occurred while logging in through facebook: {e}'
-            logging.exception("An error occured while logging in through facebook ")
+            log_exception("An error occured while logging in through facebook ", e)
             status_code = 500
             return error_response(msg, status_code)
         
@@ -219,7 +219,7 @@ class SocialAuthController:
                 return redirect(f'https://app.trendit3.com/login?error=Error_occurred_processing_the_Facebook_API_response')
 
         except Exception as e:
-            logging.exception(f"An error occurred during Facebook login: {e}")
+            log_exception(f"An error occurred during Facebook login", e)
             error_response(f'An unexpected error occurred processing the request: {str(e)}', 500)
             return redirect(f'https://app.trendit3.com/login?error=An_unexpected_error_occurred_processing_the_request')
 
@@ -245,8 +245,8 @@ class SocialAuthController:
             return redirect(url)
         
         except Exception as e:
-            msg = f'An error occurred while logging in through tiktok: {e}'
-            logging.exception("An error occured while logging in through tiktok ")
+            msg = f'An error occurred while logging in through tiktok'
+            log_exception("An error occured while logging in through tiktok ", e)
             status_code = 500
             return error_response(msg, status_code)
 
@@ -265,7 +265,7 @@ class SocialAuthController:
         
         except Exception as e:
             msg = f'An error occurred while fetching user data from tiktok: {e}'
-            logging.exception("An error occured while fetching user data from tiktok ")
+            log_exception("An error occured while fetching user data from tiktok ", e)
             status_code = 500
             return error_response(msg, status_code)
 
@@ -291,7 +291,7 @@ class SocialAuthController:
         
         except Exception as e:
             msg = f'An error occurred while logging in through tiktok: {e}'
-            logging.exception("An error occured while logging in through tiktok ")
+            log_exception("An error occured while logging in through tiktok ", e)
             status_code = 500
             return error_response(msg, status_code)
 
@@ -310,7 +310,7 @@ class SocialAuthController:
         
         except Exception as e:
             msg = f'An error occurred while fetching user data from tiktok: {e}'
-            logging.exception("An error occured while fetching user data from tiktok ")
+            log_exception("An error occured while fetching user data from tiktok ", e)
             status_code = 500
             return error_response(msg, status_code)
 
@@ -405,7 +405,7 @@ class SocialAuthController:
                 try:
                     send_other_emails(email, email_type='welcome') # send Welcome message to user's email
                 except Exception as e:
-                    logging.exception(f"Error sending Email: {str(e)}")
+                    log_exception(f"Error sending Email", e)
                     return error_response(f'An error occurred while sending the verification email: {str(e)}', 500)
 
 
@@ -509,14 +509,14 @@ class SocialAuthController:
         
         except UnsupportedMediaType as e:
             db.session.close()
-            logging.exception(f"An UnsupportedMediaType exception occurred: {e}")
+            log_exception(f"An UnsupportedMediaType exception occurred", e)
             error_response(f"{str(e)}", 415)
             
             return redirect(f'https://app.trendit3.com/login?error=UnsupportedMediaType')
             
         except Exception as e:
             db.session.close()
-            logging.exception(f"An exception occurred trying to login: {e}")
+            log_exception(f"An exception occurred trying to login", e)
             error_response(f'An Unexpected error occurred processing the request.', 500)
             
             return redirect(f'https://app.trendit3.com/login?error=An_Unexpected_error_occurred_processing_the_request')
@@ -585,14 +585,14 @@ class SocialAuthController:
         
         except UnsupportedMediaType as e:
             db.session.close()
-            logging.exception(f"An UnsupportedMediaType exception occurred: {e}")
+            log_exception(f"An UnsupportedMediaType exception occurred", e)
             error_response(f"{str(e)}", 415)
             
             return redirect(f'https://blaziod.github.io/login?error=UnsupportedMediaType')
             
         except Exception as e:
             db.session.close()
-            logging.exception(f"An exception occurred trying to login: {e}")
+            log_exception(f"An exception occurred trying to login", e)
             error_response(f'An Unexpected error occurred processing the request.', 500)
             
             return redirect(f'https://blaziod.github.io/login?error=An_Unexpected_error_occurred_processing_the_request')
@@ -689,7 +689,7 @@ class SocialAuthController:
                 try:
                     send_other_emails(email, email_type='welcome') # send Welcome message to user's email
                 except Exception as e:
-                    logging.exception(f"Error sending Email: {str(e)}")
+                    log_exception(f"Error sending Email", e)
                     return error_response(f'An error occurred while sending the verification email: {str(e)}', 500)
 
 

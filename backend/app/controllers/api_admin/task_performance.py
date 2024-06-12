@@ -1,5 +1,5 @@
 import logging
-from flask import request, jsonify
+from flask import request
 from flask_jwt_extended import get_jwt_identity
 
 from ...extensions import db

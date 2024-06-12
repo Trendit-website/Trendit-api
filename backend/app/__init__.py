@@ -25,10 +25,9 @@ from app.models.item import Item
 from app.models.task import Task, AdvertTask, EngagementTask
 from .models.payment import Payment, Transaction, Wallet, Withdrawal
 
-from .jobs import celery_app
-from .extensions import db, mail, limiter
+from .extensions import db, mail, limiter, make_celery
 from .utils.helpers.response_helpers import error_response
-from .utils.helpers.basic_helpers import log_exception
+from .utils.helpers.basic_helpers import log_exception, console_log
 from .utils.helpers.user_helpers import add_user_role
 from .utils.middleware import set_access_control_allows, check_emerge, json_check, ping_url
 from config import Config, configure_logging, config_by_name
@@ -49,9 +48,14 @@ def create_app(config_name=Config.ENV):
     '''
     app = Flask(__name__)
     app.config.from_object(config_by_name[config_name])
+    
+    
 
     # Initialize Flask extensions here
     db.init_app(app)
+    celery = make_celery(app) # Initialize Celery
+    celery.set_default()
+    
     mail.init_app(app) # Initialize Flask-Mail
     limiter.init_app(app) # initialize rate limiter
     migrate = Migrate(app, db)
@@ -118,4 +122,6 @@ def create_app(config_name=Config.ENV):
     with app.app_context():
         create_roles()  # Create roles for trendit3
     
+    
+    console_log("app_extensions", app.extensions)
     return app

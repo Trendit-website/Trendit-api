@@ -20,9 +20,18 @@ db = SQLAlchemy()
 mail = Mail()
 limiter = Limiter(key_func=get_remote_address)
 
-def make_celery(app_name=__name__):
-    backend = Config.CELERY_RESULT_BACKEND
-    broker = Config.CELERY_BROKER_URL
-    return Celery(app_name, backend=backend, broker=broker)
+def make_celery(app):
+    celery = Celery(
+        app.import_name,
+        backend=app.config['CELERY_RESULT_BACKEND'],
+        broker=app.config['CELERY_BROKER_URL']
+    )
+    celery.conf.update(app.config)
 
-celery = make_celery()
+    class ContextTask(celery.Task):
+        def __call__(self, *args, **kwargs):
+            with app.app_context():
+                return self.run(*args, **kwargs)
+
+    celery.Task = ContextTask
+    return celery
