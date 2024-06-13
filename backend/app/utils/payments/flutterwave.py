@@ -368,7 +368,11 @@ def get_banks(country:str = None) -> list:
 def create_bank_name_to_code_mapping(country : str = None) -> dict:
     """This will give you a dictionary mapping bank names to their codes"""
     supported_banks = get_banks(country)
-    mapping = {bank['name'].lower(): bank['code'] for bank in supported_banks}
+    
+    mapping = {}
+    if supported_banks:
+        mapping = {bank['name'].lower(): bank['code'] for bank in supported_banks}
+    
     console_log('mapping', mapping)
     
     return mapping
@@ -452,6 +456,9 @@ def flutterwave_verify_bank_account(account_no: str, bank_code: str) -> dict:
             "account_bank": bank_code
         }
         
+        console_log("account_number", account_no)
+        console_log("account_bank", bank_code)
+        
         response = requests.post(Config.FLW_VERIFY_BANK_ACCOUNT_URL, headers=headers, json=data)
         response_data = response.json()
         
@@ -467,6 +474,8 @@ def flutterwave_verify_bank_account(account_no: str, bank_code: str) -> dict:
             fallback_url = f"https://api.paystack.co/bank/resolve?account_number={account_no}&bank_code={bank_code}"
             paystack_response = requests.get(fallback_url, headers=paystack_headers)
             paystack_response_data = paystack_response.json()
+            
+            console_log("paystack_response_data", paystack_response_data)
             
             if paystack_response_data['status']:
                 account_info =  {

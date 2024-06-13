@@ -46,11 +46,18 @@ def supported_banks():
 def verify_bank_account():
     try:
         data = request.get_json()
+        current_user_id = get_jwt_identity()
+        current_user = Trendit3User.query.get(current_user_id)
+        if not current_user:
+            return error_response(f"user not found", 404)
         
         account_no = data.get('account_no')
-        console_log("bank name", data.get('bank_name', ''))
         bank_name = data.get('bank_name', '').lower()
-        bank_code = get_bank_code(bank_name)
+        user_country = current_user.address.country
+        bank_code = get_bank_code(bank_name, user_country)
+        
+        if not bank_code:
+            return error_response("make sure you selected a valid bank", 400)
         
         account_info = flutterwave_verify_bank_account(account_no, bank_code)
         
@@ -60,9 +67,9 @@ def verify_bank_account():
         api_response = error_response(f"make sure bank name and bank code is provided", 400)
     except requests.exceptions.RequestException as e:
         log_exception("RequestException verifying bank account", e)
-        api_response = error_response(f"Request Failed: {str(e)}", 500)
+        api_response = error_response(f"An unexpected error occurred: {str(e)}", 500)
     except Exception as e:
-        api_response = error_response("An unexpected error occurred verifying bank account", 500)
+        api_response = error_response("An unexpected error occurred. Our developers are already looking into it.", 500)
         log_exception("An exception occurred verifying bank account", e)
     
     return api_response
