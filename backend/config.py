@@ -113,12 +113,18 @@ class DevelopmentConfig(Config):
     FLASK_DEBUG = True
     DEBUG_TOOLBAR = True  # Enable debug toolbar
     EXPOSE_DEBUG_SERVER = False  # Do not expose debugger publicly
+    
+    APP_DOMAIN_NAME = os.environ.get('APP_DOMAIN_NAME') or 'https://staging.trendit3.com'
+    API_DOMAIN_NAME = os.environ.get('API_DOMAIN_NAME') or 'https://api-staging.trendit3.com'
 
 class ProductionConfig(Config):
     DEBUG = False
     FLASK_DEBUG = False
     DEBUG_TOOLBAR = False
     EXPOSE_DEBUG_SERVER = False
+    
+    APP_DOMAIN_NAME = os.environ.get('APP_DOMAIN_NAME') or 'https://app.trendit3.com'
+    API_DOMAIN_NAME = os.environ.get('API_DOMAIN_NAME') or 'https://api.trendit3.com'
 
 # Map config based on environment
 config_by_name = {

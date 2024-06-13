@@ -122,6 +122,4 @@ def create_app(config_name=Config.ENV):
     with app.app_context():
         create_roles()  # Create roles for trendit3
     
-    
-    console_log("app_extensions", app.extensions)
     return app
