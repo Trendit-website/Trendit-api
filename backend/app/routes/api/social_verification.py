@@ -1,8 +1,6 @@
 from flask_jwt_extended import jwt_required
-from flask import request
 from . import api
 from app.controllers.api import SocialVerificationController
-from app.controllers.api import NotificationController
 
 
 @api.route('/verified_socials', methods=["GET"])
@@ -14,4 +12,4 @@ def get_verified_socials():
 @api.route('/send_social_verification_request', methods=["POST"])
 @jwt_required()
 def notify_admin():
-    return NotificationController.send_social_verification_request()
+    return SocialVerificationController.send_social_verification_request()
