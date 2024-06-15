@@ -10,6 +10,7 @@ from flask import redirect, request, session
 from requests_oauthlib import OAuth2Session
 from requests_oauthlib.compliance_fixes import facebook_compliance_fix
 
+from config import main_config
 from ...extensions import db
 from ...models.role import Role
 from ...models import Role, RoleNames, TempUser, Trendit3User, Address, Profile, OneTimeToken, ReferralHistory, Membership, Wallet, UserSettings
@@ -26,24 +27,24 @@ from ...utils.helpers.mail_helpers import send_other_emails, send_code_to_email
 
 
 # Facebook OAuth configuration
-FB_CLIENT_ID = app.Config.FB_CLIENT_ID
-FB_CLIENT_SECRET = app.Config.FB_CLIENT_SECRET
+FB_CLIENT_ID = main_config.FB_CLIENT_ID
+FB_CLIENT_SECRET = main_config.FB_CLIENT_SECRET
 
 # Facebook OAuth endpoints
 FB_AUTHORIZATION_BASE_URL = os.environ.get('FB_AUTHORIZATION_BASE_URL')
 FB_TOKEN_URL = os.environ.get('FB_TOKEN_URL')
-FB_LOGIN_REDIRECT_URI = f"{app.Config.API_DOMAIN_NAME}/api/fb_login_callback"
-FB_SIGNUP_REDIRECT_URI = f"{app.Config.API_DOMAIN_NAME}/api/fb_signup_callback"
+FB_LOGIN_REDIRECT_URI = f"{main_config.API_DOMAIN_NAME}/api/fb_login_callback"
+FB_SIGNUP_REDIRECT_URI = f"{main_config.API_DOMAIN_NAME}/api/fb_signup_callback"
 
 
 # Google OAuth configuration
-GOOGLE_CLIENT_ID = app.Config.GOOGLE_CLIENT_ID
-GOOGLE_CLIENT_SECRET = app.Config.GOOGLE_CLIENT_SECRET
+GOOGLE_CLIENT_ID = main_config.GOOGLE_CLIENT_ID
+GOOGLE_CLIENT_SECRET = main_config.GOOGLE_CLIENT_SECRET
 
-GOOGLE_SIGNUP_REDIRECT_URI = f"{app.Config.API_DOMAIN_NAME}/api/gg_signup_callback"
-GOOGLE_SIGNUP_REDIRECT_URI_APP = f"{app.Config.API_DOMAIN_NAME}/api/app/gg_signup_callback"
-GOOGLE_LOGIN_REDIRECT_URI = f"{app.Config.API_DOMAIN_NAME}/api/gg_login_callback"
-GOOGLE_LOGIN_REDIRECT_URI_APP = f"{app.Config.API_DOMAIN_NAME}/api/app/gg_login_callback"
+GOOGLE_SIGNUP_REDIRECT_URI = f"{main_config.API_DOMAIN_NAME}/api/gg_signup_callback"
+GOOGLE_SIGNUP_REDIRECT_URI_APP = f"{main_config.API_DOMAIN_NAME}/api/app/gg_signup_callback"
+GOOGLE_LOGIN_REDIRECT_URI = f"{main_config.API_DOMAIN_NAME}/api/gg_login_callback"
+GOOGLE_LOGIN_REDIRECT_URI_APP = f"{main_config.API_DOMAIN_NAME}/api/app/gg_login_callback"
 
 # Google OAuth endpoints
 GOOGLE_AUTHORIZATION_BASE_URL = 'https://accounts.google.com/o/oauth2/auth'
