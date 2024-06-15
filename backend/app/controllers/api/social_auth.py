@@ -132,7 +132,7 @@ class SocialAuthController:
 
                 db.session.close()
 
-                return redirect(f'https://app.trendit3.com/?access_token={access_token}')
+                return redirect(f"{main_config.APP_DOMAIN_NAME}/?access_token={access_token}")
 
             else:
                 return error_response('Error occurred processing the request. Response from Facebook was not ok', 500)
@@ -196,13 +196,13 @@ class SocialAuthController:
                 email = user_data.get('email')
                 if not email:
                     error_response('Facebook account does not provide an email.', 401)
-                    return redirect(f'https://app.trendit3.com/login?error=Facebook_account_does_not_provide_an_email')
+                    return redirect(f"{main_config.APP_DOMAIN_NAME}/login?error=Facebook_account_does_not_provide_an_email")
 
                 # Attempt to find the user by email
                 user = get_trendit3_user(email)
                 if not user:
                     error_response('Facebook account is incorrect or doesn\'t exist in our records', 401)
-                    return redirect(f'https://app.trendit3.com/login?error=Facebook_Account_is_incorrect_or_does_not_exist_in_our_records')
+                    return redirect(f"{main_config.APP_DOMAIN_NAME}/login?error=Facebook_Account_is_incorrect_or_does_not_exist_in_our_records")
 
                 # Assuming create_access_token is a method that creates JWT tokens
                 access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=1440), additional_claims={'type': 'access'})
@@ -210,15 +210,15 @@ class SocialAuthController:
                 db.session.close()  # It is good practice to close the session when done.
                 success_response('Logged in successfully', 200)
                 
-                return redirect(f'https://app.trendit3.com/login?access_token={access_token}')
+                return redirect(f"{main_config.APP_DOMAIN_NAME}/login?access_token={access_token}")
             else:
                 error_response('Error occurred processing the Facebook API response.', 500)
-                return redirect(f'https://app.trendit3.com/login?error=Error_occurred_processing_the_Facebook_API_response')
+                return redirect(f"{main_config.APP_DOMAIN_NAME}/login?error=Error_occurred_processing_the_Facebook_API_response")
 
         except Exception as e:
             log_exception(f"An error occurred during Facebook login", e)
             error_response(f'An unexpected error occurred processing the request: {str(e)}', 500)
-            return redirect(f'https://app.trendit3.com/login?error=An_unexpected_error_occurred_processing_the_request')
+            return redirect(f"{main_config.APP_DOMAIN_NAME}/login?error=An_unexpected_error_occurred_processing_the_request")
 
 
 
@@ -347,11 +347,11 @@ class SocialAuthController:
                 # referral_code = user_data['referral_code']
                 if not email:
                     error_response('Email is required', 400)
-                    return redirect(f'https://app.trendit3.com/?error=Email_is_required')
+                    return redirect(f"{main_config.APP_DOMAIN_NAME}/?error=Email_is_required")
 
                 if Trendit3User.query.filter_by(email=email).first():
                     error_response('Email already taken', 409)
-                    return redirect(f'https://app.trendit3.com/?error=User_already_exists')
+                    return redirect(f"{main_config.APP_DOMAIN_NAME}/?error=User_already_exists")
                 
                 # if referral_code and not Trendit3User.query.filter_by(username=referral_code).first():
                 #     return error_response('Referral code is invalid', 404)
@@ -383,7 +383,6 @@ class SocialAuthController:
 
                 
                 db.session.add_all([new_user, new_user_profile, new_user_address, new_membership, new_user_wallet, new_user_setting])
-                # db.session.delete(temp_user)
                 
                 db.session.commit()
 
@@ -414,29 +413,29 @@ class SocialAuthController:
                 #     referrer = get_trendit3_user(referral_code)
                 #     referral_history = ReferralHistory.create_referral_history(email=email, status='pending', trendit3_user=referrer, date_joined=new_user.date_joined)
                 
-                return redirect(f'https://app.trendit3.com/?access_token={access_token}')
+                return redirect(f"{main_config.APP_DOMAIN_NAME}/?access_token={access_token}")
             
             else:
                 error_response('Error occurred processing the request. Response from google was not ok', 500)
-                return redirect(f'https://app.trendit3.com/?error=Error_occurred_processing_the_request')
+                return redirect(f"{main_config.APP_DOMAIN_NAME}/?error=Error_occurred_processing_the_request")
                 
         except IntegrityError as e:
             db.session.rollback()
             log_exception('Integrity Error:', e)
             error_response(f'User already exists: {str(e)}', 409)
-            return redirect(f'https://app.trendit3.com/?error=User_already_exists')
+            return redirect(f"{main_config.APP_DOMAIN_NAME}/?error=User_already_exists")
         
         except (DataError, DatabaseError) as e:
             db.session.rollback()
             log_exception('Database error occurred during registration', e)
             error_response('Error interacting with the database.', 500)
-            return redirect(f'https://app.trendit3.com/?error=Error_interacting_with_the_database')
+            return redirect(f"{main_config.APP_DOMAIN_NAME}/?error=Error_interacting_with_the_database")
             
         except Exception as e:
             db.session.rollback()
             log_exception('An error occurred during registration', e)
             error_response(f'An error occurred while processing the request: {str(e)}', 500)
-            return redirect(f'https://app.trendit3.com/?error=An_error_occurred_while_processing_the_request')
+            return redirect(f"{main_config.APP_DOMAIN_NAME}/?error=An_error_occurred_while_processing_the_request")
             
         finally:
             db.session.close()
@@ -482,7 +481,7 @@ class SocialAuthController:
             
                 if not user:
                     error_response('Google Account is incorrect or doesn\'t exist', 401)
-                    return redirect(f'https://app.trendit3.com/login?error=Google_Account_is_incorrect_or_doesnt_exist')
+                    return redirect(f"{main_config.APP_DOMAIN_NAME}/login?error=Google_Account_is_incorrect_or_doesnt_exist")
                 
                 # # Check if user has enabled 2FA
                 # user_settings = user.user_settings
@@ -502,21 +501,21 @@ class SocialAuthController:
 
                 success_response(msg, 200)
 
-                return redirect(f'https://app.trendit3.com/login?access_token={access_token}')
+                return redirect(f"{main_config.APP_DOMAIN_NAME}/login?access_token={access_token}")
         
         except UnsupportedMediaType as e:
             db.session.close()
             log_exception(f"An UnsupportedMediaType exception occurred", e)
             error_response(f"{str(e)}", 415)
             
-            return redirect(f'https://app.trendit3.com/login?error=UnsupportedMediaType')
+            return redirect(f"{main_config.APP_DOMAIN_NAME}/login?error=UnsupportedMediaType")
             
         except Exception as e:
             db.session.close()
             log_exception(f"An exception occurred trying to login", e)
             error_response(f'An Unexpected error occurred processing the request.', 500)
             
-            return redirect(f'https://app.trendit3.com/login?error=An_Unexpected_error_occurred_processing_the_request')
+            return redirect(f"{main_config.APP_DOMAIN_NAME}/login?error=An_Unexpected_error_occurred_processing_the_request")
 
 
     @staticmethod
