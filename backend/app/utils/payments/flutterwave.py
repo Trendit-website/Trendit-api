@@ -355,6 +355,12 @@ def get_banks(country:str = None) -> list:
         
         if 'status' in response_data and response_data['status'] == 'success':
             supported_banks = response_data['data']
+            names_to_exclude = {"opay", "palmpay"}
+
+            filtered_banks = (bank for bank in supported_banks if bank["name"].lower() not in names_to_exclude)
+
+            # convert the generator to a list
+            supported_banks = list(filtered_banks)
         else:
             supported_banks = None
     
@@ -456,13 +462,8 @@ def flutterwave_verify_bank_account(account_no: str, bank_code: str) -> dict:
             "account_bank": bank_code
         }
         
-        console_log("account_number", account_no)
-        console_log("account_bank", bank_code)
-        
         response = requests.post(Config.FLW_VERIFY_BANK_ACCOUNT_URL, headers=headers, json=data)
         response_data = response.json()
-        
-        console_log('response_data', response_data)
         
         if 'status' in response_data and response_data['status'] == 'success':
             account_info =  {
@@ -474,8 +475,6 @@ def flutterwave_verify_bank_account(account_no: str, bank_code: str) -> dict:
             fallback_url = f"https://api.paystack.co/bank/resolve?account_number={account_no}&bank_code={bank_code}"
             paystack_response = requests.get(fallback_url, headers=paystack_headers)
             paystack_response_data = paystack_response.json()
-            
-            console_log("paystack_response_data", paystack_response_data)
             
             if paystack_response_data['status']:
                 account_info =  {
