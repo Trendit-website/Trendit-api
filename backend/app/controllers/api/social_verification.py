@@ -1,4 +1,4 @@
-import logging
+import logging, re
 from flask import request, jsonify
 from sqlalchemy.exc import ( IntegrityError, DataError, DatabaseError, InvalidRequestError, SQLAlchemyError )
 from flask_jwt_extended import get_jwt_identity
@@ -10,6 +10,18 @@ from ...models.user import Trendit3User, SocialLinks, SocialLinksStatus
 from ...utils.helpers.mail_helpers import send_other_emails
 from ...utils.helpers.basic_helpers import log_exception
 
+
+def is_valid_social_url(url, platform):
+    patterns = {
+        'facebook': r'https?://www.facebook.com/.*',
+        'tiktok': r'https?://www.tiktok.com/@.*',
+        'instagram': r'https?://www.instagram.com/.*',
+        'x': r'https?://x.com/.*'  # Example pattern for 'x'
+    }
+    pattern = patterns.get(platform)
+    if pattern and re.match(pattern, url):
+        return True
+    return False
 
 class SocialVerificationController:
 
@@ -67,7 +79,7 @@ class SocialVerificationController:
             # Receive and parse request data
             data = request.get_json()
             link = data.get('link')
-            type = data.get('type')
+            platform = data.get('type')
             sender_id = int(get_jwt_identity())
 
             # Fetch the user
@@ -83,24 +95,27 @@ class SocialVerificationController:
                     'x': ['x_verified', 'x_id']
                 }
 
-            # Check if social media type is valid
-            if not field_mapping.get(type):
-                return error_response('Invalid social media type', 400)
+            # Check if social media platform is valid
+            if not field_mapping.get(platform):
+                return error_response('Invalid social media platform', 400)
 
             # Initialize social links if absent
             if user.social_links is None:
                 kwargs = {key: False for key in field_mapping.values()}
                 user.social_links = SocialLinks(**kwargs)
             
+            if not is_valid_social_url(link, platform):
+                return error_response('Invalid URL for specified platform', 400)
+            
             # Set the corresponding social media link
-            setattr(user.social_links, field_mapping[type][1], link)
-            setattr(user.social_links, field_mapping[type][0], SocialLinksStatus.PENDING)
+            setattr(user.social_links, field_mapping[platform][1], link)
+            setattr(user.social_links, field_mapping[platform][0], SocialLinksStatus.PENDING)
 
             # Send verification notification
             SocialVerification.send_notification(
                 sender_id=sender_id,
                 body=link,
-                type=type,
+                type=platform,
                 status=SocialVerificationStatus.PENDING
             )
 
