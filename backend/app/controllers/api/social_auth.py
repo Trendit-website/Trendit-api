@@ -413,7 +413,7 @@ class SocialAuthController:
                 #     referrer = get_trendit3_user(referral_code)
                 #     referral_history = ReferralHistory.create_referral_history(email=email, status='pending', trendit3_user=referrer, date_joined=new_user.date_joined)
                 
-                return redirect(f"{config_class.APP_DOMAIN_NAME}/?access_token={access_token}")
+                return redirect(f"{config_class.APP_DOMAIN_NAME}/dashboard/home/?access_token={access_token}")
             
             else:
                 error_response('Error occurred processing the request. Response from google was not ok', 500)
