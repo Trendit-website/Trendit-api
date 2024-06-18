@@ -13,10 +13,10 @@ from ...utils.helpers.basic_helpers import log_exception
 
 def is_valid_social_url(url, platform):
     patterns = {
-        'facebook': r'https?://www.facebook.com/.*',
-        'tiktok': r'https?://www.tiktok.com/@.*',
-        'instagram': r'https?://www.instagram.com/.*',
-        'x': r'https?://x.com/.*'  # Example pattern for 'x'
+        'facebook': r'https?://(www.facebook.com|facebook.com)/.*',
+        'tiktok': r'https?://(www.tiktok.com|tiktok.com)/@.*',
+        'instagram': r'https?://(www.instagram.com|instagram.com)/.*',
+        'x': r'https?://(www.twitter.com|twitter.com|www.x.com|x.com)/.*'  # Modified pattern for "x"
     }
     pattern = patterns.get(platform)
     if pattern and re.match(pattern, url):
