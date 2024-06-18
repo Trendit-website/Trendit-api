@@ -30,6 +30,7 @@ class Config:
     API_DOMAIN_NAME = os.environ.get('API_DOMAIN_NAME') or 'https://api.trendit3.com'
     CLIENT_ORIGINS = os.environ.get('CLIENT_ORIGINS') or 'http://localhost:3000,http://localhost:5173,https://trendit3.vercel.app'
     CLIENT_ORIGINS = [origin.strip() for origin in CLIENT_ORIGINS.split(',')]
+    REDIS_URL = os.environ.get("REDIS_URL") or 'redis://localhost:6379/0'
     
     # Constants
     TASKS_PER_PAGE = os.environ.get('TASKS_PER_PAGE') or 10
@@ -85,8 +86,8 @@ class Config:
     CLOUDINARY_API_SECRET = os.environ.get('CLOUDINARY_API_SECRET') or "HwXtPdaC5M1zepKZUriKCYZ9tsI"
     
     # Celery
-    CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL') or 'redis://localhost:6379/0'
-    CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND') or 'redis://localhost:6379/0'
+    CELERY_BROKER_URL = REDIS_URL
+    CELERY_RESULT_BACKEND = REDIS_URL
     CELERY_CONFIG = {"broker_url": CELERY_BROKER_URL, "result_backend": CELERY_RESULT_BACKEND}
     CELERY_ACCEPT_CONTENT = ['application/json']
     CELERY_TASK_SERIALIZER = 'json'
@@ -96,6 +97,9 @@ class Config:
     EXCHANGE_RATE_API_KEY = os.environ.get('EXCHANGE_RATE_API_KEY') or "c997678ed19c3c9bb53ed2af"
     EXCHANGE_RATE_API_URL = os.environ.get('EXCHANGE_RATE_API_KEY') or f"https://v6.exchangerate-api.com/v6/{EXCHANGE_RATE_API_KEY}/latest"
     
+    # Rate limit
+    RATELIMIT_STORAGE_URI = REDIS_URL
+    RATELIMIT_STORAGE_OPTIONS = os.environ.get('RATELIMIT_STORAGE_OPTIONS') or {}
 
 
     # Google config

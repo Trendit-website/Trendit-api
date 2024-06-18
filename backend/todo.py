@@ -14,7 +14,7 @@
 # PENDING
 
 '''
-# TODO: Properly implemet Celery to handle Background Jobs, which include, but not limited to the following:
+# TODO: Properly implement Celery to handle Background Jobs, which include, but not limited to the following:
         * Sending Emails
         * Periodic check for expired Task Performance (this job should be performed every 15 mins)
 '''
