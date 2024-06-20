@@ -1,16 +1,16 @@
 import logging
 from flask import request
-from sqlalchemy.exc import ( IntegrityError, DataError, DatabaseError, InvalidRequestError, SQLAlchemyError )
-from flask_jwt_extended import create_access_token, decode_token, get_jwt_identity, jwt_required
-from flask_jwt_extended.exceptions import JWTDecodeError
+from sqlalchemy.exc import ( DataError, DatabaseError )
+from flask_jwt_extended import get_jwt_identity
 
 from ...extensions import db
 
-from app.models.notification import MessageStatus, MessageType, UserMessageStatus, Notification, SocialVerification, SocialVerificationStatus
-from app.models.user import Trendit3User, SocialLinks, SocialLinksStatus
-from app.utils.helpers.basic_helpers import console_log, log_exception
-from app.utils.helpers.user_helpers import get_notifications, mark_as_read
-from app.utils.helpers.response_helpers import *
+from ...models.notification import MessageStatus, MessageType, UserMessageStatus, Notification, SocialVerification, SocialVerificationStatus
+from ...models.user import Trendit3User
+
+from ...utils.helpers.basic_helpers import console_log, log_exception
+from ...utils.helpers.user_helpers import get_notifications, mark_as_read
+from ...utils.helpers.response_helpers import *
 
 class NotificationController:
     @staticmethod
@@ -122,12 +122,13 @@ class NotificationController:
             status_code = 200
             return success_response(msg, status_code)
 
+        except (DataError, DatabaseError) as e:
+            db.session.rollback()
+            log_exception('Database error:', e)
+            return error_response('Error connecting to the database.', 500)
         except Exception as e:
-            msg = f'Error sending broadcast message'
-            status_code = 500
-            logging.exception(f"An exception occurred trying to send broadcast message: ==>", str(e))
-
-            return error_response(msg, status_code)
+            log_exception(f"An exception occurred trying to send broadcast message", e)
+            return error_response('An unexpected error. Our developers are already looking into it.', 500)
 
         
     @staticmethod
@@ -154,12 +155,15 @@ class NotificationController:
             status_code = 200
             return success_response(msg, status_code)
 
+        
+        except (DataError, DatabaseError) as e:
+            db.session.rollback()
+            log_exception('Database error:', e)
+            return error_response('Error connecting to the database.', 500)
         except Exception as e:
-            msg = f'Error sending broadcast message'
-            status_code = 500
-            logging.exception(f"An exception occurred trying to send broadcast message: ==>", str(e))
-
-            return error_response(msg, status_code)
+            db.session.rollback()
+            log_exception(f"An exception occurred trying to send broadcast message", e)
+            return error_response('An unexpected error. Our developers are already looking into it.', 500)
         
     @staticmethod
     def global_search():

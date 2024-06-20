@@ -1,13 +1,13 @@
 import logging
-from flask import request, jsonify
+from flask import request
 from sqlalchemy.exc import ( IntegrityError, DataError, DatabaseError, InvalidRequestError, SQLAlchemyError )
 from flask_jwt_extended import get_jwt_identity
 
 from app.extensions import db
 from app.utils.helpers.response_helpers import error_response, success_response
-from app.models import SocialLinksStatus
+from app.models import SocialLinkStatus, SocialLinks
 from app.models.notification import SocialVerification, SocialVerificationStatus, Notification, MessageType
-from app.models.user import Trendit3User, SocialLinks
+from app.models.user import Trendit3User
 from ...utils.helpers.mail_helpers import send_other_emails
 
 
@@ -83,7 +83,7 @@ class SocialVerificationController:
                 
                 # Set the corresponding social media link
                 setattr(user.social_links, field_mapping[type][1], link)
-                setattr(user.social_links, field_mapping[type][0], SocialLinksStatus.VERIFIED)
+                setattr(user.social_links, field_mapping[type][0], SocialLinkStatus.VERIFIED)
                     
                 db.session.commit()
                 
@@ -156,7 +156,7 @@ class SocialVerificationController:
                 
                 # Set the corresponding social media link
                 setattr(user.social_links, field_mapping[type][1], link)
-                setattr(user.social_links, field_mapping[type][0], SocialLinksStatus.REJECTED)
+                setattr(user.social_links, field_mapping[type][0], SocialLinkStatus.REJECTED)
                     
                 db.session.commit()
                 

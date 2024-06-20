@@ -66,7 +66,7 @@ class Notification(db.Model):
         return f'<Notification {self.id}>'
 
     @classmethod
-    def send_notification(cls, sender_id, recipients, body, message_type=MessageType.NOTIFICATION):
+    def send_notification(cls, sender_id, recipients, body, message_type=MessageType.NOTIFICATION, commit=True):
         """
         Send a notification from an admin to multiple recipients.
 
@@ -81,7 +81,9 @@ class Notification(db.Model):
         db.session.flush()  # Ensure the message is added to the session before creating user message statuses
         user_message_statuses = [UserMessageStatus(user_id=recipient.id, message_id=message.id, status=MessageStatus.UNREAD) for recipient in recipients]
         db.session.bulk_save_objects(user_message_statuses)
-        # db.session.commit()
+        
+        if commit:
+            db.session.commit()
 
         return message
         
@@ -107,7 +109,7 @@ class Notification(db.Model):
 
 # Admin  Notification model
 class SocialVerification(db.Model):
-    __tablename__ = 'socialverification'
+    __tablename__ = 'social_verification'
 
     id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
     sender_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
@@ -125,7 +127,7 @@ class SocialVerification(db.Model):
         return f'<Notification {self.id}>'
     
     @classmethod
-    def send_notification(cls, sender_id, body, type, status=SocialVerificationStatus.PENDING):
+    def send_notification(cls, sender_id, body, type, status=SocialVerificationStatus.PENDING, commit=True):
         """
         Send a notification from an admin to multiple recipients.
 
@@ -138,7 +140,9 @@ class SocialVerification(db.Model):
         """
         message = cls(sender_id=sender_id, body=body, status=status, type=type)
         db.session.add(message)
-        # db.session.commit()
+        
+        if commit:
+            db.session.commit()
 
         return message
     

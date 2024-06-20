@@ -21,7 +21,8 @@ from .location import LocationController
 from .stats import StatsController
 from .notification import NotificationController
 from .settings import ManageSettingsController
-from .social_auth import SocialAuthController
 from .transactions import TransactionController
 from .pricing import PricingController
-from .social_verification import SocialVerificationController
+from .social_auth import SocialAuthController
+from .social_profile import SocialProfileController
+from .social_platforms import SocialMediaPlatformsController
