@@ -64,17 +64,9 @@ class Config:
     FLW_SECRET_HASH = os.environ.get('FLW_SECRET_HASH') or "42cf4e6d9d8c728003ae3361d5268c23"
     
     
-    '''
     # mail configurations
-    MAIL_SERVER = 'smtp.hostinger.com'
-    MAIL_PORT = 587
-    MAIL_USE_TLS = True
-    MAIL_USERNAME = os.environ.get('MAIL_USERNAME') or 'support@trendit3.com'
-    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
-    '''
-    
-    MAIL_SERVER = 'smtp.gmail.com'
-    MAIL_PORT = 587
+    MAIL_SERVER = os.environ.get('MAIL_SERVER') or 'smtp.gmail.com'
+    MAIL_PORT = os.environ.get('MAIL_PORT') or 587
     MAIL_USE_TLS = True
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
