@@ -185,14 +185,15 @@ class SocialProfileController:
             return success_response(msg, 200, extra_data)
 
         except ValueError as ve:
-            logging.error(f"ValueError occurred: {ve}")
+            log_exception(f"ValueError occurred: {ve}")
             return error_response('Invalid data provided', 400)
         except SQLAlchemyError as sae:
-            logging.error(f"Database error occurred: {sae}")
             db.session.rollback()
+            log_exception(f"Database error occurred: {sae}")
             return error_response('Database error occurred', 500)
         except Exception as e:
-            logging.exception(f"An unexpected error occurred: {e}")
+            db.session.rollback()
+            log_exception(f"An unexpected error occurred: {e}")
             return error_response('Error retrieving verified social media', 500)
 
 
