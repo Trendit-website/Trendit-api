@@ -164,6 +164,8 @@ class SocialProfileController:
             if not social_links:
                 social_links = SocialLinks(trendit3_user_id=user_id)
                 db.session.add(social_links)
+                db.session.commit()
+                social_links = user.social_links
             
             extra_data = {
                 'socials': {
