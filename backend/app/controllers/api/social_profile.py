@@ -72,7 +72,7 @@ class SocialProfileController:
             console_log("user_id", user_id)
             
             # check user already added a profile for the provided platform
-            profile = SocialMediaProfile.query.filter_by(platform=platform, trendit3_user_id=user_id)
+            profile = SocialMediaProfile.query.filter_by(platform=platform, trendit3_user_id=user_id).first()
             console_log("profile", profile)
             if profile:
                 return success_response(f"{platform} profile already added", 200, {"social_profiles": [profile.to_dict() for profile in user.social_media_profiles]})
