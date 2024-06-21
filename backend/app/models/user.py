@@ -199,15 +199,9 @@ class Trendit3User(db.Model):
         user_wallet.pop("id")
         wallet_info = user_wallet
         
-        user_social_ids = self.social_ids
-        social_ids = {
-            'google_id': user_social_ids.google_id if user_social_ids else None,
-            'facebook_id': user_social_ids.facebook_id if user_social_ids else None,
-            'instagram_id': user_social_ids.instagram_id if user_social_ids else None,
-            'tiktok_id': user_social_ids.tiktok_id if user_social_ids else None,
-            'x_id': user_social_ids.x_id if user_social_ids else None,
-        }
-
+        user_social_profiles = self.social_media_profiles
+        social_profiles = [profile.to_dict() for profile in user_social_profiles]
+        
         user_social_links = self.social_links
         social_links = {
             'google_id': user_social_links.google_id if user_social_links else None,
@@ -220,14 +214,13 @@ class Trendit3User(db.Model):
             'tiktok_verified': user_social_links.tiktok_verified.value if user_social_links else None,
             'x_id': user_social_links.x_id if user_social_links else None,
             'x_verified': user_social_links.x_verified.value if user_social_links else None,
-            # 'threads_id': user_social_links.threads_id if user_social_links else None,
-            # 'threads_verified': user_social_links.threads_verified.value if user_social_links else None,
+            'threads_id': user_social_links.threads_id if user_social_links else None,
+            'threads_verified': user_social_links.threads_verified.value if user_social_links else None,
             # 'youtube_id': user_social_links.youtube_id if user_social_links else None,
             # 'youtube_verified': user_social_links.youtube_verified.value if user_social_links else None,
             # 'spotify_id': user_social_links.spotify_id if user_social_links else None,
             # 'spotify_verified': user_social_links.spotify_verified.value if user_social_links else None,
         }
-        
         
         return {
             'id': self.id,
@@ -236,7 +229,7 @@ class Trendit3User(db.Model):
             'date_joined': self.date_joined,
             'membership_fee': self.membership.membership_fee_paid,
             'wallet': wallet_info,
-            'social_ids': social_ids,
+            'social_profiles': social_profiles,
             'social_links': social_links,
             'primary_bank': bank_details,
             'roles': self.role_names,

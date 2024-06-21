@@ -69,9 +69,9 @@ class SocialProfileController:
             platform = data.get('platform')
             
             # check user already added a profile for the provided platform
-            profile = SocialMediaProfile.query.filter_by(platform=platform, trendit3_user=user)
+            profile = SocialMediaProfile.query.filter_by(platform=platform, trendit3_user_id=user_id)
             if profile:
-                return success_response(f"{platform} profile already added", 200)
+                return success_response(f"{platform} profile already added", 200, {"social_profiles": [profile.to_dict() for profile in user.social_media_profiles]})
             
             new_profile = SocialMediaProfile.add_profile(platform=platform, link=link, commit=False, trendit3_user=user)
             
