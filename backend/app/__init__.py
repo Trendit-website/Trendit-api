@@ -19,6 +19,7 @@ from flask_swagger import swagger
 from flask_swagger_ui import get_swaggerui_blueprint
 from celery import Celery
 
+from .models.social import social_media_platforms, SocialMediaProfile
 from app.models.user import Trendit3User
 from app.models.role import create_roles
 from app.models.item import Item
@@ -121,5 +122,13 @@ def create_app(config_name=Config.ENV):
     
     with app.app_context():
         create_roles()  # Create roles for trendit3
+        
+        users = Trendit3User.query.all()
+        for user in users:
+            if not user.social_media_profiles:
+                new_user_social_profiles = [SocialMediaProfile(trendit3_user=user, platform=platform) for platform in social_media_platforms]
+            else:
+                for platform in social_media_platforms:
+                    SocialMediaProfile.query.filter_by(trendit3_user_id=user.id, platform=platform).first()
     
     return app, celery

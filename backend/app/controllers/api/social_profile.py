@@ -69,6 +69,9 @@ class SocialProfileController:
             link = data.get('link')
             platform = data.get('platform')
             
+            if not all([platform, link]):
+                return error_response("Platform or link is missing or empty.", 400)
+            
             console_log("user_id", user_id)
             
             # check user already added a profile for the provided platform
