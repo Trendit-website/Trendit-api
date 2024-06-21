@@ -34,12 +34,8 @@ class SocialMediaProfile(db.Model):
         return f'< primary ID: {self.id}, platform: {self.platform}, status: {self.status} >'
     
     @classmethod
-    def add_profile(cls, platform, link, status=SocialLinkStatus.PENDING, commit=True, **kwargs):
-        profile = cls(platform=platform, link=link, status=status **kwargs)
-        
-        # Set additional attributes from kwargs
-        for key, value in kwargs.items():
-            setattr(profile, key, value)
+    def add_profile(cls, trendit3_user, platform, link, status=SocialLinkStatus.PENDING, commit=True):
+        profile = cls(trendit3_user=trendit3_user, platform=platform, link=link, status=status)
         
         db.session.add(profile)
         

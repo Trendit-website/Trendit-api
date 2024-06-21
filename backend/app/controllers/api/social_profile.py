@@ -77,12 +77,7 @@ class SocialProfileController:
             if profile:
                 return success_response(f"{platform} profile already added", 200, {"social_profiles": [profile.to_dict() for profile in user.social_media_profiles]})
             
-            new_profile = SocialMediaProfile.add_profile(platform=platform, link=link, commit=False, trendit3_user=user)
-            
-            social_profiles = user.social_media_profiles
-            extra_data = {
-                "social_profiles": [profile.to_dict() for profile in social_profiles]
-            }
+            new_profile = SocialMediaProfile.add_profile(trendit3_user=user, platform=platform, link=link, commit=False)
             
             # Send verification notification
             SocialVerification.send_notification(
@@ -103,6 +98,11 @@ class SocialProfileController:
             )
             
             db.session.commit()
+            
+            social_profiles = user.social_media_profiles
+            extra_data = {
+                "social_profiles": [profile.to_dict() for profile in social_profiles]
+            }
             
             api_response = success_response(f"{platform} profile has been submitted for review", 200, extra_data)
             
