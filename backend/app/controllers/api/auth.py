@@ -222,7 +222,6 @@ class AuthController:
             new_membership = Membership(trendit3_user=new_user)
             new_user_wallet = Wallet(trendit3_user=new_user)
             new_user_setting = UserSettings(trendit3_user=new_user)
-            new_user_social_profiles = [SocialMediaProfile(trendit3_user=new_user, platform=platform) for platform in social_media_platforms]
             
             new_user_social_links = SocialLinks(trendit3_user=new_user)
             role = Role.query.filter_by(name=RoleNames.CUSTOMER).first()
@@ -236,9 +235,11 @@ class AuthController:
                 new_membership,
                 new_user_wallet,
                 new_user_setting,
-                new_user_social_profiles,
                 new_user_social_links
             ])
+            
+            new_user_social_profiles = [SocialMediaProfile(trendit3_user=new_user, platform=platform) for platform in social_media_platforms]
+            db.session.add_all(new_user_social_profiles)
             
             db.session.delete(user)
             db.session.commit()
