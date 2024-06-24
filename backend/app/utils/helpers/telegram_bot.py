@@ -53,7 +53,7 @@ def notify_telegram_admins_new_profile(social_profile : SocialMediaProfile):
     profile_id = social_profile.id
     profile_link = social_profile.link
     platform = social_profile.platform
-    status = social_profile.status
+    status = social_profile.status.value
     
     label = f"{username} Just submitted a New Social Media Profile for review:"
     
