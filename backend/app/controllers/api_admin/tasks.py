@@ -144,7 +144,7 @@ class AdminTaskController:
             except Exception as e:
                 return error_response('Error occurred sending Email', 500)
             
-            return success_response('Task approved successfully', 200)
+            return success_response(f"Task created by {task_dict['creator']['username']} approved successfully", 200)
         except Exception as e:
             logging.exception("An exception occurred trying to approve task:\n", str(e))
             return error_response('Error approving task', 500)
