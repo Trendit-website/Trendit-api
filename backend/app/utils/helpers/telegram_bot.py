@@ -13,7 +13,7 @@ def notify_telegram_admins_new_task(task: AdvertTask | EngagementTask):
     
     task_id = task.id
     
-    data = (f"• Task Type: {task['task_type']} \n • Payment Status: {task['payment_status']} \n • Platform: {task['platform']} \n • Amount Paid: {task["fee_paid"]} \n • Status: {task['status']} \n • Date Created: {task['date_created']}")
+    data = (f"• Task Type: {task.task_type} \n • Payment Status: {task.payment_status} \n • Platform: {task.platform} \n • Amount Paid: {task.fee_paid} \n • Status: {task.status} \n • Date Created: {task.date_created}")
     
     url = f"https://api.telegram.org/bot{Config.TELEGRAM_BOT_TOKEN}/sendMessage"
     
