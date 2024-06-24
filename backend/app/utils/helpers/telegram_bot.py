@@ -12,7 +12,7 @@ def notify_telegram_admins_new_task(task: dict):
     label = f"New Task Created"
     
     # get task data
-    task_id = task.id
+    task_id = task.get("id")
     task_type = task.get("task_type")
     payment_status = task.get("payment_status")
     platform = task.get("platform")
