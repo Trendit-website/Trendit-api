@@ -11,13 +11,20 @@ from ...models.social import SocialMediaPlatform
 def notify_telegram_admins_new_task(task: dict):
     label = f"New Task Created"
     
+    # get task data
     task_id = task.id
-    
-    data = (f"• Task Type: {task.get("task_type")} \n • Payment Status: {task.get("payment_status")} \n • Platform: {task.get("platform")} \n • Amount Paid: {task.get("fee_paid")} \n • Status: {task.get("status")} \n • Date Created: {task.get("date_created")}")
+    task_type = task.get("task_type")
+    payment_status = task.get("payment_status")
+    platform = task.get("platform")
+    fee_paid = task.get("fee_paid")
+    status = task.get("status")
+    date_created = task.get("date_created")
+
+    formatted_data = (f"• Task Type: {task_type} \n • Payment Status: {payment_status} \n • Platform: {platform} \n • Amount Paid: {fee_paid} \n • Status: {status} \n • Date Created: {date_created}")
     
     url = f"https://api.telegram.org/bot{Config.TELEGRAM_BOT_TOKEN}/sendMessage"
     
-    message = f"\n\n{label:-^12}\n {data} \n{'//':-^12}\n\n"
+    message = f"\n\n{label:-^12}\n {formatted_data} \n{'//':-^12}\n\n"
     
     payload = {
         'chat_id': Config.TELEGRAM_CHAT_ID,
