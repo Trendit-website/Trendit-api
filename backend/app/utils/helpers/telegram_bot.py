@@ -9,7 +9,7 @@ from ...models.social import SocialMediaPlatform
 
 
 def notify_telegram_admins_new_task(task: dict):
-    label = f"New Task Created"
+    label = f"A New Task Was Just Created"
     
     # get task data
     task_id = task.get("id")
@@ -20,7 +20,9 @@ def notify_telegram_admins_new_task(task: dict):
     status = task.get("status")
     date_created = task.get("date_created")
 
-    formatted_data = (f"• Task Type: {task_type} \n • Payment Status: {payment_status} \n • Platform: {platform} \n • Amount Paid: {fee_paid} \n • Status: {status} \n • Date Created: {date_created}")
+    data = (f"• Task Type: {task_type} \n • Payment Status: {payment_status} \n • Platform: {platform} \n • Amount Paid: {fee_paid} \n • Status: {status} \n • Date Created: {date_created}")
+    
+    formatted_data = data.join("\n\n Use the Buttons bellow to Approve or Reject")
     
     url = f"https://api.telegram.org/bot{Config.TELEGRAM_BOT_TOKEN}/sendMessage"
     
