@@ -8,12 +8,12 @@ It includes controller handlers for admin authentication, stats, user management
 @package: Trendit³
 '''
 
-from app.controllers.api_admin.task_performance import AdminTaskPerformanceController
-from app.controllers.api_admin.auth import AdminAuthController
-from app.controllers.api_admin.dashboard import AdminDashboardController
-from app.controllers.api_admin.tasks import AdminTaskController
-from app.controllers.api_admin.users import AdminUsersController
-from app.controllers.api_admin.transactions import TransactionController
-from app.controllers.api_admin.earn_appeal import EarnAppealController
-from app.controllers.api_admin.pricing import PricingController
-from app.controllers.api_admin.social_verification import SocialVerificationController
+from .task_performance import AdminTaskPerformanceController
+from .auth import AdminAuthController
+from .dashboard import AdminDashboardController
+from .tasks import AdminTaskController
+from .users import AdminUsersController
+from .transactions import TransactionController
+from .earn_appeal import EarnAppealController
+from .pricing import PricingController
+from .social_profile import AdminSocialProfileController

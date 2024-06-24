@@ -31,8 +31,11 @@ class Config:
     CLIENT_ORIGINS = os.environ.get('CLIENT_ORIGINS') or 'http://localhost:3000,http://localhost:5173,https://trendit3.vercel.app'
     CLIENT_ORIGINS = [origin.strip() for origin in CLIENT_ORIGINS.split(',')]
     REDIS_URL = os.environ.get("REDIS_URL") or 'redis://localhost:6379/0'
+    
+    # Telegram variables
     TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
     TELEGRAM_CHAT_ID = '-1002237256556'
+    TELEGRAM_SEND_MSG_URL = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     
     # Constants
     TASKS_PER_PAGE = os.environ.get('TASKS_PER_PAGE') or 10

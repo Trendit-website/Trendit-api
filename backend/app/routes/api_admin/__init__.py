@@ -12,7 +12,7 @@ from flask import Blueprint
 
 bp = Blueprint('api_admin', __name__, url_prefix='/api/admin')
 
-from . import auth, task_performance, dashboard, tasks, users, transactions, pricing, social_verifiction
+from . import auth, task_performance, dashboard, tasks, users, transactions, pricing, social_profile
 
 @bp.route('/')
 def index():

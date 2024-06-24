@@ -3,16 +3,129 @@ from flask import request
 from sqlalchemy.exc import ( IntegrityError, DataError, DatabaseError, InvalidRequestError, SQLAlchemyError )
 from flask_jwt_extended import get_jwt_identity
 
-from app.extensions import db
-from app.utils.helpers.response_helpers import error_response, success_response
-from app.models import SocialLinkStatus, SocialLinks
-from app.models.notification import SocialVerification, SocialVerificationStatus, Notification, MessageType
-from app.models.user import Trendit3User
+from ...extensions import db
+from ...utils.helpers import log_exception, console_log
+from ...utils.helpers.response_helpers import error_response, success_response
+from ...models import SocialLinkStatus, SocialLinks, SocialMediaProfile
+from ...models.notification import SocialVerification, SocialVerificationStatus, Notification, MessageType
+from ...models.user import Trendit3User
 from ...utils.helpers.mail_helpers import send_other_emails
 
 
-class SocialVerificationController:
+class AdminSocialProfileController:
     
+        @staticmethod
+        def get_social_profiles():
+            try:
+                page = request.args.get("page", 1, type=int)
+                items_per_page = int("10")
+                pagination = SocialMediaProfile.query.order_by(SocialMediaProfile.trendit3_user_id.desc()).paginate(page=page, per_page=items_per_page, error_out=False)
+                
+                profiles = pagination.items
+                current_items = [profile.to_dict() for profile in profiles]
+                
+                extra_data = {
+                    "total": pagination.total,
+                    "all_profiles": current_items,
+                    "current_page": pagination.page,
+                    "total_pages": pagination.pages,
+                }
+                
+                api_response = success_response('Social media profiles fetched successfully', 200, extra_data)
+            except (DataError, DatabaseError) as e:
+                db.session.rollback()
+                log_exception('Database error:', e)
+                api_response = error_response('Error connecting to the database.', 500)
+            except Exception as e:
+                db.session.rollback()
+                log_exception(f"An unexpected error occurred fetching social profiles", e)
+                api_response = error_response('An unexpected error. Our developers are already looking into it.', 500)
+            
+            return api_response
+    
+        @staticmethod
+        def approve_social_media_profile(profile_id):
+            try:
+                
+                if not profile_id:
+                    return error_response("profile_id is missing or empty.", 400)
+                
+                profile = SocialMediaProfile.query.filter_by(id=profile_id).first()
+                platform = profile.platform
+                sender_id = profile.trendit3_user_id
+                sender = profile.trendit3_user
+                body = f'Your {profile.platform} verification request has been approved'
+                
+                
+                # Approve and send notification
+                profile.status = SocialLinkStatus.VERIFIED
+                
+                Notification.send_notification(
+                    sender_id=sender_id,
+                    recipients=[sender] if not isinstance(sender, (list, tuple)) else sender,
+                    body=body,
+                    message_type=MessageType.NOTIFICATION,
+                    commit=False
+                )
+
+                db.session.commit()
+                
+                api_response = success_response(f"{sender.username}'s {platform} profile  approved successfully", 200)
+            except (DataError, DatabaseError) as e:
+                db.session.rollback()
+                log_exception('Database error occurred approving social profile', e)
+                api_response = error_response('Error interacting to the database.', 500)
+            except Exception as e:
+                db.session.rollback()
+                log_exception(f"An unexpected error occurred approving social profiles", e)
+                api_response = error_response('An unexpected error. Our developers are already looking into it.', 500)
+            finally:
+                db.session.close()
+            
+            return api_response
+        
+        @staticmethod
+        def reject_social_media_profile(profile_id):
+            try:
+                
+                if not profile_id:
+                    return error_response("profile_id is missing or empty.", 400)
+                
+                profile = SocialMediaProfile.query.filter_by(id=profile_id).first()
+                platform = profile.platform
+                sender_id = profile.trendit3_user_id
+                sender = profile.trendit3_user
+                body = f'Your {profile.platform} verification request has been rejected'
+                
+                
+                # reject and send notification
+                profile.status = SocialLinkStatus.REJECTED
+                
+                Notification.send_notification(
+                    sender_id=sender_id,
+                    recipients=[sender] if not isinstance(sender, (list, tuple)) else sender,
+                    body=body,
+                    message_type=MessageType.NOTIFICATION,
+                    commit=False
+                )
+
+                db.session.commit()
+                
+                api_response = success_response(f"{sender.username}'s {platform} profile rejected successfully", 200)
+            except (DataError, DatabaseError) as e:
+                db.session.rollback()
+                log_exception('Database error occurred rejecting social profile', e)
+                api_response = error_response('Error interacting to the database.', 500)
+            except Exception as e:
+                db.session.rollback()
+                log_exception(f"An unexpected error occurred rejecting social profiles", e)
+                api_response = error_response('An unexpected error. Our developers are already looking into it.', 500)
+            finally:
+                db.session.close()
+            
+            return api_response
+    
+        # DEPRECATED
         @staticmethod
         def get_all_social_verification_requests():
             """Get all social verification requests in the system"""
@@ -95,7 +208,7 @@ class SocialVerificationController:
                 )
 
                 db.session.close()
-                                
+                
                 return success_response('Social verification request approved successfully', 200)
             
             except ValueError as ve:

@@ -3,10 +3,11 @@ import requests
 from config import Config
 from ...utils.helpers import console_log
 from ...models.task import Task, AdvertTask, EngagementTask
-from ...models.social import SocialMediaPlatform
+from ...models.social import SocialMediaPlatform, SocialMediaProfile
 
 
 
+send_msg_url = Config.TELEGRAM_SEND_MSG_URL
 
 def notify_telegram_admins_new_task(task: dict):
     label = f"A New Task Was Just Created"
@@ -24,8 +25,6 @@ def notify_telegram_admins_new_task(task: dict):
     
     formatted_data = data.join("\n\n Use the Buttons bellow to Approve or Reject")
     
-    url = f"https://api.telegram.org/bot{Config.TELEGRAM_BOT_TOKEN}/sendMessage"
-    
     message = f"\n\n{label:-^12}\n {formatted_data} \n{'//':-^12}\n\n"
     
     payload = {
@@ -38,7 +37,28 @@ def notify_telegram_admins_new_task(task: dict):
             ]]
         }
     }
-    response = requests.post(url, json=payload)
+    response = requests.post(send_msg_url, json=payload)
     console_log("response", response)
     console_log("response_data", response.json())
 
+
+def send_profile_notification(profile : SocialMediaProfile):
+    label = f"A New Social Media Profile Was Just Submitted:"
+    
+    profile_id = profile.id
+    profile_link = profile.link
+    
+    message = f"New Social Media Profile Submitted:\nID: {profile_id}\nLink: {profile_link}"
+    payload = {
+        'chat_id': Config.TELEGRAM_CHAT_ID,
+        'text': message,
+        'reply_markup': {
+            'inline_keyboard': [[
+                {'text': 'Accept', 'callback_data': f'accept_profile_{profile_id}'},
+                {'text': 'Reject', 'callback_data': f'reject_profile_{profile_id}'}
+            ]]
+        }
+    }
+    response = requests.post(send_msg_url, json=payload)
+    console_log("response", response)
+    console_log("response_data", response.json())
