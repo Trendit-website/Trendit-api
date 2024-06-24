@@ -17,7 +17,7 @@ def notify_telegram_admins_new_task(task: dict):
     
     url = f"https://api.telegram.org/bot{Config.TELEGRAM_BOT_TOKEN}/sendMessage"
     
-    message = f"\n\n{label:-^6}\n {data} \n{'//':-^6}\n\n"
+    message = f"\n\n{label:-^12}\n {data} \n{'//':-^12}\n\n"
     
     payload = {
         'chat_id': Config.TELEGRAM_CHAT_ID,
