@@ -116,9 +116,9 @@ class AdminTaskController:
 
 
     @staticmethod
-    def approve_task(task_id: int):
+    def approve_task(task_id_key):
         try:
-            task = Task.query.get(task_id)
+            task = fetch_task(task_id_key)
             
             if task is None:
                 return error_response('Task not found', 404)
@@ -127,6 +127,7 @@ class AdminTaskController:
             task_description = task_dict.get('caption', '')
             task_time = task_dict.get('date_created')
             task_type = task_dict.get('task_type')
+            
             task.status = TaskStatus.APPROVED
             db.session.commit()
             
@@ -150,9 +151,9 @@ class AdminTaskController:
         
     
     @staticmethod
-    def reject_task(task_id: int):
+    def reject_task(task_id_key):
         try:
-            task = Task.query.get(task_id)
+            task = fetch_task(task_id_key)
             if task is None:
                 return error_response('Task not found', 404)
             task.status = TaskStatus.DECLINED
@@ -172,9 +173,9 @@ class AdminTaskController:
         
 
     @staticmethod
-    def get_task(task_id: int):
+    def get_task(task_id_key):
         try:
-            task = Task.query.get(task_id)
+            task = fetch_task(task_id_key)
             if task is None:
                 return error_response('Task not found', 404)
             extra_data = {
