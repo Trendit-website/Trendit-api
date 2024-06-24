@@ -32,13 +32,13 @@ def get_task(task_id_key):
     return AdminTaskController.get_task(task_id_key)
 
 
-@bp.route('/tasks/approve/<task_id_key>', methods=['POST'])
+@bp.route('/tasks/<task_id_key>/approve', methods=['POST'])
 @roles_required('Junior Admin')
 def approve_task(task_id_key):
     return AdminTaskController.approve_task(task_id_key)
 
 
-@bp.route('/tasks/reject/<task_id_key>', methods=['POST'])
+@bp.route('/tasks/<task_id_key>/reject', methods=['POST'])
 @roles_required('Junior Admin')
 def reject_task(task_id_key):
     return AdminTaskController.reject_task(task_id_key)
