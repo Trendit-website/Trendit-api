@@ -9,12 +9,12 @@ from ...controllers.api_admin import AdminSocialProfileController
 def get_social_profiles():
     return AdminSocialProfileController.get_social_profiles()
 
-@bp.route('/social-profiles/approve/<profile_id>', methods=['POST'])
+@bp.route('/social-profiles/<profile_id>/approve', methods=['POST'])
 @roles_required('Junior Admin')
 def approve_social_media_profile(profile_id):
     return AdminSocialProfileController.approve_social_media_profile(profile_id)
 
-@bp.route('/social-profiles/reject/<profile_id>', methods=['POST'])
+@bp.route('/social-profiles/<profile_id>/reject', methods=['POST'])
 @roles_required('Junior Admin')
 def reject_social_media_profile(profile_id):
     return AdminSocialProfileController.reject_social_media_profile(profile_id)

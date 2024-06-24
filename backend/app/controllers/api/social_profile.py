@@ -4,6 +4,7 @@ from sqlalchemy.exc import ( DataError, DatabaseError, SQLAlchemyError )
 from flask_jwt_extended import get_jwt_identity
 
 from ...extensions import db
+from ...utils.helpers.telegram_bot import notify_telegram_admins_new_profile
 from ...utils.helpers.response_helpers import error_response, success_response
 from ...models.notification import SocialVerification, SocialVerificationStatus, Notification, MessageType
 from ...models.social import SocialLinks, SocialLinkStatus, SocialMediaProfile
@@ -108,6 +109,8 @@ class SocialProfileController:
             }
             
             api_response = success_response(f"{platform} profile has been submitted for review", 200, extra_data)
+            
+            notify_telegram_admins_new_profile(new_profile)
             
         except (DataError, DatabaseError) as e:
             db.session.rollback()
