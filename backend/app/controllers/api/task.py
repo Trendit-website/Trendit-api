@@ -9,6 +9,7 @@ from ...models import Task, AdvertTask, EngagementTask, TaskPaymentStatus, TaskS
 from ...utils.helpers.task_helpers import save_task, get_tasks_dict_grouped_by_field, fetch_task, get_aggregated_task_counts_by_field, fetch_performed_task
 from ...utils.helpers.response_helpers import error_response, success_response
 from ...utils.helpers.basic_helpers import console_log, log_exception
+from ...utils.helpers.telegram_bot import notify_telegram_admins_new_task
 from ...utils.payments.utils import initialize_payment
 from ...utils.payments.wallet import debit_wallet, credit_wallet
 
@@ -746,6 +747,7 @@ class TaskController:
                 extra_data = {'task': new_task.to_dict()}
                 
                 api_response = success_response(msg, 201, extra_data)
+                notify_telegram_admins_new_task(new_task)
         except TypeError as e:
             log_exception(f"A TypeError occurred during creation of Task", e)
             api_response = error_response(f"TypeError occurred: {str(e)}", 400)

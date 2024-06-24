@@ -123,12 +123,15 @@ def create_app(config_name=Config.ENV):
     with app.app_context():
         create_roles()  # Create roles for trendit3
         
-        users = Trendit3User.query.all()
-        for user in users:
-            if not user.social_media_profiles:
-                new_user_social_profiles = [SocialMediaProfile(trendit3_user=user, platform=platform) for platform in social_media_platforms]
-            else:
-                for platform in social_media_platforms:
-                    SocialMediaProfile.query.filter_by(trendit3_user_id=user.id, platform=platform).first()
+        # users = Trendit3User.query.all()
+        # for user in users:
+        #     if not user.social_media_profiles:
+        #         new_user_social_profiles = [SocialMediaProfile(trendit3_user=user, platform=platform) for platform in social_media_platforms]
+        #     else:
+        #         for platform in social_media_platforms:
+        #             profile = SocialMediaProfile.query.filter_by(trendit3_user_id=user.id, platform=platform).first()
+        #             if not profile:
+        #                 user_social_profile = SocialMediaProfile(trendit3_user=user, platform=platform)
+                        
     
     return app, celery
