@@ -744,10 +744,11 @@ class TaskController:
                 console_log('new_task', new_task)
                 
                 msg = 'Task created successfully. Payment made using Trendit³ Wallet.'
-                extra_data = {'task': new_task.to_dict()}
+                new_task_dict = new_task.to_dict()
+                extra_data = {'task': new_task_dict}
                 
                 api_response = success_response(msg, 201, extra_data)
-                notify_telegram_admins_new_task(new_task)
+                notify_telegram_admins_new_task(new_task_dict)
         except TypeError as e:
             log_exception(f"A TypeError occurred during creation of Task", e)
             api_response = error_response(f"TypeError occurred: {str(e)}", 400)
