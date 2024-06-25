@@ -494,6 +494,10 @@ def flutterwave_fetch_balance() -> dict:
     try:
         url = f"https://api.flutterwave.com/v3/balances/NGN"
         response = requests.get(url, headers=headers)
+        
+        console_log("response", response)
+        console_log("response_data", response.json())
+        
         response.raise_for_status()  # raise an exception if the request failed
         response_data = response.json()
         
