@@ -497,6 +497,8 @@ def flutterwave_fetch_balance() -> dict:
         response.raise_for_status()  # raise an exception if the request failed
         response_data = response.json()
         
+        console_log("response_data", response_data)
+        
         if 'status' in response_data and response_data['status'] == 'success':
             balances = response_data['data']
         else:
