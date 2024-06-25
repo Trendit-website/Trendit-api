@@ -17,3 +17,4 @@ from .transactions import TransactionController
 from .earn_appeal import EarnAppealController
 from .pricing import PricingController
 from .social_profile import AdminSocialProfileController
+from .wallet import AdminWalletController

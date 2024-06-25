@@ -490,3 +490,19 @@ def flutterwave_verify_bank_account(account_no: str, bank_code: str) -> dict:
         raise e
 
 
+def flutterwave_fetch_balance() -> dict:
+    try:
+        url = f"https://api.flutterwave.com/v3/balances/NGN"
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()  # raise an exception if the request failed
+        response_data = response.json()
+        
+        if 'status' in response_data and response_data['status'] == 'success':
+            balances = response_data['data']
+        else:
+            balances = None
+    
+    except requests.exceptions.RequestException as e:
+        raise e
+    except Exception as e:
+        raise e
