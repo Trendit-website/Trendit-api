@@ -23,8 +23,13 @@ def notify_telegram_admins_new_task(task: dict):
     target_state = task.get("target_state")
     location = f"{target_state}, {target_country}"
     date_created = task.get("date_created")
+    
+    requested_count = task.get("posts_count", task.get("engagements_count", 0))
+    
 
-    data = (f"• Task Type: {task_type} \n • Payment Status: {payment_status} \n • Platform: {platform} \n • Amount Paid: {fee_paid} \n • Status: {status} \n • Location: {location} \n • Date Created: {date_created}")
+    count = "No of posts" if task.get("posts_counts") else "No of Engagements"
+
+    data = (f"• Task Type: {task_type} \n • Payment Status: {payment_status} \n • Platform: {platform} \n • Amount Paid: {fee_paid} \n • Status: {status} \n • Location: {location} \n • {count}: {requested_count} \n • Date Created: {date_created}")
     
     formatted_data = data + f"\n\n Use the Buttons bellow to Approve or Reject"
     
