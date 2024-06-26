@@ -202,26 +202,6 @@ class Trendit3User(db.Model):
         user_social_profiles = self.social_media_profiles
         social_profiles = [profile.to_dict() for profile in user_social_profiles]
         
-        user_social_links = self.social_links
-        social_links = {
-            'google_id': user_social_links.google_id if user_social_links else None,
-            'google_verified': user_social_links.google_verified.value if user_social_links else None,
-            'facebook_id': user_social_links.facebook_id if user_social_links else None,
-            'facebook_verified': user_social_links.facebook_verified.value if user_social_links else None,
-            'instagram_id': user_social_links.instagram_id if user_social_links else None,
-            'instagram_verified': user_social_links.instagram_verified.value if user_social_links else None,
-            'tiktok_id': user_social_links.tiktok_id if user_social_links else None,
-            'tiktok_verified': user_social_links.tiktok_verified.value if user_social_links else None,
-            'x_id': user_social_links.x_id if user_social_links else None,
-            'x_verified': user_social_links.x_verified.value if user_social_links else None,
-            'threads_id': user_social_links.threads_id if user_social_links else None,
-            'threads_verified': user_social_links.threads_verified.value if user_social_links else None,
-            # 'youtube_id': user_social_links.youtube_id if user_social_links else None,
-            # 'youtube_verified': user_social_links.youtube_verified.value if user_social_links else None,
-            # 'spotify_id': user_social_links.spotify_id if user_social_links else None,
-            # 'spotify_verified': user_social_links.spotify_verified.value if user_social_links else None,
-        }
-        
         return {
             'id': self.id,
             'username': self.username,
@@ -230,7 +210,6 @@ class Trendit3User(db.Model):
             'membership_fee': self.membership.membership_fee_paid,
             'wallet': wallet_info,
             'social_profiles': social_profiles,
-            'social_links': social_links,
             'primary_bank': bank_details,
             'roles': self.role_names,
             'two_fa': self.two_fa_info(),
