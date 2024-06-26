@@ -2,7 +2,7 @@ import requests
 
 from config import Config
 from ...utils.helpers import console_log
-from ...models.task import Task, AdvertTask, EngagementTask
+from ...models.task import Task, AdvertTask, EngagementTask, TaskPerformance
 from ...models.social import SocialMediaPlatform, SocialMediaProfile
 
 
@@ -44,6 +44,40 @@ def notify_telegram_admins_new_task(task: dict):
     console_log("response", response)
     console_log("response_data", response.json())
 
+def notify_telegram_admins_new_performed_task(performed_task: TaskPerformance):
+    user = performed_task.trendit3_user
+    username = user.username
+    full_name = f"{user.profile.firstname} {user.profile.lastname}"
+    
+    performed_task_id = performed_task.id
+    performed_task_key = performed_task.key
+    task_type = performed_task.task_type
+    status = performed_task.status
+    
+    date_started = performed_task.started_at
+    date_completed = performed_task.date_completed
+    
+    label = f"{username} Just performed a task, and is expecting a review:"
+    
+    data = (f"• Full Name: {full_name} \n • Task ID: {performed_task_id} \n • Task Type: {task_type} \n • Date Started: {date_started} \n • Date Completed: {date_completed} \n • Status: {status}")
+    
+    formatted_data = data + f"\n\n Use the Buttons bellow to Approve or Reject"
+    
+    message = f"\n\n{label:-^12}\n\n {formatted_data} \n{'//':-^12}\n\n"
+    
+    payload = {
+        'chat_id': Config.TELEGRAM_CHAT_ID,
+        'text': message,
+        'reply_markup': {
+            'inline_keyboard': [[
+                {'text': 'Approve', 'callback_data': f'accept_performed_task_{performed_task_id}'},
+                {'text': 'Reject', 'callback_data': f'reject_performed_task_{performed_task_id}'}
+            ]]
+        }
+    }
+    response = requests.post(send_msg_url, json=payload)
+    console_log("response", response)
+    console_log("response_data", response.json())
 
 def notify_telegram_admins_new_profile(social_profile : SocialMediaProfile):
     user = social_profile.trendit3_user
