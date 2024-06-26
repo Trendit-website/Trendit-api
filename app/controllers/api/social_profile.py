@@ -79,7 +79,7 @@ class SocialProfileController:
             profile = SocialMediaProfile.query.filter_by(platform=platform, trendit3_user_id=user_id).first()
             console_log("profile", profile)
             if profile:
-                data = {f"{profile.platform}": profile.to_dict() for profile in social_profiles}
+                data = {f"{profile.platform}": profile.to_dict() for profile in user.social_media_profiles}
                 return success_response(f"{platform} profile already added", 200, {"social_profiles": data})
             
             new_profile = SocialMediaProfile.add_profile(trendit3_user=user, platform=platform, link=link, commit=False)
@@ -106,7 +106,7 @@ class SocialProfileController:
             
             social_profiles = user.social_media_profiles
             extra_data = {
-                "social_profiles": [{f"{profile.platform}": profile.to_dict()} for profile in social_profiles]
+                "social_profiles": {f"{profile.platform}": profile.to_dict() for profile in social_profiles}
             }
             
             api_response = success_response(f"{platform} profile has been submitted for review", 200, extra_data)
