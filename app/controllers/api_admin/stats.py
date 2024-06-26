@@ -37,7 +37,9 @@ class AdminStatsController:
             
             new_signups = db.session.query(func.count(Trendit3User.id)).filter(Trendit3User.date_joined >= start_date, Trendit3User.date_joined < end_date).scalar()
             new_task = db.session.query(func.count(Task.id)).filter(Task.date_created >= start_date, Task.date_created < end_date).scalar()
+            
             approved_tasks = db.session.query(func.count(Task.id)).filter(Task.date_created >= start_date, Task.date_created < end_date, Task.status==TaskStatus.APPROVED).scalar()
+            declined_tasks = db.session.query(func.count(Task.id)).filter(Task.date_created >= start_date, Task.date_created < end_date, Task.status==TaskStatus.DECLINED).scalar()
             
             
             
@@ -46,6 +48,7 @@ class AdminStatsController:
                     "new_signups": new_signups,
                     "new_task": new_task,
                     "approved_tasks": approved_tasks,
+                    "declined_tasks": declined_tasks
                 }
             }
             
