@@ -106,10 +106,15 @@ def notify_telegram_admins_new_profile(social_profile : SocialMediaProfile):
         'chat_id': Config.TELEGRAM_CHAT_ID,
         'text': message,
         'reply_markup': {
-            'inline_keyboard': [[
-                {'text': 'Approve', 'callback_data': f'accept_profile_{profile_id}'},
-                {'text': 'Reject', 'callback_data': f'reject_profile_{profile_id}'}
-            ]]
+            'inline_keyboard': [
+                [
+                    {'text': 'Approve', 'callback_data': f'accept_profile_{profile_id}'},
+                    {'text': 'Reject', 'callback_data': f'reject_profile_{profile_id}'}
+                ],
+                [
+                    {'text': 'View Profile', 'url': f'{profile_link}'}
+                ]
+            ]
         }
     }
     response = requests.post(send_msg_url, json=payload)
