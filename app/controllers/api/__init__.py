@@ -26,3 +26,4 @@ from .pricing import PricingController
 from .social_auth import SocialAuthController
 from .social_profile import SocialProfileController
 from .social_platforms import SocialMediaPlatformsController
+from .task_option import TaskOptionsController

@@ -14,12 +14,14 @@ from enum import Enum
 from threading import Thread
 from flask import current_app
 from werkzeug.datastructures import FileStorage
+from sqlalchemy.exc import ( DataError, DatabaseError, SQLAlchemyError )
 
 from ...extensions import db
 from ...models.role import Role, RoleNames
 from ...models.user import Trendit3User, Address, Profile
 from ...models.pricing import Pricing
 from ...models.notification import MessageStatus, MessageType, UserMessageStatus, Notification
+from ...models.social import SocialMediaProfile
 from ...utils.helpers.media_helpers import save_media
 from ...utils.helpers.basic_helpers import console_log, log_exception
 from ...utils.helpers.basic_helpers import generate_random_string
@@ -296,3 +298,12 @@ def mark_as_read(user_id, message_id):
     if user_message_status:
         user_message_status.status = MessageStatus.READ
         db.session.commit()
+
+def get_social_profile(platform: str, user_id: int):
+    try:
+        profile = SocialMediaProfile.query.filter(SocialMediaProfile.platform==platform, SocialMediaProfile.trendit3_user_id==user_id).first()
+        return profile
+    except (DataError, DatabaseError) as e:
+        raise e
+    except Exception as e:
+        raise e

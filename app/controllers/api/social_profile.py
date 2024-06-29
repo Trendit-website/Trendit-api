@@ -11,6 +11,7 @@ from ...models.social import SocialLinks, SocialLinkStatus, SocialMediaProfile
 from ...models.user import Trendit3User
 from ...utils.helpers.mail_helpers import send_other_emails
 from ...utils.helpers.basic_helpers import log_exception, console_log
+from ...utils.helpers.user_helpers import get_social_profile
 
 def is_valid_social_url(url, platform):
     patterns = {
@@ -66,22 +67,29 @@ class SocialProfileController:
                 return error_response("User not found", 404)
             
             data = request.get_json()
-            console_log("data", data)
             link = data.get('link')
             platform = data.get('platform')
             
             if not all([platform, link]):
                 return error_response("Platform or link is missing or empty.", 400)
             
-            console_log("user_id", user_id)
-            
             # check user already added a profile for the provided platform
-            profile = SocialMediaProfile.query.filter_by(platform=platform, trendit3_user_id=user_id).first()
-            console_log("profile", profile)
-            if profile:
-                return success_response(f"{platform} profile already added", 200, {"social_profiles": [profile.to_dict() for profile in user.social_media_profiles]})
+            profile = get_social_profile(platform, user_id)
             
-            new_profile = SocialMediaProfile.add_profile(trendit3_user=user, platform=platform, link=link, commit=False)
+            if not profile:
+                new_profile = SocialMediaProfile.add_profile(trendit3_user=user, platform=platform, link=link)
+                msg = f"Your {platform} profile has been submitted for review"
+                return success_response(msg, 200, {"social_profiles": [profile.to_dict() for profile in user.social_media_profiles]})
+            
+            if profile.status == SocialLinkStatus.VERIFIED:
+                msg = f"{platform} profile already added"
+                return error_response(msg, 400)
+            elif profile.status == SocialLinkStatus.PENDING:
+                msg = f"please wait! Your {platform} profile already submitted and awaiting review."
+                return error_response(msg, 400)
+            elif profile.status == SocialLinkStatus.REJECTED or profile.status == SocialLinkStatus.IDLE:
+                profile.link = link
+                profile.status = SocialLinkStatus.PENDING
             
             # Send verification notification
             SocialVerification.send_notification(
@@ -108,7 +116,7 @@ class SocialProfileController:
                 "social_profiles": [profile.to_dict() for profile in social_profiles]
             }
             
-            api_response = success_response(f"{platform} profile has been submitted for review", 200, extra_data)
+            api_response = success_response(f"Your {platform} profile has been submitted for review", 200, extra_data)
             
             notify_telegram_admins_new_profile(new_profile)
             
