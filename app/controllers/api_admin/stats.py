@@ -41,6 +41,8 @@ class AdminStatsController:
             approved_tasks = db.session.query(func.count(Task.id)).filter(Task.date_created >= start_date, Task.date_created < end_date, Task.status==TaskStatus.APPROVED).scalar()
             declined_tasks = db.session.query(func.count(Task.id)).filter(Task.date_created >= start_date, Task.date_created < end_date, Task.status==TaskStatus.DECLINED).scalar()
             
+            pending_tasks = db.session.query(func.count(Task.id)).filter(Task.date_created >= start_date, Task.date_created < end_date, Task.status==TaskStatus.PENDING).scalar()
+            
             
             
             extra_data={
@@ -48,7 +50,8 @@ class AdminStatsController:
                     "new_signups": new_signups,
                     "new_task": new_task,
                     "approved_tasks": approved_tasks,
-                    "declined_tasks": declined_tasks
+                    "declined_tasks": declined_tasks,
+                    "pending_tasks": pending_tasks
                 }
             }
             
