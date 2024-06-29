@@ -118,7 +118,7 @@ class SocialProfileController:
             
             api_response = success_response(f"Your {platform} profile has been submitted for review", 200, extra_data)
             
-            notify_telegram_admins_new_profile(new_profile)
+            notify_telegram_admins_new_profile(profile)
             
         except (DataError, DatabaseError) as e:
             db.session.rollback()
