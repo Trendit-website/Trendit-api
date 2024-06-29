@@ -31,7 +31,7 @@ def notify_telegram_admins_new_task(task: dict):
 
     data = (f"• Task Type: {task_type} \n • Payment Status: {payment_status} \n • Platform: {platform} \n • Amount Paid: {fee_paid} \n • Status: {status} \n • Location: {location} \n • {count}: {requested_count} \n • Date Created: {date_created}")
     
-    formatted_data = data + f"\n\n Use the Buttons bellow to Approve or Reject"
+    formatted_data = data
     
     message = f"\n\n{label:-^12}\n\n {formatted_data} \n{'//':-^12}\n\n"
     
@@ -98,7 +98,7 @@ def notify_telegram_admins_new_profile(social_profile : SocialMediaProfile):
     
     data = (f"• Full Name: {full_name} \n • Profile ID: {profile_id} \n • Platform: {platform} \n • Profile Link: {profile_link} \n • Status: {status}")
     
-    formatted_data = data + f"\n\n Use the Buttons bellow to Approve or Reject"
+    formatted_data = data
     
     message = f"\n\n{label:-^12}\n\n {formatted_data} \n{'//':-^12}\n\n"
     
