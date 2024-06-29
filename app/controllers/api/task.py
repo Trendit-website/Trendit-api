@@ -445,7 +445,7 @@ class TaskController:
         try:
             page = request.args.get("page", 1, type=int)
             tasks_per_page = int(Config.TASKS_PER_PAGE)
-            pagination = AdvertTask.query.filter_by(payment_status=TaskPaymentStatus.COMPLETE) \
+            pagination = AdvertTask.query.filter_by(payment_status=TaskPaymentStatus.COMPLETE, status=TaskStatus.APPROVED) \
                 .order_by(AdvertTask.date_created.desc()) \
                 .paginate(page=page, per_page=tasks_per_page, error_out=False)
             
@@ -482,7 +482,7 @@ class TaskController:
         try:
             page = request.args.get("page", 1, type=int)
             tasks_per_page = int(Config.TASKS_PER_PAGE)
-            pagination = AdvertTask.query.filter_by(payment_status=TaskPaymentStatus.COMPLETE, platform=platform) \
+            pagination = AdvertTask.query.filter_by(payment_status=TaskPaymentStatus.COMPLETE, status=TaskStatus.APPROVED, platform=platform) \
                 .order_by(AdvertTask.date_created.desc()) \
                 .paginate(page=page, per_page=tasks_per_page, error_out=False)
             
@@ -603,7 +603,7 @@ class TaskController:
         try:
             page = request.args.get("page", 1, type=int)
             tasks_per_page = int(Config.TASKS_PER_PAGE)
-            pagination = EngagementTask.query.filter_by(payment_status=TaskPaymentStatus.COMPLETE) \
+            pagination = EngagementTask.query.filter_by(payment_status=TaskPaymentStatus.COMPLETE, status=TaskStatus.APPROVED) \
                 .order_by(EngagementTask.date_created.desc()) \
                 .paginate(page=page, per_page=tasks_per_page, error_out=False)
             
