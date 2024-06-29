@@ -238,9 +238,6 @@ class AuthController:
                 new_user_social_links
             ])
             
-            new_user_social_profiles = [SocialMediaProfile(trendit3_user=new_user, platform=platform) for platform in social_media_platforms]
-            db.session.add_all(new_user_social_profiles)
-            
             db.session.delete(user)
             db.session.commit()
             
