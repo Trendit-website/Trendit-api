@@ -70,16 +70,11 @@ class SocialProfileController:
             link = data.get('link')
             platform = data.get('platform')
             
-            console_log("platform", platform)
-            console_log("link", link)
-            
             if not all([platform, link]):
                 return error_response("Platform or link is missing or empty.", 400)
             
             # check user already added a profile for the provided platform
             profile = get_social_profile(platform, user_id)
-            
-            console_log("New Profile", profile.to_dict())
             
             if not profile:
                 new_profile = SocialMediaProfile.add_profile(trendit3_user=user, platform=platform, link=link)
