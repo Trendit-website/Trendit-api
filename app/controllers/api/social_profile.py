@@ -70,15 +70,22 @@ class SocialProfileController:
             link = data.get('link')
             platform = data.get('platform')
             
+            console_log("platform", platform)
+            console_log("link", link)
+            
             if not all([platform, link]):
                 return error_response("Platform or link is missing or empty.", 400)
             
             # check user already added a profile for the provided platform
             profile = get_social_profile(platform, user_id)
             
+            console_log("New Profile", profile.to_dict())
+            
             if not profile:
                 new_profile = SocialMediaProfile.add_profile(trendit3_user=user, platform=platform, link=link)
+                db.session.commit()
                 msg = f"Your {platform} profile has been submitted for review"
+                notify_telegram_admins_new_profile(new_profile)
                 return success_response(msg, 200, {"social_profiles": [profile.to_dict() for profile in user.social_media_profiles]})
             
             if profile.status == SocialLinkStatus.VERIFIED:
@@ -119,7 +126,6 @@ class SocialProfileController:
             api_response = success_response(f"Your {platform} profile has been submitted for review", 200, extra_data)
             
             notify_telegram_admins_new_profile(profile)
-            
         except (DataError, DatabaseError) as e:
             db.session.rollback()
             log_exception('Database error:', e)
@@ -128,6 +134,8 @@ class SocialProfileController:
             db.session.rollback()
             log_exception(f"An unexpected error occurred sending verification request", e)
             api_response = error_response('An unexpected error. Our developers are already looking into it.', 500)
+        finally:
+            db.session.close()
         
         return api_response
     
