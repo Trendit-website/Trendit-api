@@ -1,18 +1,15 @@
 import os
 import io
-import logging
 import pandas as pd
 import requests
-from sqlalchemy.exc import ( IntegrityError, DataError, DatabaseError, InvalidRequestError, SQLAlchemyError )
-from flask import request, send_file, jsonify, url_for
+from sqlalchemy.exc import ( DataError, DatabaseError, InvalidRequestError, SQLAlchemyError )
+from flask import request, send_file
 from flask_jwt_extended import get_jwt_identity
 from datetime import datetime
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import inch
-from reportlab.pdfgen import canvas
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Image, Spacer
-from PIL import Image as PILImage
 from io import BytesIO
 
 from ...models import Trendit3User, Payment, Transaction, TransactionType
@@ -43,9 +40,15 @@ class TransactionController:
             if user is None:
                 return error_response('User not found', 404)
             
+            transaction_type = request.args.get("transaction_type", "")
+            
             # Fetch transaction records from the database
-            pagination = Transaction.query.filter_by(trendit3_user_id=current_user_id) \
-                .order_by(Transaction.created_at.desc()) \
+            if transaction_type:
+                query = Transaction.query.filter_by(trendit3_user_id=current_user_id, transaction_type=transaction_type)
+            else:
+                query = Transaction.query.filter_by(trendit3_user_id=current_user_id)
+            
+            pagination = query.order_by(Transaction.created_at.desc()) \
                 .paginate(page=page, per_page=per_page, error_out=False)
             
             
@@ -282,12 +285,12 @@ class TransactionController:
             else:
                 return error_response("Invalid format specified", 400)
 
-        except ValueError as ve:
-            logging.error(f"ValueError occurred: {ve}")
+        except ValueError as e:
+            log_exception("ValueError Exception trying to download transaction history", e)
             return error_response('Invalid data provided', 400)
         
-        except SQLAlchemyError as sae:
-            logging.error(f"Database error occurred: {sae}")
+        except SQLAlchemyError as e:
+            log_exception(f"Database error occurred", e)
             # db.session.rollback()
             return error_response('Database error occurred', 500)
 
