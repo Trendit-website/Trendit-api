@@ -12,7 +12,7 @@ task_goals = ["follow", "like", "comment", "share", "subscribe", "review", "down
 class TaskOption(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
-    key = db.Column(db.String(36), unique=True, nullable=False, default=f"{generate_random_string()}-{generate_random_string(5)}")
+    key = db.Column(db.String(36), unique=True, nullable=False, default=f"{generate_random_string(12)}-{generate_random_string(5)}")
     advertiser_name = db.Column(db.String(150), nullable=False)
     earner_name = db.Column(db.String(150), nullable=False)
     advertiser_description = db.Column(db.String(255), nullable=False)
@@ -77,20 +77,23 @@ def populate_task_options(clear: bool = False) -> None:
             {"advertiser_name": "Get Genuine People to Comment on Your Social Media Posts", "earner_name": "Post Comments on Pages and Post on Several Social Media Platforms", "advertiser_description": "", "earner_description": "", "advertiser_price": 40, "earner_price": 20, "task_type": "engagement"},
         ]
 
-        db_task_option = TaskOption.query.all()
-        if not db_task_option:
-            for option in task_options:
-                task_option = TaskOption(
-                    advertiser_name=option["advertiser_name"],
-                    earner_name=option["earner_name"],
-                    advertiser_description=option["advertiser_description"],
-                    earner_description=option["earner_description"],
-                    advertiser_price=option["advertiser_price"],
-                    earner_price=option["earner_price"],
-                    task_type=option["task_type"]
-                )
-                db.session.add(task_option)
-                db.session.commit()
+        try:
+            db_task_option = TaskOption.query.all()
+            if not db_task_option:
+                for option in task_options:
+                    task_option = TaskOption(
+                        advertiser_name=option["advertiser_name"],
+                        earner_name=option["earner_name"],
+                        advertiser_description=option["advertiser_description"],
+                        earner_description=option["earner_description"],
+                        advertiser_price=option["advertiser_price"],
+                        earner_price=option["earner_price"],
+                        task_type=option["task_type"]
+                    )
+                    db.session.add(task_option)
+                    db.session.commit()
+        except Exception as e:
+            db.session.rollback()
 
 
 
