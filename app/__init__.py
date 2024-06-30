@@ -19,11 +19,12 @@ from flask_swagger import swagger
 from flask_swagger_ui import get_swaggerui_blueprint
 from celery import Celery
 
-from app.models.user import Trendit3User
-from app.models.role import create_roles
-from app.models.item import Item
-from app.models.task import Task, AdvertTask, EngagementTask
+from .models.user import Trendit3User
+from .models.role import create_roles
+from .models.item import Item
+from .models.task import Task, AdvertTask, EngagementTask
 from .models.payment import Payment, Transaction, Wallet, Withdrawal
+from .models.task_option import populate_task_options
 
 from .extensions import db, mail, limiter, make_celery
 from .utils.helpers.response_helpers import error_response

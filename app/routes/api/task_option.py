@@ -7,5 +7,6 @@ from ...utils.helpers.response_helpers import success_response
 
 # CREATE NEW TASK
 @api.route('/task_options/', methods=['GET'])
+@jwt_required()
 def get_task_options():
     return TaskOptionsController.get_task_options()

@@ -26,16 +26,19 @@ def fetch_exchange_rates(base_currency="NGN"):
             return response_data['conversion_rates']
     return None
 
-def convert_amount(balance_in_naira, target_currency):
-    exchange_rates = fetch_exchange_rates()
-    
-    converted_amount = balance_in_naira # Default to Naira if no rate is found
-    
-    if target_currency in exchange_rates:
-        converted_amount = Decimal(balance_in_naira) * Decimal(exchange_rates[target_currency])
-    
-    return round(converted_amount, 2)
-
 def format_currency(value):
     """format Decimal with commas"""
     return f"{value:,.2f}"
+
+def convert_amount(amount_in_naira, target_currency, format=True):
+    exchange_rates = fetch_exchange_rates()
+    
+    converted_amount = amount_in_naira # Default to Naira if no rate is found
+    
+    if target_currency in exchange_rates:
+        converted_amount = Decimal(amount_in_naira) * Decimal(exchange_rates[target_currency])
+    
+    amount = round(converted_amount, 2)
+    amount = format_currency(amount) if format else amount
+    return amount
+
