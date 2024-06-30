@@ -123,7 +123,7 @@ def create_app(config_name=Config.ENV):
     with app.app_context():
         create_roles()  # Create roles for trendit3
         populate_task_options()
+        console_log("App state", "Running...")
     
-    console_log("App state", "Running...")
     
     return app, celery
