@@ -48,8 +48,13 @@ class TaskOption(db.Model):
 
 
 
-def populate_task_options():
+def populate_task_options(clear: bool = False) -> None:
     if inspect(db.engine).has_table('task_option'):
+        if clear:
+            # Clear existing task option before creating new ones
+            TaskOption.query.delete()
+            db.session.commit()
+        
         task_options = [
             {"advertiser_name": "Get People to post your advert on 𝕏", "earner_name": "Post adverts on your 𝕏 account", "advertiser_description": "", "earner_description": "", "advertiser_price": 140, "earner_price": 110, "task_type": "advert"},
             
@@ -72,18 +77,20 @@ def populate_task_options():
             {"advertiser_name": "Get Genuine People to Comment on Your Social Media Posts", "earner_name": "Post Comments on Pages and Post on Several Social Media Platforms", "advertiser_description": "", "earner_description": "", "advertiser_price": 40, "earner_price": 20, "task_type": "engagement"},
         ]
 
-        for option in task_options:
-            task_option = TaskOption(
-                advertiser_name=option["advertiser_name"],
-                earner_name=option["earner_name"],
-                advertiser_description=option["advertiser_description"],
-                earner_description=option["earner_description"],
-                advertiser_price=option["advertiser_price"],
-                earner_price=option["earner_price"],
-                task_type=option["task_type"]
-            )
-            db.session.add(task_option)
-        db.session.commit()
+        db_task_option = TaskOption.query.all()
+        if not db_task_option:
+            for option in task_options:
+                task_option = TaskOption(
+                    advertiser_name=option["advertiser_name"],
+                    earner_name=option["earner_name"],
+                    advertiser_description=option["advertiser_description"],
+                    earner_description=option["earner_description"],
+                    advertiser_price=option["advertiser_price"],
+                    earner_price=option["earner_price"],
+                    task_type=option["task_type"]
+                )
+                db.session.add(task_option)
+                db.session.commit()
 
 
 
