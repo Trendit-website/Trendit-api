@@ -137,7 +137,7 @@ config_by_name = {
 config_class =  DevelopmentConfig if Config.ENV == "development" else ProductionConfig
 
 def configure_logging(app):
-    formatter = logging.Formatter('[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
+    formatter = logging.Formatter('[%(asctime)s] ==> %(levelname)s in %(module)s: %(message)s')
     handler = logging.StreamHandler()
     handler.setFormatter(formatter)
     app.logger.addHandler(handler)
