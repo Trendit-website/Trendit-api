@@ -44,7 +44,16 @@ class TransactionController:
             
             # Fetch transaction records from the database
             if transaction_type:
-                query = Transaction.query.filter_by(trendit3_user_id=current_user_id, transaction_type=transaction_type)
+                if transaction_type=="payment":
+                    type_value = TransactionType.PAYMENT
+                elif transaction_type=="debit":
+                    type_value = TransactionType.DEBIT
+                elif transaction_type=="credit":
+                    type_value = TransactionType.CREDIT
+                elif transaction_type=="withdrawal":
+                    type_value = TransactionType.WITHDRAWAL
+                
+                query = Transaction.query.filter_by(trendit3_user_id=current_user_id, transaction_type=type_value)
             else:
                 query = Transaction.query.filter_by(trendit3_user_id=current_user_id)
             
