@@ -24,7 +24,7 @@ class TaskOptionsController:
             if user_type.lower() not in ['advertiser', 'earner']:
                 return error_response("Invalid user type", 400)
             
-            task_type = request.args.get('type', "advert")
+            task_type = request.args.get('task_type', "advert")
             if task_type.lower() not in ['advert', 'engagement']:
                 return error_response("Invalid task type", 400)
             
