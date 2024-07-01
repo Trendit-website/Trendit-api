@@ -18,7 +18,6 @@ class SocialProfilesTelegramController:
         try:
             page = request.args.get("page", 1, type=int)
             per_page = 15
-            social_profiles = SocialMediaProfile.query.all()
             
             pagination = SocialMediaProfile.query.filter_by(status=SocialLinkStatus.PENDING) \
                 .paginate(page=page, per_page=per_page, error_out=False)
