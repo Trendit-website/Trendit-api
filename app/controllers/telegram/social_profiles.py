@@ -38,7 +38,7 @@ class SocialProfilesTelegramController:
                 'total': pagination.total,
                 "current_page": pagination.page,
                 "total_pages": pagination.pages,
-                "transactions_history": current_social_profiles,
+                "pending_social_profiles": current_social_profiles,
             }
             
             
