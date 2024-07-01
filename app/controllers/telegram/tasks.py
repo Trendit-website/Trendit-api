@@ -1,15 +1,11 @@
 from flask import request
 from sqlalchemy.exc import ( DataError, DatabaseError, SQLAlchemyError )
-from flask_jwt_extended import get_jwt_identity
 
 from ...extensions import db
 from ...utils.helpers.telegram_bot import notify_telegram_admins_new_task
 from ...utils.helpers.response_helpers import error_response, success_response
 from ...models.task import Task, TaskStatus
-from ...models.social import SocialLinks, SocialLinkStatus, SocialMediaProfile
-from ...models.user import Trendit3User
 from ...utils.helpers.basic_helpers import log_exception, console_log
-from ...utils.helpers.user_helpers import get_social_profile
 
 
 class TasksTelegramController:
