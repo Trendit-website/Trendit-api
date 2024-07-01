@@ -11,4 +11,4 @@ from flask import Blueprint
 
 telegram_bp = Blueprint('telegram', __name__, url_prefix='/api/telegram')
 
-from . import (social_profiles)
+from . import (social_profiles, tasks)

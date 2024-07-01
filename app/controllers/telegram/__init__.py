@@ -1,2 +1,3 @@
 
 from .social_profiles import SocialProfilesTelegramController
+from .tasks import TasksTelegramController
