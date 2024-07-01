@@ -92,6 +92,9 @@ def create_app(config_name=Config.ENV):
     from .routes.api_admin import bp as api_admin_bp
     app.register_blueprint(api_admin_bp)
     
+    from .routes.telegram import telegram_bp
+    app.register_blueprint(telegram_bp)
+    
     from .error_handlers import bp as errorHandler_bp
     app.register_blueprint(errorHandler_bp)
     
