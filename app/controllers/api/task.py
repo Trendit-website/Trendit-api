@@ -733,9 +733,17 @@ class TaskController:
                 api_response_json = api_response.get_json()
                 new_task.update(authorization_url=api_response_json.get("authorization_url", ""))
                 
+                notify_telegram_admins_new_task(new_task.to_dict())
+                
                 return api_response
             
             if payment_method == 'trendit_wallet':
+                new_task = save_task(data, payment_status=TaskPaymentStatus.PENDING)
+                if new_task is None:
+                    return error_response('Error creating new task', 500)
+                
+                console_log('new_task', new_task)
+                
                 # Debit the user's wallet
                 try:
                     debit_wallet(current_user_id, amount, 'task-creation')
@@ -743,11 +751,7 @@ class TaskController:
                     msg = f'Error creating new Task: {e}'
                     return error_response(msg, 400)
                 
-                new_task = save_task(data, payment_status=TaskPaymentStatus.COMPLETE)
-                if new_task is None:
-                    return error_response('Error creating new task', 500)
-                
-                console_log('new_task', new_task)
+                new_task.update(payment_status=TaskPaymentStatus.COMPLETE)
                 
                 msg = 'Task created successfully. Payment made using Trendit³ Wallet.'
                 new_task_dict = new_task.to_dict()
