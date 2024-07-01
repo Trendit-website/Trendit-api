@@ -704,8 +704,14 @@ class TaskController:
         try:
             data = request.form.to_dict()
             amount = int(data.get('amount'))
-            payment_method = request.args.get('payment_method', 'trendit_wallet')
+            payment_method = request.args.get("payment_method")
             current_user_id = get_jwt_identity()
+            
+            if not payment_method:
+                return error_response("payment method was not provided", 400)
+            
+            if payment_method not in ["payment_gateway", "trendit_wallet"]:
+                return error_response("invalid payment method", 400)
             
             media_files = request.files.getlist('media')
             if len(media_files) > 5:
