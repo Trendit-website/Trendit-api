@@ -41,25 +41,32 @@ class TransactionController:
                 return error_response('User not found', 404)
             
             transaction_type = request.args.get("transaction_type", "")
+            transaction_types = {
+                "payment": TransactionType.PAYMENT,
+                "debit": TransactionType.DEBIT,
+                "credit": TransactionType.CREDIT,
+                "withdrawal": TransactionType.WITHDRAWAL,
+                "orders": ["payment", "debit"],
+                "earned": TransactionType.CREDIT
+            }
+            
+            if transaction_type and transaction_type not in transaction_types:
+                return error_response('Invalid transaction type', 400)
             
             # Fetch transaction records from the database
+            query = Transaction.query.filter_by(trendit3_user_id=current_user_id)
             if transaction_type:
-                if transaction_type=="payment":
-                    type_value = TransactionType.PAYMENT
-                elif transaction_type=="debit":
-                    type_value = TransactionType.DEBIT
-                elif transaction_type=="credit":
-                    type_value = TransactionType.CREDIT
-                elif transaction_type=="withdrawal":
-                    type_value = TransactionType.WITHDRAWAL
+                if transaction_type == "order":
+                    query = query.filter(
+                        (Transaction.transaction_type == TransactionType.PAYMENT) |
+                        (Transaction.transaction_type == TransactionType.DEBIT)
+                    )
+                else:
+                    query = query.filter_by(transaction_type=transaction_types[transaction_type])
                 
-                query = Transaction.query.filter_by(trendit3_user_id=current_user_id, transaction_type=type_value)
-            else:
-                query = Transaction.query.filter_by(trendit3_user_id=current_user_id)
             
             pagination = query.order_by(Transaction.created_at.desc()) \
                 .paginate(page=page, per_page=per_page, error_out=False)
-            
             
             transactions = pagination.items
             current_transactions = [transaction.to_dict() for transaction in transactions]
@@ -74,6 +81,9 @@ class TransactionController:
                 return success_response(f'No transactions has been made', 200, extra_data)
             
             api_response = success_response('Transaction history fetched successfully', 200, extra_data)
+        except ValueError:
+            log_exception("A ValueError occurred fetching transaction history")
+            return error_response("Invalid user ID", 400)
         except Exception as e:
             log_exception(f"An exception occurred fetching transaction history", e)
             api_response = error_response("An error occurred while processing the request", 500)
