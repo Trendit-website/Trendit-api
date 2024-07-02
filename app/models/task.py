@@ -273,6 +273,7 @@ class TaskPerformance(db.Model):
     task_type = db.Column(db.String(80), nullable=False)  # either 'advert' or 'engagement'
     reward_money = db.Column(db.Float(), default=00.00, nullable=True)
     account_name = db.Column(db.String(80), nullable=True)
+    post_link = db.Column(db.String(80), nullable=True)
     status = db.Column(db.String(80), default='pending') # pending, in_review, timed_out, cancelled, rejected or completed
     started_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     date_completed = db.Column(db.DateTime, nullable=True)
@@ -291,7 +292,7 @@ class TaskPerformance(db.Model):
         return f'<ID: {self.id}, User ID: {self.user_id}, Task ID: {self.task_id}, Task Type: {self.task_type}, Status: {self.status}>'
     
     @classmethod
-    def create_task_performance(cls, user_id, task_id, task_type, reward_money, proof_screenshot, account_name, status):
+    def create_task_performance(cls, user_id, task_id, task_type, reward_money, proof_screenshot, account_name, post_link, status):
         the_task_key = f"{generate_random_string(20)}_pt"
         counter = 1
         max_attempts = 6  # maximum number of attempts to create a unique task_key
@@ -302,7 +303,7 @@ class TaskPerformance(db.Model):
             the_task_key = f"{generate_random_string(20)}-{generate_random_string(4)}-{counter}"
             counter += 1
         
-        task = cls(user_id=user_id, task_id=task_id, key=the_task_key, task_type=task_type, reward_money=reward_money, proof_screenshot=proof_screenshot, account_name=account_name, status=status)
+        task = cls(user_id=user_id, task_id=task_id, key=the_task_key, task_type=task_type, reward_money=reward_money, proof_screenshot=proof_screenshot, account_name=account_name, post_link=post_link, status=status)
         
         db.session.add(task)
         db.session.commit()
@@ -345,6 +346,7 @@ class TaskPerformance(db.Model):
             'reward_money': self.reward_money,
             'proof_screenshot_path': self.get_proof_screenshot(),
             'account_name': self.account_name,
+            'post_link': self.post_link,
             'status': self.status,
             'started_at': self.started_at,
             'date_completed': self.date_completed,

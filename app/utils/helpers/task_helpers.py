@@ -299,6 +299,7 @@ def update_performed_task(data, pt_id=None, status='pending'):
         reward_money = float(data.get('reward_money'))
         screenshot = request.files.get('screenshot', '')
         account_name = data.get('account_name')
+        post_link = data.get('post_link', '')
         
         task_type = task.task_type
         
@@ -328,16 +329,22 @@ def update_performed_task(data, pt_id=None, status='pending'):
             if performed_task.proof_screenshot_id:
                 proof_screenshot = performed_task.proof_screenshot
             else:
-                raise Exception("No screenshot provided.")
+                if task.task_type == "engagement":
+                    raise Exception("No screenshot provided.")
+                else:
+                    pass
         else:
-            raise Exception("No screenshot provided.")
+            if task.task_type == "engagement":
+                raise Exception("No screenshot provided.")
+            else:
+                pass
         
         if performed_task:
             performed_task.update(user_id=user_id, task_id=task_id, task_type=task_type, reward_money=reward_money, proof_screenshot=proof_screenshot, status=status)
             
             return performed_task
         else:
-            new_performed_task = TaskPerformance.create_task_performance(user_id=user_id, task_id=task_id, task_type=task_type, reward_money=reward_money, proof_screenshot=proof_screenshot, account_name=account_name, status=status)
+            new_performed_task = TaskPerformance.create_task_performance(user_id=user_id, task_id=task_id, task_type=task_type, reward_money=reward_money, proof_screenshot=proof_screenshot, account_name=account_name, post_link=post_link, status=status)
             
             return new_performed_task
     except Exception as e:
