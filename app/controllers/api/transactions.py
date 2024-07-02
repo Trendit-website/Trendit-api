@@ -56,7 +56,7 @@ class TransactionController:
             # Fetch transaction records from the database
             query = Transaction.query.filter_by(trendit3_user_id=current_user_id)
             if transaction_type:
-                if transaction_type == "order":
+                if transaction_type == "orders":
                     query = query.filter(
                         (Transaction.transaction_type == TransactionType.PAYMENT) |
                         (Transaction.transaction_type == TransactionType.DEBIT)
