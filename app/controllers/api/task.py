@@ -731,9 +731,11 @@ class TaskController:
                 api_response = initialize_payment(current_user_id, data, payment_type='task-creation', meta_data={'task_key': new_task.task_key})
                 
                 api_response_json = api_response.get_json()
-                new_task.update(authorization_url=api_response_json.get("authorization_url", ""))
+                authorization_url = api_response_json.get("authorization_url", "")
                 
-                notify_telegram_admins_new_task(new_task.to_dict())
+                new_task.update(authorization_url=authorization_url)
+                
+                notify_telegram_admins_new_task(new_task)
                 
                 return api_response
             
@@ -742,7 +744,6 @@ class TaskController:
                 if new_task is None:
                     return error_response('Error creating new task', 500)
                 
-                console_log('new_task', new_task)
                 
                 # Debit the user's wallet
                 try:
@@ -758,13 +759,25 @@ class TaskController:
                 extra_data = {'task': new_task_dict}
                 
                 api_response = success_response(msg, 201, extra_data)
-                notify_telegram_admins_new_task(new_task_dict)
+                notify_telegram_admins_new_task(new_task)
+        except ValueError as e:
+            db.session.rollback()
+            log_exception(f"ValueError occurred", e)
+            api_response = error_response(f"Error: {str(e)}", 400)
         except TypeError as e:
+            db.session.rollback()
             log_exception(f"A TypeError occurred during creation of Task", e)
             api_response = error_response(f"TypeError occurred: {str(e)}", 400)
+        except (DataError, DatabaseError) as e:
+            db.session.rollback()
+            log_exception('Database error occurred during registration', e)
+            api_response = error_response('Error connecting to the database.', 500)
         except Exception as e:
+            db.session.rollback()
             log_exception("An exception occurred creating Task", e)
             api_response = error_response('Error creating new task. Our developers are already looking into it.', 500)
+        finally:
+            db.session.close()
         
         return api_response
 

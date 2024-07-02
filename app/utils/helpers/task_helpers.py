@@ -2,6 +2,7 @@ import sys
 from threading import Thread
 from flask import request, current_app
 from sqlalchemy import func
+from sqlalchemy.exc import ( DataError, DatabaseError, )
 from flask_jwt_extended import get_jwt_identity
 from datetime import datetime, timedelta
 
@@ -275,11 +276,12 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
                 
                 return new_task
         else:
-            return None
+            raise ValueError("invalid Task type")
+    except (DataError, DatabaseError) as e:
+        raise e
     except Exception as e:
         log_exception(f"An exception occurred trying to save Task {data.get('task_type')}", e)
-        db.session.rollback()
-        return None
+        raise e
 
 
 

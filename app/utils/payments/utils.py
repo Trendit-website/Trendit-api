@@ -125,8 +125,6 @@ def initialize_payment(user_id, data, payment_type=None, meta_data=None):
         db.session.rollback()
         log_exception(f"An exception occurred during payment initialization", e)
         api_response = error_response('An error occurred initializing payment.', 500)
-    finally:
-        db.session.close()
     
     return api_response
 

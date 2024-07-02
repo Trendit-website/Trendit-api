@@ -9,29 +9,35 @@ from ...models.social import SocialMediaPlatform, SocialMediaProfile
 
 send_msg_url = Config.TELEGRAM_SEND_MSG_URL
 
-def notify_telegram_admins_new_task(task: dict):
+def notify_telegram_admins_new_task(task: Task | AdvertTask | EngagementTask):
     label = f"A New Task Was Just Created"
     
     # get task data
-    task_id = task.get("id")
-    task_type = task.get("task_type")
-    payment_status = task.get("payment_status")
-    platform = task.get("platform")
-    fee_paid = task.get("fee_paid")
-    status = task.get("status")
-    target_country = task.get("target_country")
-    target_state = task.get("target_state")
+    data = task.to_dict()
+    
+    task_id = data.get("id")
+    task_type = data.get("task_type")
+    payment_status = data.get("payment_status")
+    platform = data.get("platform")
+    fee_paid = data.get("fee_paid")
+    status = data.get("status")
+    target_country = data.get("target_country")
+    target_state = data.get("target_state")
     location = f"{target_state}, {target_country}"
-    date_created = task.get("date_created")
+    date_created = data.get("date_created")
+    account_link = data.get("account_link")
     
-    requested_count = task.get("posts_count", task.get("engagements_count", 0))
+    requested_count = data.get("posts_count", data.get("engagements_count", 0))
     
 
-    count = "No of posts" if task.get("posts_counts") else "No of Engagements"
+    count = "No of posts" if data.get("posts_count") else "No of Engagements"
+    link = f"• Link: {account_link} \n" if account_link else ""
 
-    data = (f"• Task Type: {task_type} \n • Payment Status: {payment_status} \n • Platform: {platform} \n • Amount Paid: {fee_paid} \n • Status: {status} \n • Location: {location} \n • {count}: {requested_count} \n • Date Created: {date_created}")
+    data_msg = (
+        f"• Task Type: {task_type} \n • Payment Status: {payment_status} \n • Platform: {platform} \n • Amount Paid: {fee_paid} \n • Location: {location} \n • {count}: {requested_count} \n {link} • Status: {status} \n • Date Created: {date_created}"
+        )
     
-    formatted_data = data
+    formatted_data = data_msg
     
     message = f"\n\n{label:-^12}\n\n {formatted_data} \n{'//':-^12}\n\n"
     
@@ -39,10 +45,15 @@ def notify_telegram_admins_new_task(task: dict):
         'chat_id': Config.TELEGRAM_CHAT_ID,
         'text': message,
         'reply_markup': {
-            'inline_keyboard': [[
-                {'text': 'Approve', 'callback_data': f'approve_task_{task_id}'},
-                {'text': 'Reject', 'callback_data': f'reject_task_{task_id}'}
-            ]]
+            'inline_keyboard': [
+                [
+                    {'text': 'Approve', 'callback_data': f'approve_task_{task_id}'},
+                    {'text': 'Reject', 'callback_data': f'reject_task_{task_id}'}
+                ],
+                [
+                    {'text': 'View Provided Link', 'url': f'{account_link}'}
+                ] if account_link else []
+            ]
         }
     }
     response = requests.post(send_msg_url, json=payload)
