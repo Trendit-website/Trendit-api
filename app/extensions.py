@@ -35,6 +35,6 @@ def make_celery(app):
 
     celery.Task = ContextTask
     
-    import app.bg_jobs.tasks
+    from app.bg_jobs.tasks import save_task_media_files
     
     return celery
