@@ -12,6 +12,7 @@ from ..utils.helpers.media_helpers import save_media
 def save_task_media_files(self, task_id_key: str | int, media_file_paths):
     try:
         with current_app.app_context():
+            console_log("celery saving media", f"starting... {media_file_paths}")
             from ..utils.helpers.task_helpers import fetch_task
             task = fetch_task(task_id_key)
             
