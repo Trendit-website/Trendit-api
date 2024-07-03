@@ -34,4 +34,7 @@ def make_celery(app):
                 return self.run(*args, **kwargs)
 
     celery.Task = ContextTask
+    
+    import app.bg_jobs.tasks
+    
     return celery
