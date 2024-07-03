@@ -221,6 +221,7 @@ def get_task_by_key(task_key):
 
 def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
     try:
+        console_log("saving task", "...")
         user_id = int(get_jwt_identity())
         task = fetch_task(task_id_key) if task_id_key else None
         
@@ -253,6 +254,7 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
             if task:
                 task.update(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee_paid=fee_paid, fee=fee, payment_status=payment_status, posts_count=posts_count, target_country=target_country, target_state=target_state, gender=gender, religion=religion, caption=caption, hashtags=hashtags)
                 
+                console_log("saving media files with celery...", "save_task_media_files sent to celery")
                 save_task_media_files.delay(app=current_app, task_id_key=task.id, media_files=media_files) #save media files
                 
                 return task
@@ -261,6 +263,7 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
 
                 add_user_role(RoleNames.ADVERTISER, user_id)
                 
+                console_log("saving media files with celery...", "save_task_media_files sent to celery")
                 save_task_media_files.delay(app=current_app, task_id_key=new_task.id, media_files=media_files) #save media files
                 
                 return new_task
@@ -283,6 +286,8 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
     except Exception as e:
         log_exception(f"An exception occurred trying to save Task {data.get('task_type')}", e)
         raise e
+    finally:
+        console_log("task saved", "...")
 
 
 
