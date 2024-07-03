@@ -12,6 +12,7 @@ from ...utils.helpers.basic_helpers import console_log, log_exception
 from ...utils.helpers.media_helpers import save_media
 from ...exceptions import PendingTaskError, NoUnassignedTaskError
 from .user_helpers import add_user_role
+from ...bg_jobs.tasks import save_task_media_files
 
 
 
@@ -196,27 +197,27 @@ def get_task_by_key(task_key):
     return task
 
 
-def async_save_task_media_files(app, task_id_key: str | int, media_files):
-    with app.app_context():
-        try:
-            task = fetch_task(task_id_key)
+# def async_save_task_media_files(app, task_id_key: str | int, media_files):
+#     with app.app_context():
+#         try:
+#             task = fetch_task(task_id_key)
             
-            #save media files
-            task_media = []
-            if media_files:
-                for media_file in media_files:
-                    media = save_media(media_file)
-                    task.media.append(media)
-            elif not media_files and task:
-                task.media = task.media
+#             #save media files
+#             task_media = []
+#             if media_files:
+#                 for media_file in media_files:
+#                     media = save_media(media_file)
+#                     task.media.append(media)
+#             elif not media_files and task:
+#                 task.media = task.media
             
-            db.session.commit()
-        except Exception as e:
-            log_exception("an exception occurred saving task media", e)
-            raise e
+#             db.session.commit()
+#         except Exception as e:
+#             log_exception("an exception occurred saving task media", e)
+#             raise e
 
-def save_task_media_files(task_id_key: str | int, media_files):
-    Thread(target=async_save_task_media_files, args=(current_app._get_current_object(), task_id_key, media_files)).start()
+# def save_task_media_files(task_id_key: str | int, media_files):
+#     Thread(target=async_save_task_media_files, args=(current_app._get_current_object(), task_id_key, media_files)).start()
 
 def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
     try:
@@ -252,7 +253,7 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
             if task:
                 task.update(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee_paid=fee_paid, fee=fee, payment_status=payment_status, posts_count=posts_count, target_country=target_country, target_state=target_state, gender=gender, religion=religion, caption=caption, hashtags=hashtags)
                 
-                save_task_media_files(task.id, media_files) #save media files
+                save_task_media_files(app=current_app, task_id_key=task.id, media_files=media_files) #save media files
                 
                 return task
             else:
@@ -260,7 +261,7 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
 
                 add_user_role(RoleNames.ADVERTISER, user_id)
                 
-                save_task_media_files(new_task.id, media_files) #save media files
+                save_task_media_files(app=current_app, task_id_key=new_task.id, media_files=media_files) #save media files
                 
                 return new_task
             

@@ -8,5 +8,3 @@ It includes jobs for updating pending social tasks, sending notifications, and o
 @package: Trendit³
 '''
 from celery import shared_task
-
-from run import app

@@ -3,7 +3,7 @@ from celery import shared_task
 
 from ..extensions import db
 from ..models import TaskPerformance
-from ..utils.helpers.basic_helpers import log_exception
+from ..utils.helpers.basic_helpers import log_exception, console_log
 from ..utils.helpers.media_helpers import save_media
 
 
@@ -18,12 +18,15 @@ def save_task_media_files(self, app, task_id_key: str | int, media_files):
             task_media = []
             if media_files:
                 for media_file in media_files:
+                    console_log("media_file", media_file)
                     media = save_media(media_file)
+                    console_log("media saved", media)
                     task.media.append(media)
             elif not media_files and task:
                 task.media = task.media
             
             db.session.commit()
+            console_log("end of celery task...", "...")
         except Exception as e:
             log_exception("an exception occurred saving task media", e)
             raise e
