@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from celery import shared_task
+from flask import current_app
 
 from ..extensions import db
 from ..models import TaskPerformance
@@ -8,27 +9,32 @@ from ..utils.helpers.media_helpers import save_media
 
 
 @shared_task(bind=True)
-def save_task_media_files(self, task_id_key: str | int, media_files):
+def save_task_media_files(self, task_id_key: str | int, media_file_paths):
     try:
-        from ..utils.helpers.task_helpers import fetch_task
-        task = fetch_task(task_id_key)
-        
-        #save media files
-        task_media = []
-        if media_files:
-            for media_file in media_files:
-                console_log("media_file", media_file)
-                media = save_media(media_file)
-                console_log("media saved", media)
-                task.media.append(media)
-        elif not media_files and task:
-            task.media = task.media
-        
-        db.session.commit()
-        console_log("end of celery task...", "...")
+        with current_app.app_context():
+            from ..utils.helpers.task_helpers import fetch_task
+            task = fetch_task(task_id_key)
+            
+            #save media files
+            task_media = []
+            if media_file_paths:
+                for media_file_path in media_file_paths:
+                    with open(media_file_path, 'rb') as media_file:
+                        console_log("media_file", media_file)
+                        media = save_media(media_file)
+                        console_log("media saved", media)
+                        task.media.append(media)
+            elif not media_file_paths and task:
+                task.media = task.media
+            
+            db.session.commit()
+            console_log("end of celery task...", "...")
     except Exception as e:
         log_exception("an exception occurred saving task media", e)
+        db.session.rollback()
         raise e
+    finally:
+        db.session.close()
 
 
 @shared_task

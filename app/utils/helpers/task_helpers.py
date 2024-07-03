@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from ...extensions import db
 from ...models import Task, AdvertTask, EngagementTask, TaskStatus, TaskPaymentStatus, TaskPerformance, RoleNames
 from ...utils.helpers.basic_helpers import console_log, log_exception
-from ...utils.helpers.media_helpers import save_media
+from ...utils.helpers.media_helpers import save_media, save_media_files_to_temp
 from ...exceptions import PendingTaskError, NoUnassignedTaskError
 from .user_helpers import add_user_role
 from ...bg_jobs.tasks import save_task_media_files
@@ -249,13 +249,17 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
         # Get multiple media files
         media_files = request.files.getlist('media')
         
+        # Save media files to temp directory and get paths
+        media_file_paths = save_media_files_to_temp(media_files)
+        console_log("media_file_paths", media_file_paths)
+        
         
         if task_type == 'advert':
             if task:
                 task.update(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee_paid=fee_paid, fee=fee, payment_status=payment_status, posts_count=posts_count, target_country=target_country, target_state=target_state, gender=gender, religion=religion, caption=caption, hashtags=hashtags)
                 
                 console_log("saving media files with celery...", "save_task_media_files sent to celery")
-                save_task_media_files.delay(task_id_key=task.id, media_files=media_files) #save media files
+                save_task_media_files.delay(task_id_key=task.id, media_file_paths=media_file_paths) #save media files
                 
                 return task
             else:
@@ -264,7 +268,7 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
                 add_user_role(RoleNames.ADVERTISER, user_id)
                 
                 console_log("saving media files with celery...", "save_task_media_files sent to celery")
-                save_task_media_files.delay(task_id_key=new_task.id, media_files=media_files) #save media files
+                save_task_media_files.delay(task_id_key=new_task.id, media_file_paths=media_file_paths) #save media files
                 
                 return new_task
             

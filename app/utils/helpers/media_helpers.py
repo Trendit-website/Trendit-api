@@ -8,6 +8,7 @@ These functions assist with tasks such as saving media files to Cloudinary and a
 @package: Trendit³
 '''
 import os
+import tempfile
 from datetime import date
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
@@ -108,3 +109,16 @@ def save_media(media_file: FileStorage) -> Media:
     new_media = save_media_to_db(media_name, original_media_path)
     
     return new_media
+
+
+def save_media_files_to_temp(media_files):
+    temp_dir = tempfile.mkdtemp()
+    media_file_paths = []
+
+    for media_file in media_files:
+        filename = secure_filename(media_file.filename)
+        file_path = os.path.join(temp_dir, filename)
+        media_file.save(file_path)
+        media_file_paths.append(file_path)
+
+    return media_file_paths
