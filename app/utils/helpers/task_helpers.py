@@ -167,7 +167,7 @@ def initiate_task(task: Task, status='pending') -> dict:
         
         
         # Create a new TaskPerformance instance
-        initiated_task = TaskPerformance.create_task_performance(user_id=current_user_id, task_id=task.id, task_type=task.task_type, reward_money=0.0, proof_screenshot=None, account_name='', status=status)
+        initiated_task = TaskPerformance.create_task_performance(user_id=current_user_id, task_id=task.id, task_type=task.task_type, reward_money=0.0, proof_screenshot=None, account_name='', post_link='...', status=status)
         
         add_user_role(RoleNames.EARNER, current_user_id) # Give user role of Earner
         
