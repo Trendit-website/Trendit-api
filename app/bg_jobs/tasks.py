@@ -8,28 +8,27 @@ from ..utils.helpers.media_helpers import save_media
 
 
 @shared_task(bind=True)
-def save_task_media_files(self, app, task_id_key: str | int, media_files):
-    with app.app_context():
-        try:
-            from ..utils.helpers.task_helpers import fetch_task
-            task = fetch_task(task_id_key)
-            
-            #save media files
-            task_media = []
-            if media_files:
-                for media_file in media_files:
-                    console_log("media_file", media_file)
-                    media = save_media(media_file)
-                    console_log("media saved", media)
-                    task.media.append(media)
-            elif not media_files and task:
-                task.media = task.media
-            
-            db.session.commit()
-            console_log("end of celery task...", "...")
-        except Exception as e:
-            log_exception("an exception occurred saving task media", e)
-            raise e
+def save_task_media_files(self, task_id_key: str | int, media_files):
+    try:
+        from ..utils.helpers.task_helpers import fetch_task
+        task = fetch_task(task_id_key)
+        
+        #save media files
+        task_media = []
+        if media_files:
+            for media_file in media_files:
+                console_log("media_file", media_file)
+                media = save_media(media_file)
+                console_log("media saved", media)
+                task.media.append(media)
+        elif not media_files and task:
+            task.media = task.media
+        
+        db.session.commit()
+        console_log("end of celery task...", "...")
+    except Exception as e:
+        log_exception("an exception occurred saving task media", e)
+        raise e
 
 
 @shared_task
