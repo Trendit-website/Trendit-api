@@ -13,6 +13,7 @@ from ...models import Payment, Transaction, TransactionType, Withdrawal, Trendit
 from ...utils.helpers.basic_helpers import console_log, log_exception, generate_random_string
 from ...utils.helpers.task_helpers import get_task_by_key
 from ...utils.helpers.mail_helpers import send_other_emails
+from ..helpers.telegram_bot import notify_telegram_admins_new_task
 from .exceptions import TransactionMissingError, CreditWalletError, SignatureError
 from .wallet import credit_wallet
 from .paystack import headers as paystack_headers
@@ -197,6 +198,12 @@ def verify_flutterwave_payment(data):
         raise e
     except Exception as e:
         raise e
+    finally:
+        try:
+            task = task
+            notify_telegram_admins_new_task(task) # send message to admins on telegram
+        except Exception as e:
+            pass
     
     return result
 
@@ -296,6 +303,12 @@ def flutterwave_webhook():
     except Exception as e:
         fund_wallet = credit_wallet(user_id, amount) if data['event'] == 'charge.completed' else False
         raise e
+    finally:
+        try:
+            task = task
+            notify_telegram_admins_new_task(task) # send message to admins on telegram
+        except Exception as e:
+            pass
     
     return result
 

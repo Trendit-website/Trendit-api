@@ -735,8 +735,6 @@ class TaskController:
                 
                 new_task.update(authorization_url=authorization_url)
                 
-                notify_telegram_admins_new_task(new_task)
-                
                 return api_response
             
             if payment_method == 'trendit_wallet':
