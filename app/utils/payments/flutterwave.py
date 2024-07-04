@@ -202,7 +202,8 @@ def verify_flutterwave_payment(data):
         try:
             task = task
             notify_telegram_admins_new_task(task) # send message to admins on telegram
-        except Exception as e:
+        except NameError as e:
+            log_exception("'task' variable doesn't exist", e)
             pass
     
     return result
@@ -307,7 +308,8 @@ def flutterwave_webhook():
         try:
             task = task
             notify_telegram_admins_new_task(task) # send message to admins on telegram
-        except Exception as e:
+        except NameError as e:
+            log_exception("'task' variable doesn't exist", e)
             pass
     
     return result
