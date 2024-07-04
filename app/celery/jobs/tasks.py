@@ -2,10 +2,11 @@ from datetime import datetime, timedelta
 from celery import shared_task
 from flask import current_app
 
-from ..extensions import db
-from ..models import TaskPerformance
-from ..utils.helpers.basic_helpers import log_exception, console_log
-from ..utils.helpers.media_helpers import save_media
+
+from ...extensions import db
+from ...models import TaskPerformance
+from ...utils.helpers.basic_helpers import log_exception, console_log
+from ...utils.helpers.media_helpers import save_media
 
 
 @shared_task(bind=True)
@@ -13,7 +14,7 @@ def save_task_media_files(self, task_id_key: str | int, media_file_paths):
     try:
         with current_app.app_context():
             console_log("celery saving media", f"starting... {media_file_paths}")
-            from ..utils.helpers.task_helpers import fetch_task
+            from ...utils.helpers.task_helpers import fetch_task
             task = fetch_task(task_id_key)
             
             #save media files
@@ -38,7 +39,7 @@ def save_task_media_files(self, task_id_key: str | int, media_file_paths):
         db.session.close()
 
 
-@shared_task
+@shared_task(bind=True)
 def check_expired_tasks():
     pending_tasks = TaskPerformance.query.filter_by(status='pending').all()
     for task in pending_tasks:

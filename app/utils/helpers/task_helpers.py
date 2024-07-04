@@ -12,7 +12,7 @@ from ...utils.helpers.basic_helpers import console_log, log_exception
 from ...utils.helpers.media_helpers import save_media, save_media_files_to_temp
 from ...exceptions import PendingTaskError, NoUnassignedTaskError
 from .user_helpers import add_user_role
-from ...bg_jobs.tasks import save_task_media_files
+from ...celery.jobs.tasks import save_task_media_files
 
 
 

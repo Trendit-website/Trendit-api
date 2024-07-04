@@ -26,7 +26,8 @@ from .models.task import Task, AdvertTask, EngagementTask
 from .models.payment import Payment, Transaction, Wallet, Withdrawal
 from .models.task_option import populate_task_options
 
-from .extensions import db, mail, limiter, make_celery
+from .celery import make_celery, celery_init_app
+from .extensions import db, mail, limiter
 from .utils.helpers.response_helpers import error_response
 from .utils.helpers.basic_helpers import log_exception, console_log
 from .utils.helpers.user_helpers import add_user_role
@@ -54,8 +55,16 @@ def create_app(config_name=Config.ENV):
 
     # Initialize Flask extensions here
     db.init_app(app)
-    celery = make_celery(app) # Initialize Celery
-    celery.set_default()
+    
+    app.config.from_mapping(
+        CELERY=dict(
+            broker_url=Config.CELERY_BROKER_URL,
+            result_backend=Config.CELERY_BROKER_URL,
+            task_ignore_result=False,
+        ),
+    )
+    app.config.from_prefixed_env()
+    celery_init_app(app) # Initialize Celery
     
     mail.init_app(app) # Initialize Flask-Mail
     limiter.init_app(app) # initialize rate limiter
@@ -73,10 +82,6 @@ def create_app(config_name=Config.ENV):
     #app.before_request(ping_url)
     # app.before_request(json_check)
     
-    
-    # Block Postman requests in production
-    # if Config.ENV == 'production':
-    #     app.before_request(block_postman)
     
     # Configure logging
     configure_logging(app)
@@ -128,4 +133,4 @@ def create_app(config_name=Config.ENV):
         populate_task_options()
     
     
-    return app, celery
+    return app
