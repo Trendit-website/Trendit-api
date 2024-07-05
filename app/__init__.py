@@ -56,7 +56,9 @@ def create_app(config_name=Config.ENV):
     limiter.init_app(app) # initialize rate limiter
     migrate = Migrate(app, db)
     jwt = JWTManager(app) # Setup the Flask-JWT-Extended extension
-    cors = CORS(app, resources={r"/*": {"origins": Config.CLIENT_ORIGINS}}, supports_credentials=True) # Set up CORS. Allow '*' for origins.
+    
+    # Set up CORS. Allow '*' for origins.
+    cors = CORS(app, resources={r"/*": {"origins": Config.CLIENT_ORIGINS}}, supports_credentials=True)
 
     # Use the after_request decorator to set Access-Control-Allow
     app.after_request(set_access_control_allows)
@@ -66,8 +68,10 @@ def create_app(config_name=Config.ENV):
     #app.before_request(ping_url)
     # app.before_request(json_check)
     
+    
     # Configure logging
     configure_logging(app)
+    
     
     # Register blueprints
     from .routes.main import main
@@ -109,11 +113,6 @@ def create_app(config_name=Config.ENV):
         swag['info']['version'] = "1.0.0"
         return jsonify(swag)
     
-    
-    # Initialize Celery and ensure tasks are imported
-    celery = make_celery(app)
-    import app.celery.jobs.tasks  # Ensure the tasks are imported
-    celery.set_default()
     
     with app.app_context():
         create_roles()  # Create roles for trendit3
