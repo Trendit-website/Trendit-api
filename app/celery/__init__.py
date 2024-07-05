@@ -30,6 +30,6 @@ def make_celery(flask_app: Flask) -> Celery:
     celery.Task = ContextTask
     
     # Import all tasks to ensure they are registered with Celery
-    from app.celery.jobs import tasks, task_expiration
+    from app.celery.jobs import tasks
     
     return celery

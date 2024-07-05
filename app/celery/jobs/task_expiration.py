@@ -1,11 +1,12 @@
 import logging
 from flask import current_app
 from datetime import datetime, timedelta
+from celery import shared_task
 
-from app.extensions import db, celery
+from app.extensions import db
 from app.models.task import TaskPerformance
 
-@celery.task
+@shared_task(bind=True)
 def check_tasks_status():
     now = datetime.utcnow()
     timeout_threshold = now - timedelta(hours=1)
