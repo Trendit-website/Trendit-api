@@ -5,7 +5,6 @@ from flask import current_app
 
 from ...extensions import db
 from ...models import TaskPerformance
-from ...utils.helpers.task_helpers import fetch_task
 from ...utils.helpers.basic_helpers import log_exception, console_log
 from ...utils.helpers.media_helpers import save_media
 
@@ -15,6 +14,7 @@ def save_task_media_files(self, task_id_key: str | int, media_file_paths):
     try:
         with current_app.app_context():
             console_log("celery saving media", f"starting... {media_file_paths}")
+            from ...utils.helpers.task_helpers import fetch_task
             task = fetch_task(task_id_key)
             
             if task:
