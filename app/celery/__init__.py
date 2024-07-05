@@ -9,12 +9,12 @@ It includes jobs for updating pending social tasks, sending notifications, and o
 @package: Trendit³
 '''
 from flask import Flask
-from celery import Celery, Task
+from celery import Celery
 from celery.schedules import crontab
 
 from config import Config
 
-def make_celery(app):
+def make_celery(app: Flask) -> Celery:
     celery = Celery(
         app.import_name,
         backend=app.config['CELERY_RESULT_BACKEND'],
@@ -29,24 +29,4 @@ def make_celery(app):
 
     celery.Task = ContextTask
     
-    
-    celery_app = Celery(app.name, task_cls=ContextTask)
-    celery_app.config_from_object(app.config["CELERY_CONFIG"])
-    celery_app.set_default()
-    app.extensions["celery"] = celery_app
-    
     return celery
-
-
-
-def celery_init_app(app: Flask) -> Celery:
-    class FlaskTask(Task):
-        def __call__(self, *args: object, **kwargs: object) -> object:
-            with app.app_context():
-                return self.run(*args, **kwargs)
-
-    celery_app = Celery(app.name, task_cls=FlaskTask)
-    celery_app.config_from_object(app.config["CELERY"])
-    celery_app.set_default()
-    app.extensions["celery"] = celery_app
-    return celery_app

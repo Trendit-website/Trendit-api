@@ -26,7 +26,7 @@ from .models.task import Task, AdvertTask, EngagementTask
 from .models.payment import Payment, Transaction, Wallet, Withdrawal
 from .models.task_option import populate_task_options
 
-from .celery import make_celery, celery_init_app
+from .celery import make_celery
 from .extensions import db, mail, limiter
 from .utils.helpers.response_helpers import error_response
 from .utils.helpers.basic_helpers import log_exception, console_log
@@ -34,9 +34,6 @@ from .utils.helpers.user_helpers import add_user_role
 from .utils.middleware import set_access_control_allows, check_emerge, json_check, ping_url
 from config import Config, configure_logging, config_by_name
 
-def block_postman():
-    if request.headers.get('User-Agent') and 'Postman' in request.headers.get('User-Agent'):
-        return error_response("Requests from Postman are not allowed in production.", 403)
 
 def create_app(config_name=Config.ENV):
     '''
@@ -55,24 +52,11 @@ def create_app(config_name=Config.ENV):
 
     # Initialize Flask extensions here
     db.init_app(app)
-    
-    app.config.from_mapping(
-        CELERY=dict(
-            broker_url=Config.CELERY_BROKER_URL,
-            result_backend=Config.CELERY_BROKER_URL,
-            task_ignore_result=False,
-        ),
-    )
-    app.config.from_prefixed_env()
-    celery_init_app(app) # Initialize Celery
-    
     mail.init_app(app) # Initialize Flask-Mail
     limiter.init_app(app) # initialize rate limiter
     migrate = Migrate(app, db)
     jwt = JWTManager(app) # Setup the Flask-JWT-Extended extension
-    
-    # Set up CORS. Allow '*' for origins.
-    cors = CORS(app, resources={r"/*": {"origins": Config.CLIENT_ORIGINS}}, supports_credentials=True)
+    cors = CORS(app, resources={r"/*": {"origins": Config.CLIENT_ORIGINS}}, supports_credentials=True) # Set up CORS. Allow '*' for origins.
 
     # Use the after_request decorator to set Access-Control-Allow
     app.after_request(set_access_control_allows)
@@ -82,10 +66,8 @@ def create_app(config_name=Config.ENV):
     #app.before_request(ping_url)
     # app.before_request(json_check)
     
-    
     # Configure logging
     configure_logging(app)
-    
     
     # Register blueprints
     from .routes.main import main
@@ -128,9 +110,13 @@ def create_app(config_name=Config.ENV):
         return jsonify(swag)
     
     
+    # Initialize Celery and ensure tasks are imported
+    celery = make_celery(app)
+    import app.celery.jobs.tasks  # Ensure the tasks are imported
+    celery.set_default()
+    
     with app.app_context():
         create_roles()  # Create roles for trendit3
         populate_task_options()
     
-    
-    return app
+    return app, celery

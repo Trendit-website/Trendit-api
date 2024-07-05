@@ -9,6 +9,5 @@ It creates an instance of the application and runs it.
 '''
 from app import create_app
 
-app = create_app()
-celery_app = app.extensions["celery"]
+app, celery = create_app()
 app.app_context().push()
