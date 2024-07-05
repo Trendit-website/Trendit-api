@@ -2,14 +2,14 @@ from datetime import datetime, timedelta
 from celery import shared_task
 from flask import current_app
 
-
+from run import celery
 from ...extensions import db
 from ...models import TaskPerformance
 from ...utils.helpers.basic_helpers import log_exception, console_log
 from ...utils.helpers.media_helpers import save_media
 
 
-@shared_task(bind=True)
+@celery.shared_task(bind=True)
 def save_task_media_files(self, task_id_key: str | int, media_file_paths):
     try:
         with current_app.app_context():
