@@ -45,52 +45,52 @@ def create_app(config_name=Config.ENV):
     Returns:
         The Flask application instance.
     '''
-    app = Flask(__name__)
-    app.config.from_object(config_by_name[config_name])
+    flask_app = Flask(__name__)
+    flask_app.config.from_object(config_by_name[config_name])
     
     
 
     # Initialize Flask extensions here
-    db.init_app(app)
-    mail.init_app(app) # Initialize Flask-Mail
-    limiter.init_app(app) # initialize rate limiter
-    migrate = Migrate(app, db)
-    jwt = JWTManager(app) # Setup the Flask-JWT-Extended extension
+    db.init_app(flask_app)
+    mail.init_app(flask_app) # Initialize Flask-Mail
+    limiter.init_app(flask_app) # initialize rate limiter
+    migrate = Migrate(flask_app, db)
+    jwt = JWTManager(flask_app) # Setup the Flask-JWT-Extended extension
     
     # Set up CORS. Allow '*' for origins.
-    cors = CORS(app, resources={r"/*": {"origins": Config.CLIENT_ORIGINS}}, supports_credentials=True)
+    cors = CORS(flask_app, resources={r"/*": {"origins": Config.CLIENT_ORIGINS}}, supports_credentials=True)
 
     # Use the after_request decorator to set Access-Control-Allow
-    app.after_request(set_access_control_allows)
+    flask_app.after_request(set_access_control_allows)
     
     # Before request hooks
-    app.before_request(check_emerge)
-    #app.before_request(ping_url)
-    # app.before_request(json_check)
+    flask_app.before_request(check_emerge)
+    #flask_app.before_request(ping_url)
+    # flask_app.before_request(json_check)
     
     
     # Configure logging
-    configure_logging(app)
+    configure_logging(flask_app)
     
     
     # Register blueprints
     from .routes.main import main
-    app.register_blueprint(main)
+    flask_app.register_blueprint(main)
     
     from .routes.api import api as api_bp
-    app.register_blueprint(api_bp)
+    flask_app.register_blueprint(api_bp)
     
     from .routes.api_admin import bp as api_admin_bp
-    app.register_blueprint(api_admin_bp)
+    flask_app.register_blueprint(api_admin_bp)
     
     from .routes.telegram import telegram_bp
-    app.register_blueprint(telegram_bp)
+    flask_app.register_blueprint(telegram_bp)
     
     from .error_handlers import bp as errorHandler_bp
-    app.register_blueprint(errorHandler_bp)
+    flask_app.register_blueprint(errorHandler_bp)
     
     from .utils.debugging import debugger as debugger_bp
-    app.register_blueprint(debugger_bp)
+    flask_app.register_blueprint(debugger_bp)
 
 
     # Swagger setup
@@ -103,19 +103,25 @@ def create_app(config_name=Config.ENV):
             'app_name': "Trendit³ API"
         }
     )
-    app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
+    flask_app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
 
-    @app.route('/spec')
+    @flask_app.route('/spec')
     def spec():
-        swag = swagger(app)
+        swag = swagger(flask_app)
         swag['info']['title'] = "Your API"
         swag['info']['description'] = "API documentation"
         swag['info']['version'] = "1.0.0"
         return jsonify(swag)
     
     
-    with app.app_context():
+    # Initialize Celery and ensure tasks are imported
+    celery = make_celery(flask_app)
+    import app.celery.jobs.tasks # Ensure the tasks are imported
+    celery.set_default()
+    
+    
+    with flask_app.app_context():
         create_roles()  # Create roles for trendit3
         populate_task_options()
     
-    return app, celery
+    return flask_app, celery
