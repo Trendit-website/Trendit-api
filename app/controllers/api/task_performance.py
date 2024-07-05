@@ -5,7 +5,7 @@ from flask_jwt_extended import get_jwt_identity
 
 from ...extensions import db
 from ...models import Trendit3User
-from ...models.task import TaskPerformance
+from ...models.task import TaskPerformance, Task
 from ...utils.helpers.task_helpers import update_performed_task, fetch_task, generate_random_task, initiate_task, fetch_performed_task
 from ...utils.helpers.response_helpers import error_response, success_response
 from ...utils.helpers.basic_helpers import console_log, log_exception
@@ -159,6 +159,7 @@ class TaskPerformanceController:
     def get_user_performed_tasks_by_status(status):
         try:
             current_user_id = int(get_jwt_identity())
+            platform = request.args.get('platform', '')
             page = request.args.get("page", 1, type=int)
             tasks_per_page = int(6)
             
@@ -167,8 +168,14 @@ class TaskPerformanceController:
             if user is None:
                 return error_response('User not found', 404)
             
-            pagination = TaskPerformance.query.filter_by(user_id=current_user_id, status=status) \
-                .order_by(TaskPerformance.started_at.desc()) \
+            # Build the query
+            query = TaskPerformance.query.join(Task, TaskPerformance.task_id == Task.id) \
+                .filter(TaskPerformance.user_id == current_user_id, TaskPerformance.status == status)
+            
+            if platform:
+                query = query.filter(Task.platform == platform)
+            
+            pagination = query.order_by(TaskPerformance.started_at.desc()) \
                 .paginate(page=page, per_page=tasks_per_page, error_out=False)
             
             console_log("pagination", pagination)
