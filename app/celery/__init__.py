@@ -14,19 +14,22 @@ from celery.schedules import crontab
 
 from config import Config
 
-def make_celery(app: Flask) -> Celery:
+def make_celery(flask_app: Flask) -> Celery:
     celery = Celery(
-        app.import_name,
-        backend=app.config['CELERY_RESULT_BACKEND'],
-        broker=app.config['CELERY_BROKER_URL']
+        flask_app.import_name,
+        backend=flask_app.config['CELERY_RESULT_BACKEND'],
+        broker=flask_app.config['CELERY_BROKER_URL']
     )
-    celery.conf.update(app.config)
+    celery.conf.update(flask_app.config)
 
     class ContextTask(celery.Task):
         def __call__(self, *args: object, **kwargs: object) -> object:
-            with app.app_context():
+            with flask_app.app_context():
                 return self.run(*args, **kwargs)
 
     celery.Task = ContextTask
+    
+    # Import all tasks to ensure they are registered with Celery
+    from app.celery.jobs import tasks, task_expiration
     
     return celery
