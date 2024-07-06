@@ -69,13 +69,15 @@ def notify_telegram_admins_new_performed_task(performed_task: TaskPerformance):
     performed_task_key = performed_task.key
     task_type = performed_task.task_type
     status = performed_task.status
+    task = performed_task.get_task()
+    reward_money = task.get("reward_money", 110.00)
     
     date_started = performed_task.started_at
     date_completed = performed_task.date_completed
     
     label = f"{username} Just performed a task, and is expecting a review:"
     
-    data = (f"• Full Name: {full_name} \n • Task ID: {performed_task_id} \n • Task Type: {task_type} \n • Date Started: {date_started} \n • Date Completed: {date_completed} \n • Status: {status}")
+    data = (f"• Full Name: {full_name} \n • Task ID: {performed_task_id} \n • Task Type: {task_type} \n • Date Started: {date_started} \n • Date Completed: {date_completed} \n • Status: {status} \n\n • Amount to be earned: {reward_money}")
     
     formatted_data = data + f"\n\n Use the Buttons bellow to Approve or Reject"
     

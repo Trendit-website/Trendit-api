@@ -233,6 +233,7 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
         target_state = data.get('target_state', task.target_state if task else '')
         gender = data.get('gender', task.gender if task else '')
         religion = data.get('religion', task.religion if task else '')
+        reward_money = data.get('reward_money', task.reward_money if task else 110.00)
         
         if task_type == 'advert':
             caption = data.get('caption', task.caption if task and hasattr(task, "caption") else '')
@@ -256,14 +257,14 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
         
         if task_type == 'advert':
             if task:
-                task.update(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee_paid=fee_paid, fee=fee, payment_status=payment_status, posts_count=posts_count, target_country=target_country, target_state=target_state, gender=gender, religion=religion, caption=caption, hashtags=hashtags)
+                task.update(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee_paid=fee_paid, fee=fee, payment_status=payment_status, posts_count=posts_count, target_country=target_country, target_state=target_state, gender=gender, religion=religion, caption=caption, hashtags=hashtags, reward_money=reward_money)
                 
                 console_log("saving media files with celery...", "save_task_media_files sent to celery")
                 save_task_media_files.delay(task_id_key=task.id, media_file_paths=media_file_paths) #save media files
                 
                 return task
             else:
-                new_task = AdvertTask.create_task(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee_paid=fee_paid, fee=fee, payment_status=payment_status, posts_count=posts_count, target_country=target_country, target_state=target_state, gender=gender, religion=religion, caption=caption, hashtags=hashtags)
+                new_task = AdvertTask.create_task(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee_paid=fee_paid, fee=fee, payment_status=payment_status, posts_count=posts_count, target_country=target_country, target_state=target_state, gender=gender, religion=religion, caption=caption, hashtags=hashtags, reward_money=reward_money)
 
                 add_user_role(RoleNames.ADVERTISER, user_id)
                 
@@ -274,11 +275,11 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
             
         elif task_type == 'engagement':
             if task:
-                task.update(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee_paid=fee_paid, fee=fee, payment_status=payment_status, goal=goal, account_link=account_link, engagements_count=engagements_count, target_country=target_country, target_state=target_state, gender=gender, religion=religion)
+                task.update(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee_paid=fee_paid, fee=fee, payment_status=payment_status, goal=goal, account_link=account_link, engagements_count=engagements_count, target_country=target_country, target_state=target_state, gender=gender, religion=religion, reward_money=reward_money)
                 
                 return task
             else:
-                new_task = EngagementTask.create_task(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee_paid=fee_paid, fee=fee, payment_status=payment_status, goal=goal, account_link=account_link, engagements_count=engagements_count, target_country=target_country, target_state=target_state, gender=gender, religion=religion)
+                new_task = EngagementTask.create_task(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee_paid=fee_paid, fee=fee, payment_status=payment_status, goal=goal, account_link=account_link, engagements_count=engagements_count, target_country=target_country, target_state=target_state, gender=gender, religion=religion, reward_money=reward_money)
 
                 add_user_role(RoleNames.ADVERTISER, user_id)
                 

@@ -48,6 +48,7 @@ class Task(db.Model):
     target_state = db.Column(db.String(120), nullable=True, default="Lagos")
     religion = db.Column(db.String(120), nullable=True, default="")
     gender = db.Column(db.String(120), nullable=True, default="")
+    reward_money = db.Column(db.Numeric(10, 2), default=110.00, nullable=True)
     
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -136,6 +137,7 @@ class Task(db.Model):
             'platform': self.platform,
             'fee': self.fee,
             'fee_paid': self.fee_paid,
+            'reward_money': self.reward_money,
             'media_path': self.get_task_media(),
             'task_key': self.task_key,
             'target_country': self.target_country,
