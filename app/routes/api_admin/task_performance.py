@@ -30,5 +30,5 @@ def delete_performed_task(pt_id):
 
 @bp.route('/performed-tasks/verify', methods=['POST'])
 @roles_required("Super Admin", "Admin", "Junior Admin")
-def verify_task_performance():
+def verify_performed_task():
     return AdminTaskPerformanceController.verify_performed_task()
