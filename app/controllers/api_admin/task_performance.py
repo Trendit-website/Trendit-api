@@ -1,12 +1,13 @@
 import logging
 from flask import request
-from flask_jwt_extended import get_jwt_identity
+from sqlalchemy.exc import ( DataError, DatabaseError )
 
 from ...extensions import db
 from ...models import TaskPerformance, Task
-from ...utils.helpers.task_helpers import update_performed_task
+from ...utils.helpers.basic_helpers import log_exception, console_log
+from ...utils.helpers.task_helpers import update_performed_task, fetch_performed_task
+from ...utils.payments.wallet import credit_wallet
 from ...utils.helpers.response_helpers import error_response, success_response
-from ...utils.helpers.basic_helpers import generate_random_string, console_log
 
 
 class AdminTaskPerformanceController:
@@ -118,3 +119,43 @@ class AdminTaskPerformanceController:
         else:
             return success_response(msg, status_code)
 
+
+    @staticmethod
+    def verify_performed_task():
+        try:
+            data = request.get_json()
+            status = data.get("status", "")
+            pt_id_key = data.get("performed_task_id_key")
+            
+            if not status or not pt_id_key:
+                return error_response("The field status or performed_task_id_key must be provided", 400)
+            
+            performed_task = fetch_performed_task(pt_id_key)
+            if not performed_task:
+                return error_response("Performed Task not found", 404)
+            
+            
+            if status not in ["accept", "reject"]:
+                return error_response("status not allowed", 400)
+            
+            status_val = "completed" if status == "accept" else "rejected"
+            
+            performed_task.update(status=status_val)
+            
+            if status_val == "completed":
+                user_id = performed_task.user_id
+                credit_wallet(user_id, performed_task.reward_money)
+            
+            extra_data = {"performed_task": performed_task.to_dict()}
+            
+            api_response = success_response(f"Performed Task {status}ed", 200, extra_data)
+        except (DataError, DatabaseError) as e:
+            db.session.rollback()
+            log_exception('Database error occurred during registration', e)
+            api_response = error_response('Error connecting to the database.', 500)
+        except Exception as e:
+            db.session.rollback()
+            api_response = error_response("An unexpected error occurred. Our developers are looking into this.", 500)
+            log_exception("An exception occurred trying to get task:", e)
+        
+        return api_response

@@ -70,7 +70,7 @@ def notify_telegram_admins_new_performed_task(performed_task: TaskPerformance):
     task_type = performed_task.task_type
     status = performed_task.status
     task = performed_task.get_task()
-    reward_money = task.get("reward_money", 110.00)
+    reward_money = performed_task.reward_money
     
     date_started = performed_task.started_at
     date_completed = performed_task.date_completed
@@ -79,7 +79,7 @@ def notify_telegram_admins_new_performed_task(performed_task: TaskPerformance):
     
     data = (f"• Full Name: {full_name} \n • Task ID: {performed_task_id} \n • Task Type: {task_type} \n • Date Started: {date_started} \n • Date Completed: {date_completed} \n • Status: {status} \n\n • Amount to be earned: {reward_money}")
     
-    formatted_data = data + f"\n\n Use the Buttons bellow to Approve or Reject"
+    formatted_data = data + f"\n\n "
     
     message = f"\n\n{label:-^12}\n\n {formatted_data} \n{'//':-^12}\n\n"
     
@@ -88,8 +88,8 @@ def notify_telegram_admins_new_performed_task(performed_task: TaskPerformance):
         'text': message,
         'reply_markup': {
             'inline_keyboard': [[
-                {'text': 'Approve', 'callback_data': f'accept_performed_task_{performed_task_id}'},
-                {'text': 'Reject', 'callback_data': f'reject_performed_task_{performed_task_id}'}
+                {'text': 'Accept', 'callback_data': f'accept_performedTask_{performed_task_id}'},
+                {'text': 'Reject', 'callback_data': f'reject_performedTask_{performed_task_id}'}
             ]]
         }
     }

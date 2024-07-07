@@ -9,6 +9,7 @@ from ...models.task import TaskPerformance, Task, AdvertTask, EngagementTask
 from ...utils.helpers.task_helpers import update_performed_task, fetch_task, generate_random_task, initiate_task, fetch_performed_task
 from ...utils.helpers.response_helpers import error_response, success_response
 from ...utils.helpers.basic_helpers import console_log, log_exception
+from ...utils.helpers.telegram_bot import notify_telegram_admins_new_performed_task
 from ...exceptions import PendingTaskError, NoUnassignedTaskError
 
 
@@ -104,6 +105,7 @@ class TaskPerformanceController:
             extra_data = {'performed_task': new_performed_task.to_dict()}
             
             api_response = success_response(msg, 201, extra_data)
+            notify_telegram_admins_new_performed_task(new_performed_task)
         except ValueError as e:
             msg = f'error occurred performing task: {str(e)}'
             log_exception("An exception occurred trying to perform task", e)

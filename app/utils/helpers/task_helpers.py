@@ -1,4 +1,5 @@
 import sys
+from decimal import Decimal
 from threading import Thread
 from flask import request, current_app
 from sqlalchemy import func
@@ -165,9 +166,10 @@ def initiate_task(task: Task, status='pending') -> dict:
         if task.payment_status != TaskPaymentStatus.COMPLETE:
             raise ValueError("This task is not available for performance")
         
+        reward_money = task.reward_money
         
         # Create a new TaskPerformance instance
-        initiated_task = TaskPerformance.create_task_performance(user_id=current_user_id, task_id=task.id, task_type=task.task_type, reward_money=0.0, proof_screenshot=None, account_name='', post_link='...', status=status)
+        initiated_task = TaskPerformance.create_task_performance(user_id=current_user_id, task_id=task.id, task_type=task.task_type, reward_money=reward_money, proof_screenshot=None, account_name='', post_link='', status=status)
         
         add_user_role(RoleNames.EARNER, current_user_id) # Give user role of Earner
         
@@ -233,7 +235,7 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
         target_state = data.get('target_state', task.target_state if task else '')
         gender = data.get('gender', task.gender if task else '')
         religion = data.get('religion', task.religion if task else '')
-        reward_money = data.get('reward_money', task.reward_money if task else 110.00)
+        reward_money = Decimal(data.get('reward_money', task.reward_money if task else 110.00))
         
         if task_type == 'advert':
             caption = data.get('caption', task.caption if task and hasattr(task, "caption") else '')
@@ -351,7 +353,7 @@ def update_performed_task(data, pt_id=None, status='pending'):
                 pass
         
         if performed_task:
-            performed_task.update(user_id=user_id, task_id=task_id, task_type=task_type, reward_money=reward_money, proof_screenshot=proof_screenshot, status=status)
+            performed_task.update(user_id=user_id, task_id=task_id, task_type=task_type, proof_screenshot=proof_screenshot, status=status)
             
             return performed_task
         else:
