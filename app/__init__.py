@@ -121,7 +121,7 @@ def create_app(config_name=Config.ENV):
     
     
     with flask_app.app_context():
-        create_roles(clear=True)  # Create roles for trendit3
-        populate_task_options(clear=True)
+        create_roles()  # Create roles for trendit3
+        populate_task_options()
     
     return flask_app, celery
