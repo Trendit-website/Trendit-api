@@ -334,6 +334,7 @@ def update_performed_task(data, pt_id=None, status='pending'):
         if task.task_type == "engagement" and screenshot == '':
             raise ValueError("No screenshot provided.")
         
+        proof_screenshot = None
         if screenshot and screenshot.filename != '':
             try:
                 proof_screenshot = save_media(screenshot)
