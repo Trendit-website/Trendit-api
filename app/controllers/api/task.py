@@ -326,7 +326,7 @@ class TaskController:
             
             page = request.args.get("page", 1, type=int)
             per_page = 5
-            pagination = TaskPerformance.query.filter_by(task_id=task.id) \
+            pagination = TaskPerformance.query.filter_by(task_id=task.id, status="in_review") \
                 .order_by(TaskPerformance.started_at.desc()) \
                 .paginate(page=page, per_page=per_page, error_out=False)
             
