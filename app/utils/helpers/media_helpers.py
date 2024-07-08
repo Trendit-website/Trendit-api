@@ -87,6 +87,9 @@ def save_media(media_file: FileStorage) -> Media:
         ValueError: If the file type is not supported.
     """
     
+    console_log("media_file", media_file)
+    console_log("media_file instance", type(media_file))
+    
     if not isinstance(media_file, FileStorage):
         raise ValueError("Invalid media file")
     
