@@ -267,7 +267,7 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
                 task.update(trendit3_user_id=user_id, task_type=task_type, platform=platform, fee_paid=fee_paid, fee=fee, payment_status=payment_status, posts_count=posts_count, target_country=target_country, target_state=target_state, gender=gender, religion=religion, caption=caption, hashtags=hashtags, reward_money=reward_money)
                 
                 console_log("saving media files with celery...", "save_task_media_files sent to celery")
-                save_task_media_files.delay(task_id_key=task.id, media_file_paths=media_file_paths) #save media files
+                save_task_media_files(task_id_key=task.id, media_file_paths=media_file_paths) #save media files
                 
                 return task
             else:
@@ -276,7 +276,7 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
                 add_user_role(RoleNames.ADVERTISER, user_id)
                 
                 console_log("saving media files with celery...", "save_task_media_files sent to celery")
-                save_task_media_files.delay(task_id_key=new_task.id, media_file_paths=media_file_paths) #save media files
+                save_task_media_files(task_id_key=new_task.id, media_file_paths=media_file_paths) #save media files
                 
                 return new_task
             
