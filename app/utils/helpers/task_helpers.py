@@ -13,7 +13,6 @@ from ...utils.helpers.basic_helpers import console_log, log_exception
 from ...utils.helpers.media_helpers import save_media, save_media_files_to_temp
 from ...exceptions import PendingTaskError, NoUnassignedTaskError
 from .user_helpers import add_user_role
-from app.celery.jobs.tasks import save_task_media_files
 
 
 
@@ -199,27 +198,30 @@ def get_task_by_key(task_key):
     return task
 
 
-# def async_save_task_media_files(app, task_id_key: str | int, media_files):
-#     with app.app_context():
-#         try:
-#             task = fetch_task(task_id_key)
+def async_save_task_media_files(app, task_id_key: str | int, media_file_paths):
+    try:
+        with app.app_context():
+            console_log("saving media", f"starting... {media_file_paths}")
+            task = fetch_task(task_id_key)
             
-#             #save media files
-#             task_media = []
-#             if media_files:
-#                 for media_file in media_files:
-#                     media = save_media(media_file)
-#                     task.media.append(media)
-#             elif not media_files and task:
-#                 task.media = task.media
+            #save media files
+            if media_file_paths:
+                for media_file_path in media_file_paths:
+                    with open(media_file_path, 'rb') as media_file:
+                        media = save_media(media_file)
+                        task.media.append(media)
+                    
+            elif not media_file_paths and task:
+                task.media = task.media
             
-#             db.session.commit()
-#         except Exception as e:
-#             log_exception("an exception occurred saving task media", e)
-#             raise e
+            db.session.commit()
+            console_log("end of saving...", "...")
+    except Exception as e:
+        log_exception("an exception occurred saving task media", e)
+        raise e
 
-# def save_task_media_files(task_id_key: str | int, media_files):
-#     Thread(target=async_save_task_media_files, args=(current_app._get_current_object(), task_id_key, media_files)).start()
+def save_task_media_files(task_id_key: str | int, media_file_paths):
+    Thread(target=async_save_task_media_files, args=(current_app._get_current_object(), task_id_key, media_file_paths)).start()
 
 def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
     try:
