@@ -273,7 +273,7 @@ class TaskPerformance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     key = db.Column(db.String(120), unique=True, nullable=False, default=generate_random_string(20))
     task_type = db.Column(db.String(80), nullable=False)  # either 'advert' or 'engagement'
-    reward_money = db.Column(db.Float(), default=00.00, nullable=True)
+    reward_money = db.Column(db.Numeric(10, 2), nullable=True)
     account_name = db.Column(db.String(80), nullable=True)
     post_link = db.Column(db.String(80), nullable=True)
     status = db.Column(db.String(80), default='pending') # pending, in_review, timed_out, cancelled, rejected or completed

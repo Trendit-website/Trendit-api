@@ -235,7 +235,10 @@ def save_task(data, task_id_key=None, payment_status=TaskPaymentStatus.PENDING):
         target_state = data.get('target_state', task.target_state if task else '')
         gender = data.get('gender', task.gender if task else '')
         religion = data.get('religion', task.religion if task else '')
-        reward_money = Decimal(data.get('reward_money', task.reward_money if task else 110.00))
+        reward_money = Decimal(data.get('reward_money', task.reward_money if task else None))
+        
+        if not reward_money:
+            raise ValueError("reward_money needs to be provided")
         
         if task_type == 'advert':
             caption = data.get('caption', task.caption if task and hasattr(task, "caption") else '')
