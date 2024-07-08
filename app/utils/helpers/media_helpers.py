@@ -8,6 +8,7 @@ These functions assist with tasks such as saving media files to Cloudinary and a
 @package: Trendit³
 '''
 import os
+from io import BufferedReader
 import tempfile
 from datetime import date
 from werkzeug.utils import secure_filename
@@ -72,7 +73,7 @@ def save_media_to_db(media_name: str, original_media_path: str):
         raise e
 
 
-def save_media(media_file: FileStorage) -> Media:
+def save_media(media_file, filename) -> Media:
     """
     Saves a media file (image or video) to Cloudinary and the database.
     and then return the media instance after adding the media to Media Table
@@ -88,14 +89,11 @@ def save_media(media_file: FileStorage) -> Media:
     """
     
     console_log("media_file", media_file)
-    console_log("media_file instance", type(media_file))
     
-    if not isinstance(media_file, FileStorage):
-        raise ValueError("Invalid media file")
     
     # Generate a random string and append it to the original file name
     rand_string = generate_random_string(8)
-    media_name = secure_filename(media_file.filename) # Grab file name of the selected media
+    media_name = secure_filename(filename)  # Grab file name of the selected media
     the_media_name, the_media_ext = os.path.splitext(os.path.basename(media_name)) # get the file name and extension
     new_media_name = f"{the_media_name}-{rand_string}"
     

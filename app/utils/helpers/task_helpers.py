@@ -1,4 +1,4 @@
-import sys
+import sys, os
 from decimal import Decimal
 from threading import Thread
 from flask import request, current_app
@@ -207,8 +207,9 @@ def async_save_task_media_files(app, task_id_key: str | int, media_file_paths):
             #save media files
             if media_file_paths:
                 for media_file_path in media_file_paths:
+                    filename = os.path.basename(media_file_path)
                     with open(media_file_path, 'rb') as media_file:
-                        media = save_media(media_file)
+                        media = save_media(media_file, filename)
                         task.media.append(media)
                     
             elif not media_file_paths and task:
