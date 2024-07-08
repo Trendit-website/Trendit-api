@@ -199,8 +199,8 @@ def get_task_by_key(task_key):
 
 
 def async_save_task_media_files(app, task_id_key: str | int, media_file_paths):
-    try:
-        with app.app_context():
+    with app.app_context():
+        try:
             console_log("saving media", f"starting... {media_file_paths}")
             task = fetch_task(task_id_key)
             
@@ -216,9 +216,9 @@ def async_save_task_media_files(app, task_id_key: str | int, media_file_paths):
             
             db.session.commit()
             console_log("end of saving...", "...")
-    except Exception as e:
-        log_exception("an exception occurred saving task media", e)
-        raise e
+        except Exception as e:
+            log_exception("an exception occurred saving task media", e)
+            raise e
 
 def save_task_media_files(task_id_key: str | int, media_file_paths):
     Thread(target=async_save_task_media_files, args=(current_app._get_current_object(), task_id_key, media_file_paths)).start()
