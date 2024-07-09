@@ -549,7 +549,10 @@ class AuthController:
             current_user.delete()
             
             api_response = success_response('account deleted successfully', 200)
-            
+        except (DataError, DatabaseError) as e:
+            db.session.rollback()
+            log_exception('Database error', e)
+            return error_response('Error interacting to the database.', 500)
         except Exception as e:
             db.session.rollback()
             log_exception("An exception occurred processing request", e)
