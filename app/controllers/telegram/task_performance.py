@@ -28,7 +28,7 @@ class TaskPerformanceTelegramController:
                 return success_response(f"There are no task orders that are pending approval", 200, extra_data)
             
             for task in  tasks:
-                notify_telegram_admins_new_task(task.to_dict())
+                notify_telegram_admins_new_task(task)
             
             current_tasks = [task.to_dict() for task in tasks]
             
