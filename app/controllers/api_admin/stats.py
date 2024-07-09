@@ -10,7 +10,7 @@ from ...utils.helpers.response_helpers import error_response, success_response
 from ...utils.helpers.basic_helpers import log_exception, console_log
 from ...utils.payments.flutterwave import flutterwave_fetch_balance
 
-from ...models import Trendit3User, Task, TaskStatus
+from ...models import Trendit3User, Task, TaskStatus, SocialMediaProfile, SocialLinkStatus
 
 
 class AdminStatsController:
@@ -43,6 +43,8 @@ class AdminStatsController:
             
             pending_tasks = db.session.query(func.count(Task.id)).filter(Task.date_created >= start_date, Task.date_created < end_date, Task.status==TaskStatus.PENDING).scalar()
             
+            pending_social_profiles = db.session.query(func.count(SocialMediaProfile.id)).filter(SocialMediaProfile.status==SocialLinkStatus.PENDING).scalar()
+            
             
             
             extra_data={
@@ -51,7 +53,8 @@ class AdminStatsController:
                     "new_task": new_task,
                     "approved_tasks": approved_tasks,
                     "declined_tasks": declined_tasks,
-                    "pending_tasks": pending_tasks
+                    "pending_tasks": pending_tasks,
+                    "pending_social_profiles": pending_social_profiles
                 }
             }
             
