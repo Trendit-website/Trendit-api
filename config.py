@@ -10,6 +10,7 @@ It also includes a function to configure logging for the application.
 '''
 import os, secrets, logging
 from datetime import timedelta
+from typing import Final
 from celery import Celery
 
 
@@ -34,8 +35,10 @@ class Config:
     
     # Telegram variables
     TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
-    TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID") or '-1002237256556'
+    TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_BOT_TOKEN") or '-1002237256556'
     TELEGRAM_SEND_MSG_URL = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+    APP_BOT_PASSWORD: Final = os.environ.get("APP_BOT_USERNAME") or "Trendit3Bot"
+    APP_BOT_PASSWORD: Final = os.environ.get("APP_BOT_PASSWORD") or "TrenditBot1"
     
     # Constants
     TASKS_PER_PAGE = os.environ.get('TASKS_PER_PAGE') or 10
