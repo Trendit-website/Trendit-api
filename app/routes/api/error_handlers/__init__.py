@@ -14,8 +14,13 @@ def database_Error(error):
     log_exception("SQLalchemy Database Error", error)
     return error_response('An unexpected error. Our developers are already looking into it.', 500)
 
-@api_bp.app_errorhandler(DataError, DatabaseError)
-def database_Error(error):
+@api_bp.app_errorhandler(DataError)
+def data_error(error):
+    log_exception("SQLalchemy Database Error", error)
+    return error_response('Error interacting to the database.', 500)
+
+@api_bp.app_errorhandler(DatabaseError)
+def database_error(error):
     log_exception("SQLalchemy Database Error", error)
     return error_response('Error interacting to the database.', 500)
 
