@@ -86,6 +86,9 @@ def create_app(config_name=Config.ENV):
     from .routes.telegram import telegram_bp
     flask_app.register_blueprint(telegram_bp)
     
+    from .routes.mail import mail_bp
+    flask_app.register_blueprint(mail_bp)
+    
     from .error_handlers import bp as errorHandler_bp
     flask_app.register_blueprint(errorHandler_bp)
     
