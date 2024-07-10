@@ -519,9 +519,11 @@ def flutterwave_fetch_balance() -> dict:
         console_log("response_data", response_data)
         
         if 'status' in response_data and response_data['status'] == 'success':
-            balances = response_data['data']
+            balances: dict = response_data['data']
         else:
             balances = None
+        
+        return balances
     
     except requests.exceptions.RequestException as e:
         raise e
