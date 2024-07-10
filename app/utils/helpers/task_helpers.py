@@ -320,6 +320,9 @@ def update_performed_task(data, pt_id=None, status='pending'):
         account_name = data.get('account_name')
         post_link = data.get('post_link', '')
         
+        console_log("account_name", account_name)
+        console_log("post_link", post_link)
+        
         task_type = task.task_type
         
         performed_task = None
@@ -360,7 +363,7 @@ def update_performed_task(data, pt_id=None, status='pending'):
                 pass
         
         if performed_task:
-            performed_task.update(user_id=user_id, task_id=task_id, task_type=task_type, proof_screenshot=proof_screenshot, status=status)
+            performed_task.update(user_id=user_id, task_id=task_id, task_type=task_type, proof_screenshot=proof_screenshot, account_name=account_name, post_link=post_link, status=status)
             
             return performed_task
         else:
