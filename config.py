@@ -29,6 +29,7 @@ class Config:
     SUPPORT_EMAIL: Final = "support@trendit3.com"
     HELP_EMAIL: Final = "help@trendit3.com"
     DOMAIN_NAME = os.environ.get('DOMAIN_NAME') or 'https://www.trendit3.com'
+    
     APP_DOMAIN_NAME = os.environ.get('APP_DOMAIN_NAME') or 'https://app.trendit3.com'
     API_DOMAIN_NAME = os.environ.get('API_DOMAIN_NAME') or 'https://api.trendit3.com'
     CLIENT_ORIGINS = os.environ.get('CLIENT_ORIGINS') or 'http://localhost:3000,http://localhost:5173,https://trendit3.vercel.app'
@@ -116,13 +117,21 @@ class Config:
     # TikTok config
 
 
-class DevelopmentConfig(Config):
+class StagingConfig(Config):
     FLASK_DEBUG = True
     DEBUG_TOOLBAR = True  # Enable debug toolbar
     EXPOSE_DEBUG_SERVER = False  # Do not expose debugger publicly
     
     APP_DOMAIN_NAME = os.environ.get('APP_DOMAIN_NAME') or 'https://staging.trendit3.com'
     API_DOMAIN_NAME = os.environ.get('API_DOMAIN_NAME') or 'https://api-staging.trendit3.com'
+
+class DevelopmentConfig(Config):
+    FLASK_DEBUG = True
+    DEBUG_TOOLBAR = True  # Enable debug toolbar
+    EXPOSE_DEBUG_SERVER = False  # Do not expose debugger publicly
+    
+    APP_DOMAIN_NAME = os.environ.get('APP_DOMAIN_NAME') or 'https://staging.trendit3.com'
+    API_DOMAIN_NAME = os.environ.get('API_DOMAIN_NAME') or 'http://127.0.0.1:5000'
 
 class ProductionConfig(Config):
     DEBUG = False
@@ -137,9 +146,12 @@ class ProductionConfig(Config):
 config_by_name = {
     'development': DevelopmentConfig,
     'production': ProductionConfig,
+    'staging': StagingConfig
 }
 
-config_class =  DevelopmentConfig if Config.ENV == "development" else ProductionConfig
+config_class = DevelopmentConfig if Config.ENV == "development" else (
+    StagingConfig if Config.ENV == "staging" else ProductionConfig
+)
 
 def configure_logging(app):
     formatter = logging.Formatter('[%(asctime)s] ==> %(levelname)s in %(module)s: %(message)s')
