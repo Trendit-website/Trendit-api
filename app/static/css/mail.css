@@ -19,17 +19,7 @@
 }
 
 .btn {
-    cursor: pointer;
-    background-color: var(--theme-clr);
-    text-decoration: none;
-    text-align: center;
-    font-size: 16px;
-    font-weight: 600;
-    width: 290px;
-    height: 49px;
-    padding: 14px 72px 14px 72px;
-    border-radius: 80px;
-    color: #fff;
+    cursor: pointer;background-color: #DA348F;text-decoration: none;text-align: center;font-size: 16px;font-weight: 600;width: 290px;height: 49px;padding: 14px 72px 14px 72px;border-radius: 80px;color: #fff;
 }
 
 footer {
