@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="https://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office">
+    <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <meta name="x-apple-disable-message-reformatting">
+        <!--[if !mso]><!-->
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <title>{% block title %}{% endblock %}</title>
+
+        <style>
+            @font-face {
+                font-family: 'aquawax';
+                src: url(./aquawax/Aquawax\ Light\ Trial.ttf),
+                url(./aquawax/Aquawax\ Medium\ Trial.ttf)
+            }
+        </style>
+
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/mail.css') }}">
+    </head>
+
+    <body style="color: #fff;">
+        <div class="wrapper">
+
+            <table role="presentation" style="width:100%;border:0;border-spacing:0; padding-top: 40px; padding-bottom: 60px;">
+                <tr>
+                    <td align="center">
+                        <img src="{{ url_for('static', filename='img/mail/logo.svg') }}" />
+                    </td>
+                </tr>
+            </table>  
+
+            {% block content %}{% endblock %}
+
+
+            <footer>
+                <ul style="display: flex; width: 95%; flex-direction: row; align-items: center; column-gap: 15px; padding-left: 33%; padding-right: 50%;">
+                    <li>Privacy Policy</li>
+                    <li>Contact us</li>
+                    <li>Read our blog</li>
+                </ul>
+                <div>
+                    <p style="text-align: center;">
+                        Copyright 2024 Trendit3 Technology. All rights reserved. 
+                    </p>
+                    <div style="display: flex; flex-direction: row; align-items: center; justify-content: center; column-gap: 5px;">
+                        <a href="">
+                            <img src="{{ url_for('static', filename='img/mail/facebook.png') }}" />
+                        </a>
+                        <a href="">
+                            <img src="{{ url_for('static', filename='img/mail/instagram.png') }}" />
+                        </a>
+                        <a href="">
+                            <img src="{{ url_for('static', filename='img/mail/youtube.png') }}" />
+                        </a>
+                        <a href="">
+                            <img src="{{ url_for('static', filename='img/mail/x.png') }}" />
+                        </a> 
+                        <a href="">
+                            <img src="{{ url_for('static', filename='img/mail/linkedin-icon.png') }}" />
+                        </a>  
+                        <a href="">
+                            <img src="{{ url_for('static', filename='img/mail/tiktok.png') }}" />
+                        </a>          
+                        <a href="">
+                            <img src="{{ url_for('static', filename='img/mail/Telegram.png') }}" />
+                        </a>          
+                        <a href="">
+                            <img src="{{ url_for('static', filename='img/mail/whatsapp.png') }}" />
+                        </a>
+                    </div>
+                </div>
+            </footer>
+        
+            <div class="spacer">&nbsp;</div>
+
+        </div>
+    </body>
+</html>

@@ -13,7 +13,11 @@ mail_bp = Blueprint('mail', __name__, url_prefix='/mail')
 
 @mail_bp.route("/welcome", methods=['GET'])
 def welcome():
-    return render_template('email/welcome.html')
+    return render_template('mail/welcome.html', firstname="Emmanuel", username="zeddy")
+
+@mail_bp.route("/otp", methods=['GET'])
+def otp():
+    return render_template('mail/otp.html')
 
 @mail_bp.route("/verify-mail", methods=['GET'])
 def verify_mail():

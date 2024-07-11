@@ -26,6 +26,8 @@ class Config:
     STATIC_DIR = 'app/static'
     UPLOADS_DIR = 'app/static/uploads'
     EMERGENCY_MODE = os.environ.get('EMERGENCY_MODE') or False
+    SUPPORT_EMAIL: Final = "support@trendit3.com"
+    HELP_EMAIL: Final = "help@trendit3.com"
     DOMAIN_NAME = os.environ.get('DOMAIN_NAME') or 'https://www.trendit3.com'
     APP_DOMAIN_NAME = os.environ.get('APP_DOMAIN_NAME') or 'https://app.trendit3.com'
     API_DOMAIN_NAME = os.environ.get('API_DOMAIN_NAME') or 'https://api.trendit3.com'

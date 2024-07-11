@@ -36,21 +36,22 @@ def send_code_async_email(app, user_email:str, six_digit_code:int | str, code_ty
         None
     """
     with app.app_context():
-        subject = 'Verify Your Email'
-        template = render_template("email/verify_email2.html", verification_code=six_digit_code)
-        msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
-        
         user = Trendit3User.query.filter(Trendit3User.email == user_email).first()
         username = user.username if user else ''
+        firstname = user.profile.firstname if user else ''
+        
+        subject = 'Verify Your Email'
+        template = render_template("mail/verify-email.html", verification_code=six_digit_code)
+        msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
         
         if code_type == 'pwd_reset':
             subject = 'Reset your password'
-            template = render_template("email/pwd_reset2.html", reset_url=six_digit_code, user_email=user_email, username=username)
+            template = render_template("mail/forgot-password.html", reset_url=six_digit_code, user_email=user_email, firstname=firstname, username=username)
             msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
 
         elif code_type == '2FA':
             subject = 'One Time Password'
-            template = render_template("email/otp.html", verification_code=six_digit_code, user_email=user_email)
+            template = render_template("mail/otp.html", verification_code=six_digit_code, user_email=user_email, firstname=firstname)
             msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
         try:
             mail.send(msg)
@@ -100,22 +101,24 @@ def send_async_other_email(app, user_email, email_type, task_type, task_time, ta
     with app.app_context():
         user = Trendit3User.query.filter(Trendit3User.email == user_email).first()
         username = user.username if user else ''
+        firstname = user.profile.firstname if user else ''
         
         subject = 'membership'
-        template = render_template("email/membership_paid2.html", redirect_link='https://app.trendit3.com/', user_email=user_email, username=username)
+        template = render_template("mail/membership-paid.html", redirect_link=f"{Config.APP_DOMAIN_NAME}", user_email=user_email, username=username)
         msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
         
         if email_type == 'welcome':
             subject = 'Welcome'
-            template = render_template("email/welcome.html", redirect_link='https://app.trendit3.com/', user_email=user_email, username=username)
+            template = render_template("mail/welcome.html", redirect_link=f"{Config.APP_DOMAIN_NAME}", user_email=user_email, firstname=firstname, username=username)
             msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
 
         elif email_type == 'task_approved':
             subject = 'Task Approved'
             template = render_template(
                 "email/task_approved.html", 
-                redirect_link='https://app.trendit3.com/', 
-                user_email=user_email, 
+                redirect_link=f"{Config.APP_DOMAIN_NAME}", 
+                user_email=user_email,
+                firstname=firstname, 
                 username=username,
                 task_type=task_type,
                 task_time=task_time,
@@ -126,27 +129,57 @@ def send_async_other_email(app, user_email, email_type, task_type, task_time, ta
 
         elif email_type == 'task_rejected':
             subject = 'Task Rejected'
-            template = render_template("email/task_rejected.html", redirect_link='https://app.trendit3.com/', user_email=user_email, username=username)
+            template = render_template(
+                "email/task_rejected.html",
+                redirect_link=f"{Config.APP_DOMAIN_NAME}",
+                user_email=user_email,
+                firstname=firstname,
+                username=username
+            )
             msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
 
         elif email_type == 'credit':
             subject = 'Account Credited'
-            template = render_template("email/credit_alert.html", redirect_link='https://app.trendit3.com/', user_email=user_email, username=username, amount=amount)
+            template = render_template(
+                "email/credit_alert.html",
+                redirect_link=f"{Config.APP_DOMAIN_NAME}",
+                user_email=user_email,
+                firstname=firstname,
+                username=username, amount=amount
+            )
             msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
 
         elif email_type == 'debit':
             subject = 'Account Debited'
-            template = render_template("email/debit_alert.html", redirect_link='https://app.trendit3.com/', user_email=user_email, username=username, amount=amount)
+            template = render_template(
+                "email/debit_alert.html",
+                redirect_link=f"{Config.APP_DOMAIN_NAME}",
+                user_email=user_email,
+                firstname=firstname,
+                username=username,
+                amount=amount
+            )
             msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
 
         elif email_type == 'new_admin':
             subject = 'Admin Approved'
-            template = render_template("email/new_admin.html", redirect_link='https://admin.trendit3.com/', user_email=user_email, username=username, amount=amount)
+            template = render_template(
+                "email/new_admin.html",
+                redirect_link='https://admin.trendit3.com/',
+                user_email=user_email,
+                firstname=firstname,
+                username=username,
+                amount=amount)
             msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
 
         elif email_type == 'admin_login':
             subject = 'Admin Login'
-            template = render_template("email/admin_login.html", redirect_link=f'https://admin.trendit3.com/verify-login?token={admin_login_code}', user_email=user_email)
+            template = render_template(
+                "email/admin_login.html",
+                redirect_link=f'https://admin.trendit3.com/verify-login?token={admin_login_code}',
+                firstname=firstname,
+                user_email=user_email
+            )
             msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
 
         

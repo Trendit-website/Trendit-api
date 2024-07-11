@@ -1,0 +1,53 @@
+{% extends 'mail/base/base.html' %}
+{% block title %} Welcome {% endblock %}
+
+
+{% block content %}
+
+        <p style="font-weight: bold; font-family: 'Inter', 'sans-serif'; font-size: 16px; font-weight: 700;">Hi 
+            {% if not firstname %}  {{ username }} {% else %} {{ firstname }} {% endif %}, Welcome to Trendit³!</p>
+
+        <div style="width: 95%; font-family: 'Inter', 'sans-serif'; font-size: 16px; font-weight: 400; color: #B1B1B1; margin-bottom: 30px;">
+            <p style="width: 90%;">
+                We’re thrilled to have you join the Trendit³ community. Get ready to dive into a realm of limitless opportunities!
+            </p>
+            <p>
+                With Trendit³, you can turn your social media activity into a daily income stream. Here’s how you can start earning consistently:
+            </p>
+            <p>
+                Daily Earnings: Complete simple social media tasks like following, liking, commenting, sharing, retweeting, and even posting ads on your WhatsApp Status to earn money every day.
+            </p>
+            <p>
+                Social Media Boost: Purchase REAL followers, likes, comments, shares, subscribers, reviews, WhatsApp views, and more to enhance your social media presence.
+            </p>
+            <p>
+                Airtime and Data Savings: Buy airtime and data at up to 50% off and make extra money by selling to friends and family at regular prices.
+            </p>
+            <p>
+                Marketplace: Buy and sell products easily on the Trendit³ Marketplace.
+            </p>
+            <p>
+                Plus, you can earn an instant ₦500 referral commission for every new member you bring to Trendit³. The more you refer, the more you earn!
+            </p>
+        </div>
+
+        <div style="width: 95%; font-size: 16px;margin-bottom: 30px; font-weight: 400; color: #B1B1B1; font-family: 'Inter', 'sans-serif';">
+            Thank you for joining Trendit³. Enjoy the endless possibilities and start earning today!
+        </div>
+
+        <a href="{{ config.APP_DOMAIN_NAME }}" class="btn">
+            Continue
+        </a> 
+
+        <div style="width: 95%; font-size: 16px; font-weight: 400; margin-top: 45px; color: #B1B1B1; font-family: 'Inter', 'sans-serif';">
+            <p style="margin-bottom: -10px;">Please contact us with any questions, we're always happy to help.</p>
+            <p>Email: <a href="mailto:{{ config.SUPPORT_EMAIL }}" style="color: blue;">{{ config.SUPPORT_EMAIL }}</a></p>
+            <p>
+                Cheers, <br />
+                The Trendit team
+            </p>
+        </div>
+
+        <div class="spacer" style="line-height:100px;height:100px;">&nbsp;</div>
+
+{% endblock %}

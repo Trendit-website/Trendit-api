@@ -1,0 +1,26 @@
+{% extends 'mail/base/base.html' %}
+{% block title %} OTP {% endblock %}
+
+
+{% block content %}
+        <p style="font-weight: bold; font-family: 'Inter', 'sans-serif'; font-size: 20px; font-weight: 600;">
+            Welcome Back {% if not firstname %} {{ username }} {% else %} {{ firstname }} {% endif %}.
+        </p>
+
+        <div style="width: 95%; font-family: 'Inter', 'sans-serif'; margin-bottom: 20px; font-size: 16px; font-weight: 400; color: #B1B1B1;">
+            <p style="width: 90%;"> To complete your login process, please use the six-digit code below. </p>
+        </div>
+
+        <div style="width: 95%; font-family: 'Inter', 'sans-serif'; margin-bottom: 20px; font-size: 16px; font-weight: 400; color: #B1B1B1;">
+            <p style="width: 90%;">
+                Your 2 Factor code is:
+            </p>  
+        </div>
+        
+        <div style="width: 95%; font-family: 'Inter', 'sans-serif'; margin-bottom: 20px; font-size: 32px; font-weight: 400; color: #FFFFFF;">
+            <p>
+                {{ verification_code }}
+            </p>
+        </div>
+        <div class="spacer" style="line-height:400px;height:400px;">&nbsp;</div>
+{% endblock %}
