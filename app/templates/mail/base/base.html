@@ -18,60 +18,37 @@
                 src: url(./aquawax/Aquawax\ Light\ Trial.ttf),
                     url(./aquawax/Aquawax\ Medium\ Trial.ttf)
             }
-
-            :root {
-                --theme-clr: #DA348F;
-            }
-
-            .wrapper {
-                max-width: 600px;
-                padding-left: 25px;
-                border: 1px solid black;
-                margin: auto;
-                border-radius: 20px;
-                padding-bottom: 3px;
-                background-color: #020102;
-            }
-
-            .btn {
-                cursor: pointer;
-                background-color: var(--theme-clr);
-                text-decoration: none;
-                text-align: center;
-                font-size: 16px;
-                font-weight: 600;
-                width: 290px;
-                height: 49px;
-                padding: 14px 72px 14px 72px;
-                border-radius: 80px;
-                color: #fff;
-            }
-
-            footer {
-                width: 95%;
-                font-size: 9px;
-                font-weight: 400;
-                margin-top: 45px;
-                color: #B1B1B1;
-                font-family: 'Inter', 'sans-serif';
-            }
-
-            .spacer {
-                line-height: 50px;
-                height: 50px;
-                mso-line-height-rule: exactly;
-            }
         </style>
 
     </head>
 
     <body style="color: #fff;">
-        <div class="wrapper">
+        <div class="wrapper" style="max-width: 600px;padding-left: 25px;border: 1px solid black;margin: auto;border-radius: 20px;padding-bottom: 3px;background-color: #020102;">
+            <style>
+                .btn {
+                    cursor: pointer;
+                    background-color: #DA348F;
+                    text-decoration: none;
+                    text-align: center;
+                    font-size: 16px;
+                    font-weight: 600;
+                    width: 290px;
+                    height: 49px;
+                    padding: 14px 72px 14px 72px;
+                    border-radius: 80px;
+                    color: #fff;
+                }
+                .spacer {
+                    line-height: 50px;
+                    height: 50px;
+                    mso-line-height-rule: exactly;
+                }
+            </style>
 
             <table role="presentation" style="width:100%;border:0;border-spacing:0; padding-top: 40px; padding-bottom: 60px;">
                 <tr>
                     <td align="center">
-                        <img src="{{ config.API_DOMAIN_NAME}}/static/img/mail/logo.svg" />
+                        <img src="https://res.cloudinary.com/dvgthwhdn/image/upload/v1720698115/mail/logo.svg" />
                     </td>
                 </tr>
             </table>  
@@ -79,7 +56,7 @@
             {% block content %}{% endblock %}
 
 
-            <footer>
+            <footer style="width: 95%;font-size: 9px;font-weight: 400;margin-top: 45px;color: #B1B1B1;font-family: 'Inter', 'sans-serif';">
                 <ul style="display: flex; width: 95%; flex-direction: row; align-items: center; column-gap: 15px; padding-left: 33%; padding-right: 50%;">
                     <li>Privacy Policy</li>
                     <li>Contact us</li>
@@ -91,28 +68,28 @@
                     </p>
                     <div style="display: flex; flex-direction: row; align-items: center; justify-content: center; column-gap: 5px;">
                         <a href="">
-                            <img src="{{config.API_DOMAIN_NAME}}/static/img/mail/facebook.png" />
+                            <img src="https://res.cloudinary.com/dvgthwhdn/image/upload/v1720698115/mail/facebook.png" />
                         </a>
                         <a href="">
-                            <img src="{{config.API_DOMAIN_NAME}}/static/img/mail/instagram.png" />
+                            <img src="https://res.cloudinary.com/dvgthwhdn/image/upload/v1720698115/mail/instagram.png" />
                         </a>
                         <a href="">
-                            <img src="{{config.API_DOMAIN_NAME}}/static/img/mail/youtube.png" />
+                            <img src="https://res.cloudinary.com/dvgthwhdn/image/upload/v1720698116/mail/youtube.png" />
                         </a>
                         <a href="">
-                            <img src="{{config.API_DOMAIN_NAME}}/static/img/mail/x.png" />
+                            <img src="https://res.cloudinary.com/dvgthwhdn/image/upload/v1720698116/mail/x.png" />
                         </a> 
                         <a href="">
-                            <img src="{{config.API_DOMAIN_NAME}}/static/img/mail/linkedin-icon.png" />
+                            <img src="https://res.cloudinary.com/dvgthwhdn/image/upload/v1720698115/mail/linkedin-icon.png" />
                         </a>  
                         <a href="">
-                            <img src="{{config.API_DOMAIN_NAME}}/static/img/mail/tiktok.png" />
+                            <img src="https://res.cloudinary.com/dvgthwhdn/image/upload/v1720698115/mail/tiktok.png" />
                         </a>          
                         <a href="">
-                            <img src="{{config.API_DOMAIN_NAME}}/static/img/mail/Telegram.png" />
+                            <img src="https://res.cloudinary.com/dvgthwhdn/image/upload/v1720698115/mail/Telegram.png" />
                         </a>          
                         <a href="">
-                            <img src="{{config.API_DOMAIN_NAME}}/static/img/mail/whatsapp.png" />
+                            <img src="https://res.cloudinary.com/dvgthwhdn/image/upload/v1720698115/mail/whatsapp.png" />
                         </a>
                     </div>
                 </div>
