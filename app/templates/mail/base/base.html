@@ -16,12 +16,53 @@
             @font-face {
                 font-family: 'aquawax';
                 src: url(./aquawax/Aquawax\ Light\ Trial.ttf),
-                url(./aquawax/Aquawax\ Medium\ Trial.ttf)
+                    url(./aquawax/Aquawax\ Medium\ Trial.ttf)
+            }
+
+            :root {
+                --theme-clr: #DA348F;
+            }
+
+            .wrapper {
+                max-width: 600px;
+                padding-left: 25px;
+                border: 1px solid black;
+                margin: auto;
+                border-radius: 20px;
+                padding-bottom: 3px;
+                background-color: #020102;
+            }
+
+            .btn {
+                cursor: pointer;
+                background-color: var(--theme-clr);
+                text-decoration: none;
+                text-align: center;
+                font-size: 16px;
+                font-weight: 600;
+                width: 290px;
+                height: 49px;
+                padding: 14px 72px 14px 72px;
+                border-radius: 80px;
+                color: #fff;
+            }
+
+            footer {
+                width: 95%;
+                font-size: 9px;
+                font-weight: 400;
+                margin-top: 45px;
+                color: #B1B1B1;
+                font-family: 'Inter', 'sans-serif';
+            }
+
+            .spacer {
+                line-height: 50px;
+                height: 50px;
+                mso-line-height-rule: exactly;
             }
         </style>
 
-        <!-- <link rel="stylesheet" href="{ url_for('static', filename='css/mail.css') }"> -->
-        <link rel="stylesheet" href="{{config.API_DOMAIN_NAME}}/static/css/mail.css">
     </head>
 
     <body style="color: #fff;">
@@ -30,7 +71,7 @@
             <table role="presentation" style="width:100%;border:0;border-spacing:0; padding-top: 40px; padding-bottom: 60px;">
                 <tr>
                     <td align="center">
-                        <img src="../../../static/img/mail/logo.svg" />
+                        <img src="{{ config.API_DOMAIN_NAME/static/img/mail/logo.svg}}" />
                     </td>
                 </tr>
             </table>  
@@ -50,28 +91,28 @@
                     </p>
                     <div style="display: flex; flex-direction: row; align-items: center; justify-content: center; column-gap: 5px;">
                         <a href="">
-                            <img src="../../../static/img/mail/facebook.png" />
+                            <img src="{{config.API_DOMAIN_NAME/static/img/mail/facebook.png}}" />
                         </a>
                         <a href="">
-                            <img src="../../../static/img/mail/instagram.png" />
+                            <img src="{{config.API_DOMAIN_NAME/static/img/mail/instagram.png}}" />
                         </a>
                         <a href="">
-                            <img src="../../../static/img/mail/youtube.png" />
+                            <img src="{{config.API_DOMAIN_NAME/static/img/mail/youtube.png}}" />
                         </a>
                         <a href="">
-                            <img src="../../../static/img/mail/x.png" />
+                            <img src="{{config.API_DOMAIN_NAME/static/img/mail/x.png}}" />
                         </a> 
                         <a href="">
-                            <img src="../../../static/img/mail/linkedin-icon.png" />
+                            <img src="{{config.API_DOMAIN_NAME/static/img/mail/linkedin-icon.png}}" />
                         </a>  
                         <a href="">
-                            <img src="../../../static/img/mail/tiktok.png" />
+                            <img src="{{config.API_DOMAIN_NAME/static/img/mail/tiktok.png}}" />
                         </a>          
                         <a href="">
-                            <img src="../../../static/img/mail/Telegram.png" />
+                            <img src="{{config.API_DOMAIN_NAME/static/img/mail/Telegram.png}}" />
                         </a>          
                         <a href="">
-                            <img src="../../../static/img/mail/whatsapp.png" />
+                            <img src="{{config.API_DOMAIN_NAME/static/img/mail/whatsapp.png}}" />
                         </a>
                     </div>
                 </div>
