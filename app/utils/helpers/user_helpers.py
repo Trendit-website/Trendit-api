@@ -10,6 +10,7 @@ These functions assist with tasks such as:
 @link: https://github.com/zeddyemy
 @package: Trendit³
 '''
+import os
 from enum import Enum
 from threading import Thread
 from flask import current_app
@@ -25,18 +26,19 @@ from ...models.social import SocialMediaProfile
 from ...utils.helpers.media_helpers import save_media
 from ...utils.helpers.basic_helpers import console_log, log_exception
 from ...utils.helpers.basic_helpers import generate_random_string
+from .media_helpers import save_media_files_to_temp
 
 
-def async_save_profile_pic(app, user: Trendit3User, media_file):
+def async_save_profile_pic(app, user: Trendit3User, media_file_paths):
     with app.app_context():
         try:
             user_profile = user.profile
-            if isinstance(media_file, FileStorage) and media_file.filename != '':
-                try:
-                    profile_picture = save_media(media_file) # This saves image file, saves the path in db and return the Media instance
-                except Exception as e:
-                    log_exception(f"An error occurred saving profile image: {str(e)}")
-            elif profile_picture == '' and user:
+            if media_file_paths:
+                for file_path in media_file_paths:
+                    filename = os.path.basename(file_path)
+                    with open(file_path, 'rb') as media_file:
+                        profile_picture = save_media(media_file, filename) # This saves image file, saves the path in db and return the Media instance
+            elif not media_file_paths and user:
                 if user_profile.profile_picture_id:
                     profile_picture = user_profile.profile_picture
                 else:
@@ -50,7 +52,8 @@ def async_save_profile_pic(app, user: Trendit3User, media_file):
             raise e
 
 def save_profile_pic(user: Trendit3User, media_file: FileStorage):
-    Thread(target=async_save_profile_pic, args=(current_app._get_current_object(), user, media_file)).start()
+    media_file_paths = save_media_files_to_temp(media_file)
+    Thread(target=async_save_profile_pic, args=(current_app._get_current_object(), user, media_file_paths)).start()
 
 
 # for pricing icon

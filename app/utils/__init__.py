@@ -961,7 +961,18 @@ class AppJSON:
 				"Tsafe",
 				"Zurmi"
 			]
-			}
+			},
+			{
+			"name": "Federal Capital Territory",
+			"local_governments": [
+				"Abaji",
+				"Abuja Municipal",
+				"Bwari",
+				"Gwagwalada",
+				"Kuje",
+				"Kwali",
+			]
+			},
 		]
     }
     
