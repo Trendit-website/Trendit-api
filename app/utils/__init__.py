@@ -963,7 +963,7 @@ class AppJSON:
 			]
 			},
 			{
-			"name": "Federal Capital Territory",
+			"name": "Federal Capital Territory State",
 			"local_governments": [
 				"Abaji",
 				"Abuja Municipal",
