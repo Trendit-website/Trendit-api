@@ -116,21 +116,19 @@ def save_media_files_to_temp(media_files):
     temp_dir = tempfile.mkdtemp()
     media_file_paths = []
     
-    try:
-        iterator = iter(media_files)
+    console_log("media files", media_files)
+    if isinstance(media_files, list):
         
         for media_file in media_files:
             filename = secure_filename(media_file.filename)
             file_path = os.path.join(temp_dir, filename)
             media_file.save(file_path)
             media_file_paths.append(file_path)
-    except TypeError as te:
+    else:
         media_file = media_files
         filename = secure_filename(media_file.filename)
         file_path = os.path.join(temp_dir, filename)
         media_file.save(file_path)
         media_file_paths.append(file_path)
-    except Exception as e:
-        raise e
 
     return media_file_paths

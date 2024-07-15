@@ -38,15 +38,19 @@ def async_save_profile_pic(app, user: Trendit3User, media_file_paths):
                     filename = os.path.basename(file_path)
                     with open(file_path, 'rb') as media_file:
                         profile_picture = save_media(media_file, filename) # This saves image file, saves the path in db and return the Media instance
+                        profile_picture_id = profile_picture.id
             elif not media_file_paths and user:
                 if user_profile.profile_picture_id:
                     profile_picture = user_profile.profile_picture
+                    profile_picture_id = profile_picture.id
                 else:
                     profile_picture = None
+                    profile_picture_id = None
             else:
                 profile_picture = None
+                profile_picture_id = None
             
-            user_profile.update(profile_picture=profile_picture)
+            user_profile.update(profile_picture_id=profile_picture_id)
         except Exception as e:
             log_exception()
             raise e

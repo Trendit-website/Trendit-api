@@ -65,7 +65,7 @@ class ProfileController:
             local_government = data.get('local_government', user_address.local_government if user_address else '')
             birthday = data.get('birthday', user_profile.birthday if user_profile else None)
             profile_picture = request.files.get('profile_picture', '')
-            # profile_picture = request.files.getlist('profile_picture', profile_picture)
+            profile_picture = request.files.getlist('profile_picture') or profile_picture
             
             
             currency_info = {}
