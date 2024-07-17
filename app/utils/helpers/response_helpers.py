@@ -9,9 +9,9 @@ These functions assist with tasks such as generating success and error responses
 
 @app/utils/helpers/response_helpers.py
 """
-from flask import jsonify, make_response
+from flask import jsonify, make_response, Response
 
-def error_response(msg, status_code, extra_data=None):
+def error_response(msg: str, status_code: int, extra_data: dict | None = None) -> Response:
     '''
     Creates a JSON response for an error with a specified status code.
 
@@ -23,7 +23,7 @@ def error_response(msg, status_code, extra_data=None):
     Returns:
         flask.Response: A JSON response object with the error details and status code.
     '''
-    response = {
+    response: dict = {
         'status': 'failed',
         'status_code': status_code,
         'message': msg
@@ -31,12 +31,12 @@ def error_response(msg, status_code, extra_data=None):
     if extra_data:
         response.update(extra_data)
     
-    response = make_response(response)
+    response: Response = make_response(response)
     response.status_code = status_code
     
     return response
 
-def success_response(msg, status_code, extra_data=None):
+def success_response(msg: str, status_code: int, extra_data: dict | None = None) -> Response:
     '''
     Creates a JSON response for a success with a specified status code.
 
@@ -48,7 +48,7 @@ def success_response(msg, status_code, extra_data=None):
     Returns:
         flask.Response: A JSON response object with the success message and status code.
     '''
-    response = {
+    response: dict = {
         'status': 'success',
         'status_code': status_code,
         'message': msg
@@ -56,7 +56,7 @@ def success_response(msg, status_code, extra_data=None):
     if extra_data:
         response.update(extra_data)
     
-    response = make_response(response)
+    response: Response = make_response(response)
     response.status_code = status_code
     
     return response
