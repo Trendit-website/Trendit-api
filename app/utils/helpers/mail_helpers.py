@@ -240,7 +240,7 @@ def send_transaction_alert_email(user_email, reason, amount, tx_type="debit"):
     Thread(target=send_async_transaction_alert_email, args=(current_app._get_current_object(), tx_type, user_email, reason, amount)).start()
 
 def send_async_social_profile_status_email(app: Flask, user_email, platform, status):
-    with app.app_context:
+    with app.app_context():
         user = Trendit3User.query.filter(Trendit3User.email == user_email).first()
         social_profile = SocialMediaProfile.query.filter_by(platform=platform, trendit3_user_id=user.id)
         
@@ -287,7 +287,7 @@ def send_social_profile_status_email(user_email, platform, status=SocialLinkStat
 
 
 def send_async_task_performance_email(app: Flask, pt_id):
-    with app.app_context:
+    with app.app_context():
         performed_task: TaskPerformance = TaskPerformance.query.filter_by(id=pt_id)
         user: Trendit3User = performed_task.trendit3_user
         user_email = user.email
