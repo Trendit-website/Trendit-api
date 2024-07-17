@@ -200,11 +200,13 @@ def send_other_emails(user_email, email_type='membership', task_type=None, task_
 
 def send_async_transaction_alert_email(app: Flask, tx_type: str, user_email: str, reason: str, amount=None) -> None:
     with app.app_context():
-        user = Trendit3User.query.filter(Trendit3User.email == user_email).first()
-        username = user.username if user else ''
-        firstname = user.profile.firstname if user else ''
-        currency_code = user.wallet.currency_code
-        amount = convert_amount(amount, currency_code)
+        user: Trendit3User = Trendit3User.query.filter(Trendit3User.email == user_email).first()
+        username: str = user.username if user else ''
+        firstname: str = user.profile.firstname if user else ''
+        currency_code: str = user.wallet.currency_code
+        amount: str = convert_amount(amount, currency_code)
+        
+        console_log("amount", f"{currency_code} {amount}")
         
         subject = 'Wallet Debited'
         template = render_template(
@@ -241,8 +243,10 @@ def send_transaction_alert_email(user_email, reason, amount, tx_type="debit"):
 
 def send_async_social_profile_status_email(app: Flask, user_email, platform, status):
     with app.app_context():
-        user = Trendit3User.query.filter(Trendit3User.email == user_email).first()
-        social_profile = SocialMediaProfile.query.filter_by(platform=platform, trendit3_user_id=user.id)
+        user: Trendit3User = Trendit3User.query.filter(Trendit3User.email == user_email).first()
+        social_profile:SocialMediaProfile = SocialMediaProfile.query.filter_by(platform=platform, trendit3_user_id=user.id)
+        
+        console_log("social_profile", social_profile)
         
         subject = "Social Profile Rejected"
         template = render_template(
