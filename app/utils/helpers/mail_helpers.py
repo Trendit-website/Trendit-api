@@ -267,7 +267,7 @@ def send_async_social_profile_status_email(app: Flask, user_email, platform, sta
         except Exception as e:
             log_exception(f"EXCEPTION SENDING MAIL FOR {status} SOCIAL PROFILE", e)
 
-def send_social_profile_status_email(user_email, status=SocialLinkStatus.REJECTED) -> None:
+def send_social_profile_status_email(user_email, platform, status=SocialLinkStatus.REJECTED) -> None:
     '''
     Asynchronously sends an email about the state of a submitted social profile.
 
@@ -281,7 +281,7 @@ def send_social_profile_status_email(user_email, status=SocialLinkStatus.REJECTE
         None
     '''
     
-    Thread(target=send_async_social_profile_status_email, args=(current_app._get_current_object(), status, user_email)).start()
+    Thread(target=send_async_social_profile_status_email, args=(current_app._get_current_object(), user_email, platform, status)).start()
 
 
 

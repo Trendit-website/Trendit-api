@@ -71,7 +71,7 @@ class AdminSocialProfileController:
 
                 db.session.commit()
                 
-                send_social_profile_status_email(sender.email, status=SocialLinkStatus.VERIFIED)
+                send_social_profile_status_email(sender.email, platform, status=SocialLinkStatus.VERIFIED)
                 
                 api_response = success_response(f"{sender.full_name}'s {platform} profile  approved successfully", 200)
             except (DataError, DatabaseError) as e:
@@ -114,7 +114,7 @@ class AdminSocialProfileController:
 
                 db.session.commit()
                 
-                send_social_profile_status_email(sender.email, status=SocialLinkStatus.REJECTED)
+                send_social_profile_status_email(sender.email, platform, status=SocialLinkStatus.REJECTED)
                 
                 api_response = success_response(f"{sender.full_name}'s {platform} profile rejected successfully", 200)
             except (DataError, DatabaseError) as e:
