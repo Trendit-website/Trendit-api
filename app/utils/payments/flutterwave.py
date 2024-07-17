@@ -140,7 +140,7 @@ def verify_flutterwave_payment(data):
                     elif payment_type == 'credit-wallet':
                         # Credit user's wallet
                         try:
-                            credit_wallet(user_id, amount)
+                            credit_wallet(user_id, amount, credit_type="funded-wallet")
                         except ValueError as e:
                             raise CreditWalletError(f'Error crediting wallet. Please Try To Verify Again: {e}')
                         
@@ -259,7 +259,7 @@ def flutterwave_webhook():
                     elif payment_type == 'credit-wallet':
                         # Credit user's wallet
                         try:
-                            credit_wallet(user_id, amount)
+                            credit_wallet(user_id, amount, credit_type="funded-wallet")
                             send_other_emails(trendit3_user.email, email_type='credit', amount=amount) # send credit alert to user's email
                         except ValueError as e:
                             raise ValueError(f'Error crediting wallet: {e}')
@@ -296,13 +296,13 @@ def flutterwave_webhook():
                 "status_code": 404
             }
     except SignatureError as e:
-        fund_wallet = credit_wallet(user_id, amount) if data['event'] == 'charge.completed' else False
+        fund_wallet = credit_wallet(user_id, amount, credit_type="failed-payment") if data['event'] == 'charge.completed' else False
         raise e
     except (DataError, DatabaseError) as e:
-        fund_wallet = credit_wallet(user_id, amount) if data['event'] == 'charge.completed' else False
+        fund_wallet = credit_wallet(user_id, amount, credit_type="failed-payment") if data['event'] == 'charge.completed' else False
         raise e
     except Exception as e:
-        fund_wallet = credit_wallet(user_id, amount) if data['event'] == 'charge.completed' else False
+        fund_wallet = credit_wallet(user_id, amount, credit_type="failed-payment") if data['event'] == 'charge.completed' else False
         raise e
     finally:
         try:

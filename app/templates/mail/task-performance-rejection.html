@@ -1,0 +1,101 @@
+{% extends 'mail/base/base.html' %}
+{% block title %} Task Performance Rejected {% endblock %}
+
+
+{% block content %}
+        <p style="font-weight: bold; font-family: 'Inter', 'sans-serif'; font-size: 20px; font-weight: 700;">
+            Hello {% if not user.firstname %}  {{ user.username }} {% else %} {{ user.firstname }} {% endif %},
+        </p>
+
+        <div style="width: 95%; font-family: 'Inter', 'sans-serif'; margin-bottom: 10px; font-size: 16px; font-weight: 400; color: #B1B1B1;">
+            <p style="width: 90%;">
+                We're reaching out to provide feedback on your recent task performance. While your effort is appreciated, this particular submission wasn't approved due to one of the following facts:
+            </p>         
+        </div>
+
+		<div style="width: 90%; font-family: 'Inter', 'sans-serif'; font-size: 16px; font-weight: 400; color: #B1B1B1; margin-bottom: 30px;">
+            <ul>
+                <li style="margin-bottom: 10px;">
+                    The proof of work submitted for the task was not considered authentic enough for the task performed
+                </li>
+                <li style="margin-bottom: 10px;">
+                    Or the task was undone or deleted after submission of proof of work
+                </li>
+            </ul>
+        </div>
+
+        <div style="width: 95%; font-family: 'Inter', 'sans-serif'; margin-bottom: 10px; font-size: 16px; font-weight: 400; color: #B1B1B1;">
+            <p style="width: 90%;">
+                <b style="font-weight: bold; font-size: 18px;"> Task Performance details: </b>
+            </p>         
+        </div>
+        <div style="margin-bottom: 24px; border: 1px solid #B1B1B1; padding: 16px; border-radius: 8px;">
+			{% if task_description %}
+			<div style="font-size: 16px; font-family: Campton; font-weight: 400; color: #B1B1B1; margin-bottom: 8px;">
+				<b style="font-weight: bold;"> Task Description: </b> {{ task_description }}
+			</div>
+			{% endif %}
+			<div style="font-size: 14px; font-family: Campton; font-weight: 400; color: #B1B1B1; margin-bottom: 8px;">
+				<b style="font-weight: bold;"> Date: </b> {{ performed_task.started_at }}
+			</div>
+			<div style="font-size: 14px; font-family: Campton; font-weight: 400; color: #B1B1B1;">
+				<b style="font-weight: bold;"> Type: </b> {{ performed_task.task_type }} task
+			</div>
+            {% if performed_task.post_link %}
+            <div style="font-size: 14px; font-family: Campton; font-weight: 400; color: #B1B1B1;">
+				<b style="font-weight: bold;"> submitted Link: </b> {{ performed_task.post_link }}
+			</div>
+            {% endif %}
+            {% if performed_task.proof_screenshot_id %}
+            <div style="font-size: 14px; font-family: Campton; font-weight: 400; color: #B1B1B1;">
+				<b style="font-weight: bold;"> submitted Screenshot: </b> {{ performed_task.get_proof_screenshot() }}
+			</div>
+            {% endif %}
+		</div>
+
+        <div style="width: 95%; font-family: 'Inter', 'sans-serif'; margin-bottom: 10px; font-size: 16px; font-weight: 400; color: #B1B1B1;">
+            <p style="width: 90%;">
+                We understand that rejections can be frustrating, but they are an opportunity to learn and improve. To help you with future tasks, here are some resources:
+            </p>         
+        </div> 
+        <div style="width: 90%; font-family: 'Inter', 'sans-serif'; font-size: 16px; font-weight: 400; color: #B1B1B1; margin-bottom: 30px;">
+            <ul>
+                <li style="margin-bottom: 10px;">
+                    Watch our tutorial video on YouTube at  <a href="" style="color: blue;">www.youtube.com/@Trendithq</a>
+                </li>
+                <li style="margin-bottom: 10px;">
+                    You can also check out our frequently asked question on our site [leads user to our landing page]
+                </li>
+            </ul>      
+        </div> 
+        <div style="width: 95%; font-family: 'Inter', 'sans-serif'; margin-bottom: 10px; font-size: 16px; font-weight: 400; color: #B1B1B1;">
+            <p style="width: 90%;">                    
+                Don't be discouraged! We encourage you to review the feedback and try again. We're confident you'll be successful on future tasks.
+            </p>
+        </div>  
+        <div style="width: 95%; font-family: 'Inter', 'sans-serif'; margin-bottom: 40px; font-size: 16px; font-weight: 400; color: #B1B1B1;">
+            <p style="width: 90%;">                    
+                In the meantime, feel free to explore other available tasks on our platform.
+                If you have any questions or need further clarification, please don't hesitate to reach out.
+            </p>
+        </div> 
+        <a href="{{ config.APP_DOMAIN_NAME }}/dashboard/earn-history" style="background-color: #DA348F; font-family: 'Inter', 'sans-serif'; text-decoration: none; text-align: center; font-size: 16px; font-weight: 600; width: 290px; height: 49px; padding: 14px 72px 14px 72px; border-radius: 80px; color: #fff;">
+            View Your Task History
+        </a>
+
+        <div class="spacer" style="line-height:40px;height:40px;mso-line-height-rule:exactly;">&nbsp;</div>
+        
+        <div style="width: 95%; font-size: 16px; font-weight: 400; margin-top: 45px; color: #B1B1B1; font-family: 'Inter', 'sans-serif';">
+            <p>
+                For further enquires, please contact our customers support through the following channels:
+            </p>
+        </div>
+        <div style="width: 95%; font-size: 16px; font-weight: 400; color: #B1B1B1; font-family: 'Inter', 'sans-serif';">
+            <p>Email: <a href="mailto:{{ config.SUPPORT_EMAIL }}" style="color: blue;">{{ config.SUPPORT_EMAIL }}</a></p>
+            <div class="spacer" style="line-height:15px;height:15px;mso-line-height-rule:exactly;">&nbsp;</div>
+            <p>
+                Thanks for choosing Trendit³.
+            </p>
+        </div>   
+        <div class="spacer" style="line-height:200px;height:200px;mso-line-height-rule:exactly;">&nbsp;</div>
+{% endblock %}

@@ -5,7 +5,9 @@
 {% block content %}
 
         <p style="font-weight: bold; font-family: 'Inter', 'sans-serif'; font-size: 16px; font-weight: 700;">Hi 
-            {% if not firstname %}  {{ username }} {% else %} {{ firstname }} {% endif %}, Welcome to Trendit³!</p>
+            {% if not firstname %}  {{ username }} {% else %} {{ firstname }} {% endif %}, Welcome to Trendit³!
+        </p>
+        
 
         <div style="width: 95%; font-family: 'Inter', 'sans-serif'; font-size: 16px; font-weight: 400; color: #B1B1B1; margin-bottom: 30px;">
             <p style="width: 90%;">
@@ -48,6 +50,6 @@
             </p>
         </div>
 
-        <div class="spacer" style="line-height:100px;height:100px;">&nbsp;</div>
+        <div class="spacer" style="line-height:100px;height:100px;mso-line-height-rule:exactly;">&nbsp;</div>
 
 {% endblock %}

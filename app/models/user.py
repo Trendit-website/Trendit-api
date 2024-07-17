@@ -200,7 +200,7 @@ class Trendit3User(db.Model):
         wallet_info = user_wallet
         
         user_social_profiles = self.social_media_profiles
-        social_profiles = [profile.to_dict() for profile in user_social_profiles]
+        social_profiles = [social_profile.to_dict() for social_profile in user_social_profiles]
         
         return {
             'id': self.id,

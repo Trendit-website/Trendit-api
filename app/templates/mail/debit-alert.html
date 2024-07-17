@@ -1,0 +1,42 @@
+{% extends 'mail/base/base.html' %}
+{% block title %} Debit Payment {% endblock %}
+
+
+{% block content %}
+        <p style="font-weight: bold; font-family: 'Inter', 'sans-serif'; font-size: 20px; font-weight: 700;">
+            Hello {% if not user.firstname %}  {{ user.username }} {% else %} {{ user.firstname }} {% endif %},
+        </p>
+
+        <div style="width: 95%; font-family: 'Inter', 'sans-serif'; margin-bottom: 40px; font-size: 16px; font-weight: 400; color: #B1B1B1;">
+            <p style="width: 90%;">
+                {% if reason == "New Social Task Order" %}
+                    Your  have been debited  with the sum of {{currency_code}} {{ amount }} from  your Trendit³  account for the Payment of a social task which you created. To view your transaction and available balance on your Trendit³ account, click on the button below.
+                {% else %}
+                    Your Trendit³ wallet has been charged {{currency_code}} {{amount}} for the purchase of a product from our marketplace. Your order is being processed and you will receive a notification once it is shipped. To view your order details and wallet balance, click the button below.
+                {% endif %}
+            </p>         
+        </div>
+        
+        <a href="{{ config.APP_DOMAIN_NAME }}/dashboard/home" style="cursor: pointer; background-color: #DA348F; font-family: 'Inter', 'sans-serif'; text-decoration: none; text-align: center; font-size: 16px; font-weight: 600; width: 290px; height: 49px; padding: 14px 72px 14px 72px; border-radius: 80px; color: #fff;">
+            View Account
+        </a>
+        
+        <div class="spacer" style="line-height:15px;height:15px;mso-line-height-rule:exactly;">&nbsp;</div>
+
+        <div style="width: 95%; font-size: 16px; font-weight: 400; margin-top: 45px; color: #B1B1B1; font-family: 'Inter', 'sans-serif';">
+            <p>
+                For further enquires, please contact our customers support through the following channels:
+            </p>
+        </div>
+
+        <div style="width: 95%; font-size: 16px; font-weight: 400; color: #B1B1B1; font-family: 'Inter', 'sans-serif';">
+            <p>Email: <a href="mailto:{{ config.SUPPORT_EMAIL }}" style="color: blue;">{{ config.SUPPORT_EMAIL }}</a></p>
+            <div class="spacer" style="line-height:15px;height:15px;mso-line-height-rule:exactly;">&nbsp;</div>
+            <p>
+                Thanks for choosing Trendit³.
+            </p>
+        </div>
+
+        <div class="spacer" style="line-height:200px;height:200px;mso-line-height-rule:exactly;">&nbsp;</div>
+{% endblock %}
+

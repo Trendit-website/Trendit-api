@@ -6,6 +6,7 @@ from flask_jwt_extended import get_jwt_identity
 from ...extensions import db
 from ...utils.helpers import log_exception, console_log
 from ...utils.helpers.response_helpers import error_response, success_response
+from ...utils.helpers.mail_helpers import send_social_profile_status_email
 from ...models import SocialLinkStatus, SocialLinks, SocialMediaProfile
 from ...models.notification import SocialVerification, SocialVerificationStatus, Notification, MessageType
 from ...models.user import Trendit3User
@@ -50,11 +51,11 @@ class AdminSocialProfileController:
                 if not profile_id:
                     return error_response("profile_id is missing or empty.", 400)
                 
-                profile = SocialMediaProfile.query.filter_by(id=profile_id).first()
-                platform = profile.platform
-                sender_id = profile.trendit3_user_id
-                sender = profile.trendit3_user
-                body = f'Your {profile.platform} verification request has been approved'
+                profile: SocialMediaProfile = SocialMediaProfile.query.filter_by(id=profile_id).first()
+                platform: str = profile.platform
+                sender_id: int = profile.trendit3_user_id
+                sender: Trendit3User = profile.trendit3_user
+                body: str = f'Your {profile.platform} verification request has been approved'
                 
                 
                 # Approve and send notification
@@ -70,7 +71,9 @@ class AdminSocialProfileController:
 
                 db.session.commit()
                 
-                api_response = success_response(f"{sender.username}'s {platform} profile  approved successfully", 200)
+                send_social_profile_status_email(sender.email, status=SocialLinkStatus.VERIFIED)
+                
+                api_response = success_response(f"{sender.full_name}'s {platform} profile  approved successfully", 200)
             except (DataError, DatabaseError) as e:
                 db.session.rollback()
                 log_exception('Database error occurred approving social profile', e)
@@ -91,11 +94,11 @@ class AdminSocialProfileController:
                 if not profile_id:
                     return error_response("profile_id is missing or empty.", 400)
                 
-                profile = SocialMediaProfile.query.filter_by(id=profile_id).first()
-                platform = profile.platform
-                sender_id = profile.trendit3_user_id
-                sender = profile.trendit3_user
-                body = f'Your {profile.platform} verification request has been rejected'
+                profile: SocialMediaProfile = SocialMediaProfile.query.filter_by(id=profile_id).first()
+                platform: str = profile.platform
+                sender_id: int = profile.trendit3_user_id
+                sender: Trendit3User = profile.trendit3_user
+                body: str = f'Your {profile.platform} verification request has been rejected'
                 
                 
                 # reject and send notification
@@ -111,7 +114,9 @@ class AdminSocialProfileController:
 
                 db.session.commit()
                 
-                api_response = success_response(f"{sender.username}'s {platform} profile rejected successfully", 200)
+                send_social_profile_status_email(sender.email, status=SocialLinkStatus.REJECTED)
+                
+                api_response = success_response(f"{sender.full_name}'s {platform} profile rejected successfully", 200)
             except (DataError, DatabaseError) as e:
                 db.session.rollback()
                 log_exception('Database error occurred rejecting social profile', e)

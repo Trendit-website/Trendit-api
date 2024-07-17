@@ -8,11 +8,11 @@ from decimal import Decimal
 from ...extensions import db
 from ...models import Payment, Transaction, TransactionType, Withdrawal, Trendit3User
 from ...utils.helpers.basic_helpers import console_log, log_exception, generate_random_string
-from ...utils.helpers.mail_helpers import send_other_emails
+from ...utils.helpers.mail_helpers import send_other_emails, send_transaction_alert_email
 
 
 def debit_wallet(user_id: int, amount: int, payment_type=None) -> float:
-    user = Trendit3User.query.get(user_id)
+    user: Trendit3User = Trendit3User.query.get(user_id)
     
     if user is None:
         raise ValueError("User not found.")
@@ -38,7 +38,8 @@ def debit_wallet(user_id: int, amount: int, payment_type=None) -> float:
         
         db.session.add_all([payment, transaction])
         db.session.commit()
-        send_other_emails(user.email, email_type='debit', amount=amount) # send debit alert to user's mail
+        
+        send_transaction_alert_email("debit", user.email, reason=service_paid_for, amount=amount) # send debit alert to user's mail
         return wallet.balance
     except Exception as e:
         # Handle the exception appropriately (rollback, log the error, etc.)
@@ -46,8 +47,8 @@ def debit_wallet(user_id: int, amount: int, payment_type=None) -> float:
         raise e
 
 
-def credit_wallet(user_id: int, amount: int | float | Decimal) -> float:
-    user = Trendit3User.query.get(user_id)
+def credit_wallet(user_id: int, amount: int | float | Decimal, credit_type="task-performance") -> Decimal:
+    user: Trendit3User = Trendit3User.query.get(user_id)
     
     if user is None:
         raise ValueError("User not found.")
@@ -57,11 +58,14 @@ def credit_wallet(user_id: int, amount: int | float | Decimal) -> float:
     if wallet is None:
         raise ValueError("User does not have a wallet.")
 
-
     try:
         # Credit the wallet
         wallet.balance += Decimal(amount)
         db.session.commit()
+        
+        if credit_type in ["task-performance", "funded-wallet"]:
+            send_transaction_alert_email("credit", user.email, reason=credit_type, amount=amount)
+        
         return wallet.balance
     except Exception as e:
         # Handle the exception appropriately (rollback, log the error, etc.)

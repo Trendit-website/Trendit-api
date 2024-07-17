@@ -1,3 +1,4 @@
+from flask import Flask
 from threading import Thread
 from flask import render_template, current_app
 from flask_mail import Message
@@ -5,8 +6,9 @@ from enum import Enum
 
 from app import mail
 from config import Config
+from ...utils.payments.rates import convert_amount
 from ...utils.helpers.basic_helpers import console_log, log_exception
-from ...models import Trendit3User
+from ...models import Trendit3User, SocialMediaProfile, SocialLinkStatus, TaskPerformance
 
 class EmailType(Enum):
     VERIFY_EMAIL = 'verify_email'
@@ -115,7 +117,7 @@ def send_async_other_email(app, user_email, email_type, task_type, task_time, ta
         elif email_type == 'task_approved':
             subject = 'Task Approved'
             template = render_template(
-                "email/task_approved.html", 
+                "mail/task-approval.html", 
                 redirect_link=f"{Config.APP_DOMAIN_NAME}", 
                 user_email=user_email,
                 firstname=firstname, 
@@ -130,7 +132,7 @@ def send_async_other_email(app, user_email, email_type, task_type, task_time, ta
         elif email_type == 'task_rejected':
             subject = 'Task Rejected'
             template = render_template(
-                "email/task_rejected.html",
+                "mail/task-rejection.html",
                 redirect_link=f"{Config.APP_DOMAIN_NAME}",
                 user_email=user_email,
                 firstname=firstname,
@@ -141,18 +143,19 @@ def send_async_other_email(app, user_email, email_type, task_type, task_time, ta
         elif email_type == 'credit':
             subject = 'Account Credited'
             template = render_template(
-                "email/credit_alert.html",
+                "email/credit-alert.html",
                 redirect_link=f"{Config.APP_DOMAIN_NAME}",
                 user_email=user_email,
                 firstname=firstname,
-                username=username, amount=amount
+                username=username,
+                amount=amount
             )
             msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
 
         elif email_type == 'debit':
             subject = 'Account Debited'
             template = render_template(
-                "email/debit_alert.html",
+                "mail/debit-alert.html",
                 redirect_link=f"{Config.APP_DOMAIN_NAME}",
                 user_email=user_email,
                 firstname=firstname,
@@ -192,3 +195,126 @@ def send_async_other_email(app, user_email, email_type, task_type, task_time, ta
 
 def send_other_emails(user_email, email_type='membership', task_type=None, task_time=None, task_description=None, amount=None, admin_login_code=''):
     Thread(target=send_async_other_email, args=(current_app._get_current_object(), user_email, email_type, task_type, task_time, task_description, amount, admin_login_code)).start()
+
+
+
+def send_async_transaction_alert_email(app: Flask, tx_type: str, user_email: str, reason: str, amount=None) -> None:
+    with app.app_context():
+        user = Trendit3User.query.filter(Trendit3User.email == user_email).first()
+        username = user.username if user else ''
+        firstname = user.profile.firstname if user else ''
+        currency_code = user.wallet.currency_code
+        amount = convert_amount(amount, currency_code)
+        
+        subject = 'Wallet Debited'
+        template = render_template(
+            "mail/debit-alert.html",
+            user=user,
+            user_email=user_email,
+            username=username,
+            currency_code=currency_code,
+            amount=amount,
+            reason=reason
+        )
+        if tx_type == "credit":
+            subject = 'Wallet Credited'
+            template = render_template(
+                "mail/credit-alert.html",
+                user=user,
+                user_email=user_email,
+                firstname=firstname,
+                username=username,
+                currency_code=currency_code,
+                amount=amount,
+                reason=reason
+            )
+        
+        msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
+        
+        try:
+            mail.send(msg)
+        except Exception as e:
+            log_exception(f"EXCEPTION SENDING '{tx_type} transaction' MAIL", e)
+
+def send_transaction_alert_email(user_email, reason, amount, tx_type="debit"):
+    Thread(target=send_async_transaction_alert_email, args=(current_app._get_current_object(), tx_type, user_email, reason, amount)).start()
+
+def send_async_social_profile_status_email(app: Flask, user_email, platform, status):
+    with app.app_context:
+        user = Trendit3User.query.filter(Trendit3User.email == user_email).first()
+        social_profile = SocialMediaProfile.query.filter_by(platform=platform, trendit3_user_id=user.id)
+        
+        subject = "Social Profile Rejected"
+        template = render_template(
+            "mail/social-rejection.html",
+            user=user,
+            user_email=user_email,
+            social_profile=social_profile
+        )
+        if status == SocialLinkStatus.VERIFIED:
+            subject = "Social Profile Approved"
+            template = render_template(
+                "mail/social-approval.html",
+                user=user,
+                user_email=user_email,
+                social_profile=social_profile
+            )
+        
+        msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
+        
+        try:
+            mail.send(msg)
+        except Exception as e:
+            log_exception(f"EXCEPTION SENDING MAIL FOR {status} SOCIAL PROFILE", e)
+
+def send_social_profile_status_email(user_email, status=SocialLinkStatus.REJECTED) -> None:
+    '''
+    Asynchronously sends an email about the state of a submitted social profile.
+
+    This function runs in a separate thread and sends an email to the user.
+
+    Args:
+        status (str): the status of the social profile (SocialLinkStatus.VERIFIED or SocialLinkStatus.REJECTED)
+        user_email (str): The email address of the user.
+
+    Returns:
+        None
+    '''
+    
+    Thread(target=send_async_transaction_alert_email, args=(current_app._get_current_object(), status, user_email)).start()
+
+
+
+
+def send_async_task_performance_email(app: Flask, pt_id):
+    with app.app_context:
+        performed_task: TaskPerformance = TaskPerformance.query.filter_by(id=pt_id)
+        user: Trendit3User = performed_task.trendit3_user
+        user_email = user.email
+        
+        subject = "Task Performance Rejected"
+        template = render_template(
+            "mail/task-performance-rejection.html",
+            user=user,
+            user_email=user_email,
+            performed_task=performed_task
+        )
+        if performed_task.status == "completed":
+            subject = "Task Performance Accepted"
+            template = render_template(
+                "mail/task-performance-approval.html",
+                user=user,
+                user_email=user_email,
+                performed_task=performed_task
+            )
+        
+        msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
+        
+        try:
+            mail.send(msg)
+        except Exception as e:
+            log_exception(f"EXCEPTION SENDING MAIL FOR {performed_task.status} TASK PERFORMANCE", e)
+
+def send_task_performance_email(pt_id) -> None:
+    
+    Thread(target=send_async_task_performance_email, args=(current_app._get_current_object(), pt_id)).start()

@@ -1,0 +1,68 @@
+{% extends 'mail/base/base.html' %}
+{% block title %} Social Profile Rejected {% endblock %}
+
+
+{% block content %}
+        <p style="font-weight: bold; font-family: 'Inter', 'sans-serif'; font-size: 20px; font-weight: 700;">
+            Hello {% if not user.firstname %}  {{ user.username }} {% else %} {{ user.firstname }} {% endif %},
+        </p>
+
+        <div style="width: 95%; font-family: 'Inter', 'sans-serif'; margin-bottom: 10px; font-size: 16px; font-weight: 400; color: #B1B1B1;">
+            <p style="width: 90%;">
+                We're reaching out regarding linking of your {{ social_profile.platform }} page to your Trendit³ account. The account Link to your Instagram page  which you provided for linking of your account looks great, unfortunately, the account link you provided wasn't approved at this time.. Due to one of the following reasons.
+            </p>
+        </div>
+        <div style="width: 95%; font-family: 'Inter', 'sans-serif'; margin-bottom: 10px; font-size: 16px; font-weight: 400; color: #B1B1B1;">
+            <p style="width: 90%;">
+                Our Platform requires participants to have:
+            </p>
+        </div>
+        <div style="width: 90%; font-family: 'Inter', 'sans-serif'; font-size: 16px; font-weight: 400; color: #B1B1B1; margin-bottom: 30px;">
+            <ul>
+                <li style="margin-bottom: 10px;">
+                    At least 500 followers on the social media page or profile they submit. This helps ensure a wider reach for the individuals or businesses being promoted
+                </li>
+                <li style="margin-bottom: 10px;">
+                    You must have posted at least five times on your page within the last one year
+                </li>
+            </ul>
+        </div>
+        <div style="width: 95%; font-family: 'Inter', 'sans-serif'; margin-bottom: 10px; font-size: 16px; font-weight: 400; color: #B1B1B1;">
+            <p style="width: 90%;">      
+                Don't be  Discourage! Here's What You Can Do:
+            </p>
+        </div>
+        <div style="width: 90%; font-family: 'Inter', 'sans-serif'; font-size: 16px; font-weight: 400; color: #B1B1B1; margin-bottom: 30px;">
+            <ul>
+                <li style="margin-bottom: 10px;">
+                    You can boost your account here with us on Trendit³ on our advertisers page by creating advertisement task to get people to follow your account
+                </li>
+                <li style="margin-bottom: 10px;">                    
+                    Try Again When You Reach 500 Followers: Once your follower count reaches 500 on the submitted platform, feel free to update your application with the new link. We'd be happy to review it again!
+                </li>
+            </ul>
+        </div>
+        <div style="width: 95%; font-family: 'Inter', 'sans-serif'; margin-bottom: 10px; font-size: 16px; font-weight: 400; color: #B1B1B1;">
+            <p style="width: 90%;">
+                We appreciate your understanding and hope to see you participate in other tasks soon!
+            </p>
+        </div>
+
+        <div class="spacer" style="line-height:10px;height:10px;mso-line-height-rule:exactly;">&nbsp;</div>
+
+        <div style="width: 95%; font-size: 16px; font-weight: 400; margin-top: 45px; color: #B1B1B1; font-family: 'Inter', 'sans-serif';">
+            <p>
+                For further enquires, please contact our customers support through the following channels:
+            </p>
+        </div>
+        <div style="width: 95%; font-size: 16px; font-weight: 400; color: #B1B1B1; font-family: 'Inter', 'sans-serif';">
+            <p>Email: <a href="mailto:{{ config.SUPPORT_EMAIL }}" style="color: blue;">{{ config.SUPPORT_EMAIL }}</a></p>
+            <div class="spacer" style="line-height:15px;height:15px;mso-line-height-rule:exactly;">&nbsp;</div>
+            <p>
+                Thanks for choosing Trendit³.
+            </p>
+        </div>
+
+        <div class="spacer" style="line-height:200px;height:200px;mso-line-height-rule:exactly;">&nbsp;</div>
+{% endblock %}
+

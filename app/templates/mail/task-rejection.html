@@ -1,0 +1,59 @@
+{% extends 'mail/base/base.html' %}
+{% block title %} Task Order Rejected {% endblock %}
+
+
+{% block content %}
+        <p style="font-weight: bold; font-family: 'Inter', 'sans-serif'; font-size: 20px; font-weight: 700;">
+            Hello {% if not firstname %}  {{ username }} {% else %} {{ firstname }} {% endif %},
+        </p>
+
+        <div style="width: 95%; font-family: 'Inter', 'sans-serif'; margin-bottom: 40px; font-size: 16px; font-weight: 400; color: #B1B1B1;">
+            <p style="width: 90%;">
+                We're reaching out to provide feedback on your recent task order. While your effort is appreciated, this particular submission was rejected due to the Fact that:
+            </p>
+        </div>
+
+        <div style="width: 90%; font-family: 'Inter', 'sans-serif'; font-size: 16px; font-weight: 400; color: #B1B1B1; margin-bottom: 30px;">
+            <ul>
+                <li style="margin-bottom: 10px;">
+                    The task order was not considered authentic enough to be given to earners.
+                </li>
+                <li style="margin-bottom: 10px;">
+                    The task order violates are terms of service/condition.
+                </li>
+                <li style="margin-bottom: 10px;">
+                    Or payment for the task order was not completed or abandoned.
+                </li>
+            </ul>
+        </div>
+
+        <div style="width: 95%; font-family: 'Inter', 'sans-serif'; margin-bottom: 40px; font-size: 16px; font-weight: 400; color: #B1B1B1;">
+            <p style="width: 90%;">
+                Thank you for your contribution. we appreciate your commitment to the platform. You can reach out our support team if you think the rejection is unjustified.
+            </p>
+        </div>
+
+        <a href="{{ config.APP_DOMAIN_NAME }}/dashboard/advertise-history" style="cursor: pointer; background-color: #DA348F; font-family: 'Inter', 'sans-serif'; text-decoration: none; text-align: center; font-size: 16px; font-weight: 600; width: 290px; height: 49px; padding: 14px 72px 14px 72px; border-radius: 80px; color: #fff;">
+            View Your Task Order History
+        </a>
+
+        <div class="spacer" style="line-height:40px;height:40px;mso-line-height-rule:exactly;">&nbsp;</div>
+
+        <div style="width: 95%; font-size: 16px; font-weight: 400; margin-top: 45px; color: #B1B1B1; font-family: 'Inter', 'sans-serif';">
+            <p>
+                For further enquires, please contact our customers support through the following channels:
+            </p>
+        </div>
+
+        <div style="width: 95%; font-size: 16px; font-weight: 400; color: #B1B1B1; font-family: 'Inter', 'sans-serif';">
+            <p>Email: <a href="mailto:{{ config.SUPPORT_EMAIL }}" style="color: blue;">{{ config.SUPPORT_EMAIL }}</a></p>
+
+            <div class="spacer" style="line-height:15px;height:15px;mso-line-height-rule:exactly;">&nbsp;</div>
+            
+			<p>
+                Thanks for choosing Trendit³.
+            </p>
+        </div>
+
+        <div class="spacer" style="line-height:200px;height:200px;mso-line-height-rule:exactly;">&nbsp;</div>
+{% endblock %}

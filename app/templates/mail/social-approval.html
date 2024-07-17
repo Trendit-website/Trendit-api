@@ -1,0 +1,61 @@
+{% extends 'mail/base/base.html' %}
+{% block title %} Social Profile Approved {% endblock %}
+
+
+{% block content %}
+        <p style="font-weight: bold; font-family: 'Inter', 'sans-serif'; font-size: 20px; font-weight: 700;">
+            Hello {% if not user.firstname %}  {{ user.username }} {% else %} {{ user.firstname }} {% endif %},
+        </p>
+
+        <div style="width: 95%; font-family: 'Inter', 'sans-serif'; margin-bottom: 10px; font-size: 16px; font-weight: 400; color: #B1B1B1;">
+            <p style="width: 90%;">
+                We're happy to let you know that the link to your {{ social_profile.platform }} page which you provided to be linked to your account on Trendit³ has been approved!
+            </p>
+        </div>
+        <div style="width: 95%; font-family: 'Inter', 'sans-serif'; margin-bottom: 10px; font-size: 16px; font-weight: 400; color: #B1B1B1;">
+            <p style="width: 90%;">
+                This means you're now all set to participate in in our advert and engagement tasks here on Trendit³. Do well to participate in all tasks.
+            </p>
+        </div>
+        <div style="width: 95%; font-family: 'Inter', 'sans-serif'; margin-bottom: 10px; font-size: 16px; font-weight: 400; color: #B1B1B1;">
+            <p style="width: 90%;">
+                Please ensure to abide by these rules:
+            </p>
+        </div>
+        <div style="width: 90%; font-family: 'Inter', 'sans-serif'; font-size: 16px; font-weight: 400; color: #B1B1B1; margin-bottom: 30px;">
+            <ul>
+                <li style="margin-bottom: 10px;">
+                    Follow all provided instructions on tasks which you are to perform
+                </li>
+                <li style="margin-bottom: 10px;">
+                    Task performed would be reviewed and consider as accepted or rejected before payment can be made to your account.
+                </li>
+            </ul>
+        </div>
+        <div style="width: 95%; font-family: 'Inter', 'sans-serif'; margin-bottom: 10px; font-size: 16px; font-weight: 400; color: #B1B1B1;">
+            <p style="width: 90%;">
+                Thank you for providing a valid and appropriate social media profile. We look forward to seeing you earn massively here on Trendit³!
+            </p>
+        </div>
+        <div style="width: 95%; font-family: 'Inter', 'sans-serif'; margin-bottom: 10px; font-size: 16px; font-weight: 400; color: #B1B1B1;">
+            <p style="width: 90%;">
+                If you have any questions, please don't hesitate to contact us.
+            </p>
+        </div>
+        <div class="spacer" style="line-height:10px;height:10px;mso-line-height-rule:exactly;">&nbsp;</div>
+        <div style="width: 95%; font-size: 16px; font-weight: 400; margin-top: 45px; color: #B1B1B1; font-family: 'Inter', 'sans-serif';">
+            <p>
+                For further enquires, please contact our customers support through the following channels:
+            </p>
+        </div>
+        <div style="width: 95%; font-size: 16px; font-weight: 400; color: #B1B1B1; font-family: 'Inter', 'sans-serif';">
+            <p>Email: <a href="mailto:{{ config.SUPPORT_EMAIL }}" style="color: blue;">{{ config.SUPPORT_EMAIL }}</a></p>
+            <div class="spacer" style="line-height:15px;height:15px;mso-line-height-rule:exactly;">&nbsp;</div>
+            <p>
+                Thanks for choosing Trendit³.
+            </p>
+        </div>
+
+        <div class="spacer" style="line-height:200px;height:200px;mso-line-height-rule:exactly;">&nbsp;</div>
+{% endblock %}
+

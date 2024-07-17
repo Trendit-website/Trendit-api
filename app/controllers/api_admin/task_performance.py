@@ -4,6 +4,7 @@ from sqlalchemy.exc import ( DataError, DatabaseError )
 
 from ...extensions import db
 from ...models import TaskPerformance, Task
+from ...utils.helpers.mail_helpers import send_task_performance_email
 from ...utils.helpers.basic_helpers import log_exception, console_log
 from ...utils.helpers.task_helpers import update_performed_task, fetch_performed_task
 from ...utils.payments.wallet import credit_wallet
@@ -128,7 +129,7 @@ class AdminTaskPerformanceController:
             pt_id_key = data.get("performed_task_id_key")
             
             if not status or not pt_id_key:
-                return error_response("The field status or performed_task_id_key must be provided", 400)
+                return error_response("The field 'status' or 'performed_task_id_key' must be provided", 400)
             
             performed_task = fetch_performed_task(pt_id_key)
             if not performed_task:
@@ -149,6 +150,8 @@ class AdminTaskPerformanceController:
             extra_data = {"performed_task": performed_task.to_dict()}
             
             api_response = success_response(f"Performed Task {status}ed", 200, extra_data)
+            
+            send_task_performance_email(pt_id=performed_task.id)
         except (DataError, DatabaseError) as e:
             db.session.rollback()
             log_exception('Database error occurred during registration', e)
