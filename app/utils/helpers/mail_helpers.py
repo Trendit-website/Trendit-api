@@ -281,7 +281,7 @@ def send_social_profile_status_email(user_email, status=SocialLinkStatus.REJECTE
         None
     '''
     
-    Thread(target=send_async_transaction_alert_email, args=(current_app._get_current_object(), status, user_email)).start()
+    Thread(target=send_async_social_profile_status_email, args=(current_app._get_current_object(), status, user_email)).start()
 
 
 
