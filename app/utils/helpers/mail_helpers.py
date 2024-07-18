@@ -244,18 +244,16 @@ def send_transaction_alert_email(user_email, reason, amount, tx_type="debit"):
 def send_async_social_profile_status_email(app: Flask, user_email, platform, status):
     with app.app_context():
         user: Trendit3User = Trendit3User.query.filter(Trendit3User.email == user_email).first()
-        social_profile: SocialMediaProfile = SocialMediaProfile.query.filter(SocialMediaProfile.platform==platform, SocialMediaProfile.trendit3_user_id==user.id)
+        social_profile: SocialMediaProfile = SocialMediaProfile.query.filter_by(platform=platform, trendit3_user_id=user.id).first()
         
         console_log("social_profile", social_profile)
-        console_log("platform", social_profile.platform)
         
         subject = "Social Profile Rejected"
         template = render_template(
             "mail/social-rejection.html",
             user=user,
             user_email=user_email,
-            social_profile=social_profile,
-            platform=platform
+            social_profile=social_profile
         )
         if status == SocialLinkStatus.VERIFIED:
             subject = "Social Profile Approved"
@@ -263,8 +261,7 @@ def send_async_social_profile_status_email(app: Flask, user_email, platform, sta
                 "mail/social-approval.html",
                 user=user,
                 user_email=user_email,
-                social_profile=social_profile,
-                platform=platform
+                social_profile=social_profile
             )
         
         msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
