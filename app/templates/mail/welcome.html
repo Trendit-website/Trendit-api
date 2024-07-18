@@ -4,8 +4,8 @@
 
 {% block content %}
 
-        <p style="font-weight: bold; font-family: 'Inter', 'sans-serif'; font-size: 16px; font-weight: 700;">Hi 
-            {% if not firstname %}  {{ username }} {% else %} {{ firstname }} {% endif %}, Welcome to Trendit³!
+        <p style="font-weight: bold; font-family: 'Inter', 'sans-serif'; font-size: 16px; font-weight: 700;">
+            Hi {% if user.firstname %} {{ user.firstname }} {% else %} {{ user.username }} {% endif %},
         </p>
         
 

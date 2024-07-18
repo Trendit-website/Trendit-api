@@ -4,7 +4,7 @@
 
 {% block content %}
         <p style="font-weight: bold; font-family: 'Inter', 'sans-serif'; font-size: 20px; font-weight: 700;">
-            Hello {% if not user.firstname %}  {{ user.username }} {% else %} {{ user.firstname }} {% endif %},
+            Hello {% if user.firstname %}  {{ user.firstname }} {% else %} {{ user.username }} {% endif %},
         </p>
 
         <div style="width: 95%; font-family: 'Inter', 'sans-serif'; margin-bottom: 10px; font-size: 16px; font-weight: 400; color: #B1B1B1;">
