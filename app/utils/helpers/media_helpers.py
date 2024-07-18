@@ -126,9 +126,10 @@ def save_media_files_to_temp(media_files):
             media_file_paths.append(file_path)
     else:
         media_file = media_files
-        filename = secure_filename(media_file.filename)
-        file_path = os.path.join(temp_dir, filename)
-        media_file.save(file_path)
-        media_file_paths.append(file_path)
+        if not isinstance(media_file, str):
+            filename = secure_filename(media_file.filename)
+            file_path = os.path.join(temp_dir, filename)
+            media_file.save(file_path)
+            media_file_paths.append(file_path)
 
     return media_file_paths
