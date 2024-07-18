@@ -247,13 +247,15 @@ def send_async_social_profile_status_email(app: Flask, user_email, platform, sta
         social_profile: SocialMediaProfile = SocialMediaProfile.query.filter(SocialMediaProfile.platform==platform, SocialMediaProfile.trendit3_user_id==user.id)
         
         console_log("social_profile", social_profile)
+        console_log("platform", social_profile.platform)
         
         subject = "Social Profile Rejected"
         template = render_template(
             "mail/social-rejection.html",
             user=user,
             user_email=user_email,
-            social_profile=social_profile
+            social_profile=social_profile,
+            platform=platform
         )
         if status == SocialLinkStatus.VERIFIED:
             subject = "Social Profile Approved"
@@ -261,7 +263,8 @@ def send_async_social_profile_status_email(app: Flask, user_email, platform, sta
                 "mail/social-approval.html",
                 user=user,
                 user_email=user_email,
-                social_profile=social_profile
+                social_profile=social_profile,
+                platform=platform
             )
         
         msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
