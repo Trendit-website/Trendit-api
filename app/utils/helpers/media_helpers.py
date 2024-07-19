@@ -103,11 +103,14 @@ def save_media(media_file, filename=None) -> Media:
     
     # Upload the media to Cloudinary
     upload_result = upload_to_cloudinary(media_file, new_media_name, folder_path, resource_type)
+    console_log("Cloudinary upload_result", upload_result)
     
     original_media_path = upload_result['secure_url'] # Get the URL of the uploaded media
     
     # Add the media properties to database
     new_media = save_media_to_db(media_name, original_media_path)
+    
+    console_log("new_media", new_media.get_path())
     
     return new_media
 

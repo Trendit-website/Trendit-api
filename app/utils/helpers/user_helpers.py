@@ -33,9 +33,11 @@ def async_save_profile_pic(app, user: Trendit3User, media_file_paths):
     with app.app_context():
         try:
             user_profile = user.profile
+            console_log("async media_file_paths", media_file_paths)
             if media_file_paths:
                 for file_path in media_file_paths:
                     filename = os.path.basename(file_path)
+                    console_log("filename", filename)
                     with open(file_path, 'rb') as media_file:
                         profile_picture = save_media(media_file, filename) # This saves image file, saves the path in db and return the Media instance
                         profile_picture_id = profile_picture.id
@@ -57,6 +59,7 @@ def async_save_profile_pic(app, user: Trendit3User, media_file_paths):
 
 def save_profile_pic(user: Trendit3User, media_file: FileStorage):
     media_file_paths = save_media_files_to_temp(media_file)
+    console_log("media_file_paths", media_file_paths)
     Thread(target=async_save_profile_pic, args=(current_app._get_current_object(), user, media_file_paths)).start()
 
 
