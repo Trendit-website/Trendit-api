@@ -6,13 +6,8 @@ Description: This module contains models and functions for notifications.
 from datetime import datetime, timezone
 from sqlalchemy.orm import backref
 from enum import Enum
-from flask import request
 
 from app.extensions import db
-from app.utils.helpers.basic_helpers import generate_random_string
-
-from app.decorators.auth import roles_required
-from app.models.user import Trendit3User
 
 
 

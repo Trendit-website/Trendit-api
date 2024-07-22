@@ -9,14 +9,16 @@ as well as methods for password hashing and verification.
 @package Trendit³
 '''
 
-from sqlalchemy.orm import backref
+from sqlalchemy.orm import backref, validates
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from ..extensions import db
-from ..models import Media
-from ..models.role import Role
-from ..models.payment import TransactionType
+from .media import Media
+from .social import SocialMediaProfile
+from .role import Role, user_roles
+from .notification import Notification, user_notification
+from .payment import TransactionType
 from enum import Enum
 from config import Config
 
@@ -168,8 +170,31 @@ class Trendit3User(db.Model):
         db.session.commit()
 
     def delete(self):
-        db.session.delete(self)
-        db.session.commit()
+        try:
+            # Manually delete user roles
+            db.session.execute(user_roles.delete().where(user_roles.c.user_id == self.id))
+            
+            db.session.execute(user_notification.delete().where(user_notification.c.user_id == self.id))
+            
+            notifications = Notification.query.filter_by(sender_id=self.id)
+            social_profiles = SocialMediaProfile.query.filter_by(trendit3_user_id=self.id).all()
+            for sp in social_profiles:
+                sp.delete()
+            
+            for notification in notifications:
+                notification.delete()
+            
+            db.session.delete(self)
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            raise
+
+    @validates('roles')
+    def validate_roles(self, key, value):
+        if not value:
+            raise ValueError("User must have at least one role")
+        return value
     
     def membership_fee(self, paid: bool) -> None:
         if not isinstance(paid, bool):
