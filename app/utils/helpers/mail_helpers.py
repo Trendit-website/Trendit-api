@@ -48,12 +48,23 @@ def send_code_async_email(app, user_email:str, six_digit_code:int | str, code_ty
         
         if code_type == 'pwd_reset':
             subject = 'Reset your password'
-            template = render_template("mail/forgot-password.html", reset_url=six_digit_code, user_email=user_email, firstname=firstname, username=username)
+            template = render_template(
+                "mail/forgot-password.html",
+                reset_url=six_digit_code,
+                user_email=user_email,
+                user=user,
+                firstname=firstname,
+                username=username)
             msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
 
         elif code_type == '2FA':
             subject = 'One Time Password'
-            template = render_template("mail/otp.html", verification_code=six_digit_code, user_email=user_email, firstname=firstname)
+            template = render_template(
+                "mail/otp.html",
+                verification_code=six_digit_code,
+                user_email=user_email,
+                user=user,
+                firstname=firstname)
             msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
         try:
             mail.send(msg)
