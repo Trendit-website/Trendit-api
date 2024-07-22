@@ -53,6 +53,7 @@ def async_save_profile_pic(app, user: Trendit3User, media_file_paths):
                 profile_picture_id = None
             
             user_profile.update(profile_picture_id=profile_picture_id)
+            console_log("profile pic updates", f"ID: {profile_picture_id}, PATH: {profile_picture.media_path}")
         except Exception as e:
             log_exception()
             raise e
