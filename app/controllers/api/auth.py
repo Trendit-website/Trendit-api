@@ -88,6 +88,10 @@ class AuthController:
             decoded_token = decode_token(signup_token)
             user_info = decoded_token['sub']
             email = user_info['email']
+            email = user_info.get('email', None)
+            
+            if not email:
+                raise ValueError("Token is invalid or has been tampered with")
             
             if int(entered_code) != int(user_info['verification_code']):
                 return error_response('Verification code is incorrect', 400)
@@ -122,6 +126,9 @@ class AuthController:
         except DecodeError as e:
             log_exception('JWT Decode Error', e)
             return error_response('Signup token invalid or corrupted. Make sure you are sending it correctly.', 401)
+        except ValueError as e:
+            log_exception("", e)
+            return error_response(f"{e}", 400)
         except IntegrityError as e:
             db.session.rollback()
             logging.exception(f"Integrity Error: \n {e}")
