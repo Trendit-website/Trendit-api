@@ -11,3 +11,5 @@ from app import create_app
 
 flask_app, celery = create_app()
 flask_app.app_context().push()
+
+app_config = flask_app.config

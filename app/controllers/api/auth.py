@@ -10,7 +10,7 @@ It includes methods for checking username, checking email, signing up, resending
 
 import logging, json
 from datetime import timedelta
-from flask import request, make_response
+from flask import request, make_response, current_app
 from sqlalchemy.exc import ( IntegrityError, DataError, DatabaseError, InvalidRequestError, )
 from werkzeug.security import generate_password_hash
 from werkzeug.exceptions import UnsupportedMediaType
@@ -450,7 +450,10 @@ class AuthController:
                 'email': user.email
             }, expires_delta=expires, additional_claims={'type': 'reset-pwd', "reset": True})
             
-            reset_url = f"{Config.APP_DOMAIN_NAME}/reset_password?token={reset_token}"
+            app_config = current_app.config
+            console_log("app_config", app_config)
+            console_log("base app url", app_config.APP_DOMAIN_NAME)
+            reset_url = f"{app_config.APP_DOMAIN_NAME}/reset_password?token={reset_token}"
             
             try:
                 send_url_to_email(user.email, reset_url, code_type='pwd_reset') # send reset code to user's email
