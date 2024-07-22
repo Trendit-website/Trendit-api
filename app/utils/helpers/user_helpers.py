@@ -32,7 +32,10 @@ from .media_helpers import save_media_files_to_temp
 def async_save_profile_pic(app, user: Trendit3User, media_file_paths):
     with app.app_context():
         try:
-            user_profile = user.profile
+            user_profile: Profile = user.profile
+            console_log("user_profile", f"{user_profile}")
+            console_log("user_profile", f"ID: {user_profile.id} Pic path: {user_profile.profile_pic}")
+            
             console_log("async media_file_paths", media_file_paths)
             if media_file_paths:
                 for file_path in media_file_paths:
@@ -41,6 +44,7 @@ def async_save_profile_pic(app, user: Trendit3User, media_file_paths):
                     with open(file_path, 'rb') as media_file:
                         profile_picture = save_media(media_file, filename) # This saves image file, saves the path in db and return the Media instance
                         profile_picture_id = profile_picture.id
+                        console_log("r profile_picture_id", profile_picture_id)
             elif not media_file_paths and user:
                 if user_profile.profile_picture_id:
                     profile_picture = user_profile.profile_picture
@@ -52,8 +56,9 @@ def async_save_profile_pic(app, user: Trendit3User, media_file_paths):
                 profile_picture = None
                 profile_picture_id = None
             
-            user_profile.update(profile_picture_id=profile_picture_id)
+            user_profile.update(profile_picture=profile_picture)
             console_log("profile pic updates", f"ID: {profile_picture_id}, PATH: {profile_picture.media_path}")
+            console_log("user_profile_pic ID", f"ID: {user_profile.profile_picture_id}, PATH: {user_profile.profile_picture.media_path}")
         except Exception as e:
             log_exception()
             raise e
