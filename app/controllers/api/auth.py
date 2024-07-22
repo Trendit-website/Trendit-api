@@ -87,7 +87,6 @@ class AuthController:
             # Decode the JWT and extract the user's info and the verification code
             decoded_token = decode_token(signup_token)
             user_info = decoded_token['sub']
-            email = user_info['email']
             email = user_info.get('email', None)
             
             if not email:
