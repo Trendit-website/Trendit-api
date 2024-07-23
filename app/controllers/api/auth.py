@@ -19,7 +19,7 @@ from flask_jwt_extended.exceptions import JWTDecodeError
 from jwt import ExpiredSignatureError, DecodeError
 import pyotp
 
-from config import Config
+from config import Config, config_class
 from ...extensions import db
 from ...models import Role, RoleNames, TempUser, Trendit3User, Address, Profile, OneTimeToken, ReferralHistory, Membership, Wallet, UserSettings, SocialMediaProfile, SocialLinks, SocialIDs
 from ...models.social import social_media_platforms
@@ -450,9 +450,8 @@ class AuthController:
                 'email': user.email
             }, expires_delta=expires, additional_claims={'type': 'reset-pwd', "reset": True})
             
-            app_config = current_app.config
-            console_log("base app url", app_config["APP_DOMAIN_NAME"])
-            reset_url = f"{app_config["APP_DOMAIN_NAME"]}/reset_password?token={reset_token}"
+            console_log("base app url", config_class.APP_DOMAIN_NAME)
+            reset_url = f"{config_class.APP_DOMAIN_NAME}/reset_password?token={reset_token}"
             
             try:
                 send_url_to_email(user.email, reset_url, code_type='pwd_reset') # send reset code to user's email
