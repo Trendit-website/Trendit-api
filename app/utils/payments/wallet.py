@@ -39,7 +39,7 @@ def debit_wallet(user_id: int, amount: int, payment_type=None) -> float:
         db.session.add_all([payment, transaction])
         db.session.commit()
         
-        send_transaction_alert_email("debit", user.email, reason=service_paid_for, amount=amount) # send debit alert to user's mail
+        send_transaction_alert_email(user.email, reason=service_paid_for, amount=amount, tx_type="debit") # send debit alert to user's mail
         return wallet.balance
     except Exception as e:
         # Handle the exception appropriately (rollback, log the error, etc.)
@@ -64,7 +64,7 @@ def credit_wallet(user_id: int, amount: int | float | Decimal, credit_type="task
         db.session.commit()
         
         if credit_type in ["task-performance", "funded-wallet"]:
-            send_transaction_alert_email("credit", user.email, reason=credit_type, amount=amount)
+            send_transaction_alert_email(user.email, reason=credit_type, amount=amount, tx_type="credit")
         
         return wallet.balance
     except Exception as e:
