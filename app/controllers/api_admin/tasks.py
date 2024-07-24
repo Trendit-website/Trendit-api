@@ -1,18 +1,16 @@
 import logging
-from flask import request, jsonify
+from flask import request
 from flask_jwt_extended import get_jwt_identity
 from sqlalchemy.exc import ( DataError, DatabaseError, )
 
 from app.extensions import db
 from app.models.task import TaskPerformance, Task, AdvertTask, EngagementTask, TaskPaymentStatus, TaskStatus
-from ...utils.helpers.task_helpers import save_task, get_tasks_dict_grouped_by_field, fetch_task, get_aggregated_task_counts_by_field, fetch_performed_task
-from app.utils.helpers.task_helpers import update_performed_task
+from ...utils.helpers.task_helpers import fetch_task, fetch_performed_task
 from app.utils.helpers.response_helpers import error_response, success_response
-from app.utils.helpers.basic_helpers import generate_random_string, console_log, log_exception
+from app.utils.helpers.basic_helpers import console_log, log_exception
 from app.models.user import Trendit3User
 from ...utils.helpers.mail_helpers import send_other_emails
-from ...utils.payments.utils import initialize_payment
-from ...utils.payments.wallet import debit_wallet, credit_wallet
+from ...utils.payments.wallet import credit_wallet, refund_to_wallet
 
 
 class AdminTaskController:
@@ -159,12 +157,15 @@ class AdminTaskController:
             task.status = TaskStatus.DECLINED
             db.session.commit()
             
-            email = Trendit3User.query.get(task.trendit3_user_id).email
+            user: Trendit3User = Trendit3User.query.get(task.trendit3_user_id)
+            email = user.email
 
             try:
                 send_other_emails(email, email_type='task_rejected') # send email
             except Exception as e:
                 return error_response('Error occurred sending Email', 500)
+            
+            refund_to_wallet(user_id=user.id, amount=task.fee_paid, reason="task-rejection")
             
             return success_response('Task rejected successfully', 200)
         except Exception as e:

@@ -11,11 +11,15 @@
         <div style="width: 95%; font-family: 'Inter', 'sans-serif'; margin-bottom: 40px; font-size: 16px; font-weight: 400; color: #B1B1B1;">
             <p style="width: 90%;">
                 {% if reason == "task-performance" %}
-                    You have been credited with the sum of {{currency_code}} {{ amount }} to your Trendit³ account for the completion of the social task with you engaged in. To view your updated balance, click on the button below.
+                    You have been credited with the sum of {{currency_code}} {{ amount }} to your Trendit³ account for the completion of the social task you engaged in. To view your updated balance, click on the button below.
                 {% elif reason == "funded-wallet" %}
                     Your Trendit³ wallet has been successfully credited with the sum of {{currency_code}} {{ amount }}. This transaction was processed via Flutterwave. To view your updated balance, click the button below. 
                 {% elif reason == "failed-payment" %}
                     We apologize for the temporary inconvenience. Your recent payment of {{currency_code}} {{amount}} has been refunded to your Trendit³ wallet. This refund was processed due to a system error. You can now use this amount for future transactions. To view your updated balance, click the button below.
+                {% elif reason == "task-rejection" %}
+                    Your task order has been rejected. We apologize for any inconvenience this may cause. 
+                    A refund of {{currency_code}} {{ amount }} has been credited to your wallet after deducting a 1.5% fee. 
+                    For more information on the reason for rejection, please visit your task dashboard.
                 {% else %}
                     A sum of {{currency_code}} {{ amount }} was just credited to you account. To view your updated balance, click the button below. 
                 {% endif %}
