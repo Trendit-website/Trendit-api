@@ -1,6 +1,5 @@
-import logging
 from datetime import timedelta
-from flask import request, jsonify, current_app
+from flask import request, current_app
 from werkzeug.datastructures import FileStorage
 from werkzeug.exceptions import BadRequestKeyError
 from sqlalchemy.exc import ( IntegrityError, DataError, DatabaseError, InvalidRequestError, )
@@ -8,16 +7,16 @@ from flask_jwt_extended import create_access_token, decode_token, get_jwt_identi
 from flask_jwt_extended.exceptions import JWTDecodeError
 
 from ...extensions import db
-from ...models import Trendit3User, Address, Profile, BankAccount, Wallet
-from app.models.user import Trendit3User, Address, Profile
+from ...models import Trendit3User, Profile, BankAccount, Wallet
+from ...models.user import Trendit3User, Profile
 from ...utils.helpers.location_helpers import get_currency_info
-from app.utils.helpers.basic_helpers import console_log, log_exception
-from app.utils.helpers.user_helpers import get_user_info
-from app.utils.helpers.media_helpers import save_media
-from app.utils.helpers.user_helpers import is_username_exist, is_email_exist, save_profile_pic
-from app.utils.helpers.auth_helpers import send_code_to_email, generate_six_digit_code
+from ...utils.helpers.basic_helpers import console_log, log_exception
+from ...utils.helpers.user_helpers import get_user_info
+from ...utils.helpers.media_helpers import save_media
+from ...utils.helpers.user_helpers import is_username_exist, is_email_exist, save_profile_pic
+from ...utils.helpers.auth_helpers import send_code_to_email, generate_six_digit_code
 from ...utils.helpers.bank_helpers import get_bank_code
-from app.utils.helpers.response_helpers import *
+from ...utils.helpers.response_helpers import *
 
 class ProfileController:
     @staticmethod
