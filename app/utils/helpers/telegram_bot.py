@@ -72,25 +72,40 @@ def notify_telegram_admins_new_performed_task(performed_task: TaskPerformance):
     task = performed_task.get_task()
     reward_money = performed_task.reward_money
     
+    post_link = performed_task.post_link
+    image_url = performed_task.get_proof_screenshot()
+    
     date_started = performed_task.started_at
     date_completed = performed_task.date_completed
     
     label = f"{username} Just performed a task, and is expecting a review:"
     
-    data = (f"• Full Name: {full_name} \n • Task ID: {performed_task_id} \n • Task Type: {task_type} \n • Date Started: {date_started} \n • Date Completed: {date_completed} \n • Status: {status} \n\n • Amount to be earned: {reward_money}")
+    screenshot_txt = F"• Proof Screenshot: {image_url}" if performed_task.proof_screenshot_id else ""
+    data = (f"• Full Name: {full_name} \n • Task ID: {performed_task_id} \n • Task Type: {task_type} \n • Date Started: {date_started} \n • Date Completed: {date_completed} \n • Status: {status} \n\n • Amount to be earned: {reward_money} {screenshot_txt}")
     
     formatted_data = data + f"\n\n "
     
-    message = f"\n\n{label:-^12}\n\n {formatted_data} \n{'//':-^12}\n\n"
+    message = f"\n\n{label:-^12}\n\n {formatted_data} \n{'//':-^12}\n\n "
+    
+    view_link_button = None  # Initialize as None
+    if post_link and post_link.strip():  # Check if post_link exists and is not empty
+        view_link_button = {'text': 'View link', 'url': f'{post_link}'}
+    
+    inline_keyboard = [
+        [
+            {'text': 'Accept', 'callback_data': f'accept_performedTask_{performed_task_id}'},
+            {'text': 'Reject', 'callback_data': f'reject_performedTask_{performed_task_id}'}
+        ],
+    ]
+
+    if view_link_button:  # Add the button only if it's not None
+        inline_keyboard.append([view_link_button])
     
     payload = {
         'chat_id': Config.TELEGRAM_CHAT_ID,
         'text': message,
         'reply_markup': {
-            'inline_keyboard': [[
-                {'text': 'Accept', 'callback_data': f'accept_performedTask_{performed_task_id}'},
-                {'text': 'Reject', 'callback_data': f'reject_performedTask_{performed_task_id}'}
-            ]]
+            'inline_keyboard': inline_keyboard
         }
     }
     response = requests.post(send_msg_url, json=payload)
