@@ -13,7 +13,7 @@ from requests_oauthlib.compliance_fixes import facebook_compliance_fix
 from config import config_class
 from ...extensions import db
 from ...models.role import Role
-from ...models import Role, RoleNames, TempUser, Trendit3User, Address, Profile, OneTimeToken, ReferralHistory, Membership, Wallet, UserSettings
+from ...models import Role, RoleNames, TempUser, Trendit3User, Address, Profile, OneTimeToken, ReferralHistory, Membership, Wallet, UserSettings, SocialLinks
 from ...models.membership import Membership
 from ...models.payment import Wallet
 from ...utils.helpers.basic_helpers import console_log, log_exception, generate_random_string
@@ -343,8 +343,8 @@ class SocialAuthController:
                 user_google_data = response.json()
                 print(user_google_data)
                 # Return the user's data (you can customize this response as needed)
-                email = user_google_data['email'] # not using .get() here beause this compulsorily has to work
-                # referral_code = user_data['referral_code']
+                email = user_google_data['email'] # not using .get() here because this compulsorily has to work
+                
                 if not email:
                     error_response('Email is required', 400)
                     return redirect(f"{config_class.APP_DOMAIN_NAME}/?error=Email_is_required")
@@ -353,20 +353,11 @@ class SocialAuthController:
                     error_response('Email already taken', 409)
                     return redirect(f"{config_class.APP_DOMAIN_NAME}/?error=User_already_exists")
                 
-                # if referral_code and not Trendit3User.query.filter_by(username=referral_code).first():
-                #     return error_response('Referral code is invalid', 404)
-
-                # first check if user is already a temporary user.
-                # user = TempUser.query.filter_by(email=email).first()
-                # if user:
-                #     return success_response('User registered successfully', 201, {'user_data': user.to_dict()})
+                console_log("user google data", user_google_data)
                 
-                # temp_user = TempUser(email=email)
-                # user_data = temp_user.to_dict()
-                # user_google_id = user_google_data['user_id']
                 firstname = user_google_data.get('given_name', '')
                 lastname = user_google_data.get('family_name', '')
-                username = generate_random_string(12)
+                username = f"{firstname}_{generate_random_string(2)}_{lastname}"
 
                 while (Trendit3User.query.filter_by(username=username).first()):
                     username = generate_random_string(12)
@@ -377,12 +368,21 @@ class SocialAuthController:
                 new_membership = Membership(trendit3_user=new_user)
                 new_user_wallet = Wallet(trendit3_user=new_user)
                 new_user_setting = UserSettings(trendit3_user=new_user)
+                new_user_social_links = SocialLinks(trendit3_user=new_user)
+                
                 role = Role.query.filter_by(name=RoleNames.CUSTOMER).first()
                 if role:
                     new_user.roles.append(role)
 
-                
-                db.session.add_all([new_user, new_user_profile, new_user_address, new_membership, new_user_wallet, new_user_setting])
+                db.session.add_all([
+                    new_user,
+                    new_user_profile,
+                    new_user_address,
+                    new_membership,
+                    new_user_wallet,
+                    new_user_setting,
+                    new_user_social_links
+                ])
                 
                 db.session.commit()
 
@@ -393,9 +393,7 @@ class SocialAuthController:
                     referral.update(username=username, status='registered', date_joined=new_user.date_joined)
                 
                 # create access token.
-                access_token = create_access_token(identity=new_user.id, expires_delta=timedelta(minutes=1440), additional_claims={'type': 'access'})
-                
-            
+                access_token = create_access_token(identity=new_user.id, expires_delta=timedelta(minutes=131400), additional_claims={'type': 'access'})
                 
                 # Send Welcome Email
                 try:
@@ -404,15 +402,6 @@ class SocialAuthController:
                     log_exception(f"Error sending Email", e)
                     return error_response(f'An error occurred while sending the verification email: {str(e)}', 500)
 
-
-                db.session.close()
-                
-                # TODO: Make asynchronous
-                # if 'referral_code' in user_info:
-                #     referral_code = user_info['referral_code']
-                #     referrer = get_trendit3_user(referral_code)
-                #     referral_history = ReferralHistory.create_referral_history(email=email, status='pending', trendit3_user=referrer, date_joined=new_user.date_joined)
-                
                 return redirect(f"{config_class.APP_DOMAIN_NAME}/?access_token={access_token}")
             
             else:
