@@ -20,6 +20,11 @@ class NotificationType(Enum):
     NOTIFICATION = 'notification'
     ACTIVITY = 'activity'
 
+class MessageType(Enum):
+    MESSAGE = 'message'
+    NOTIFICATION = 'notification'
+    ACTIVITY = 'activity'
+
 class SocialVerificationStatus(Enum):
     PENDING = 'pending'
     APPROVED = 'approved'
@@ -47,7 +52,7 @@ class Notification(db.Model):
     __tablename__ = 'notification'
 
     id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
-    type = db.Column(db.Enum(NotificationType), nullable=False, default=NotificationType.MESSAGE)
+    notification_type = db.Column(db.Enum(NotificationType), nullable=False, default=NotificationType.MESSAGE)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
     title = db.Column(db.String(255), nullable=True)
