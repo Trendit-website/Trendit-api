@@ -5,19 +5,19 @@ from . import api
 from app.controllers.api import NotificationController
 
 
-@api.route('/notifications', methods=['POST'])
+@api.route('/notifications', methods=["GET", "POST"])
 @jwt_required()
 def get_user_notifications():
     return NotificationController.get_user_notifications()
 
 
-@api.route('/messages', methods=['POST'])
+@api.route('/messages', methods=["POST"])
 @jwt_required()
 def get_user_messages():
     return NotificationController.get_user_messages()
 
 
-@api.route('/activities', methods=['POST'])
+@api.route('/activities', methods=["POST"])
 @jwt_required()
 def get_user_activities():
     return NotificationController.get_user_activities()

@@ -18,8 +18,26 @@ class NotificationController:
         
         try:
             current_user_id = get_jwt_identity()
-            notification = get_notifications(current_user_id, MessageType.NOTIFICATION)
-            extra_data = {'user_notification': notification}
+            page = request.args.get("page", 1, type=int)
+            tasks_per_page = int(10)
+            pagination = Notification.query.filter_by(recipient_id=current_user_id) \
+                .order_by(Notification.created_at.desc()) \
+                .paginate(page=page, per_page=tasks_per_page, error_out=False)
+            
+            
+            notifications = pagination.items
+            current_notifications = [notification.to_dict() for notification in notifications]
+            extra_data = {
+                'total': pagination.total,
+                "current_page": pagination.page,
+                "total_pages": pagination.pages,
+                "notifications": current_notifications,
+            }
+            
+            if not notifications:
+                return success_response(f'There are no notifications yet', 200, extra_data)
+            
+            
             result = success_response('User notifications fetched successfully', 200, extra_data)
         
         except Exception as e:
@@ -76,11 +94,10 @@ class NotificationController:
         Notification: The sent notification object.
         """
         try:
-            sender_id = int(get_jwt_identity())
+            recipient_id = int(get_jwt_identity())
             recipients = Trendit3User.query.all()
-            Notification.send_notification(
-                sender_id=sender_id,
-                recipients=recipients,
+            Notification.add_notification(
+                recipient_id=recipient_id,
                 body=body,
                 message_type=MessageType.MESSAGE
             )
@@ -107,11 +124,10 @@ class NotificationController:
         Notification: The sent notification object.
         """
         try:
-            sender_id = int(get_jwt_identity())
-            recipients = Trendit3User.query.filter_by(id=sender_id).first()
-            Notification.send_notification(
-                sender_id=sender_id,
-                recipients=recipients,
+            recipient_id = int(get_jwt_identity())
+            recipients = Trendit3User.query.filter_by(id=recipient_id).first()
+            Notification.add_notification(
+                recipient_id=recipient_id,
                 body=body,
                 message_type=MessageType.NOTIFICATION
             )
@@ -140,11 +156,10 @@ class NotificationController:
         Notification: The sent notification object.
         """
         try:
-            sender_id = int(get_jwt_identity())
-            recipients = Trendit3User.query.filter_by(id=sender_id).first()
-            Notification.send_notification(
-                sender_id=sender_id,
-                recipients=recipients,
+            recipient_id = int(get_jwt_identity())
+            recipients = Trendit3User.query.filter_by(id=recipient_id).first()
+            Notification.add_notification(
+                recipient_id=recipient_id,
                 body=body,
                 message_type=MessageType.ACTIVITY
             )

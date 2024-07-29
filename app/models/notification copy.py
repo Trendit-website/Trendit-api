@@ -48,22 +48,21 @@ class Notification(db.Model):
 
     id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
     type = db.Column(db.Enum(MessageType), nullable=False, default=MessageType.MESSAGE)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.now(timezone.utc))
-    updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+    createdAt = db.Column(db.DateTime, nullable=False, default=datetime.now(timezone.utc))
+    updatedAt = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
     title = db.Column(db.String(255), nullable=True)
     body = db.Column(db.Text, nullable=True, default=None)
-    read = db.Column(db.Boolean, nullable=True, default=False)
+    read = db.Column(db.Boolean, nullable=False, default=False)
     recipient_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=True)
 
     # Relationships
-    # recipients = db.relationship('Trendit3User', secondary=user_notification, backref='received_messages', lazy='dynamic')
-    recipients = db.relationship('Trendit3User', secondary=user_notification, back_populates='notifications')
+    recipient = db.relationship('Trendit3User', secondary=user_notification, back_populates='notifications')
 
     def __repr__(self):
         return f'<Notification {self.id}>'
 
     @classmethod
-    def add_notification(cls, recipient_id, body, message_type=MessageType.NOTIFICATION, commit=True):
+    def send_notification(cls, recipient_id, body, message_type=MessageType.NOTIFICATION, commit=True):
         """
         Send a notification from an admin to multiple recipients.
 
@@ -80,7 +79,6 @@ class Notification(db.Model):
             db.session.commit()
 
         return message
-        
 
     def update(self, **kwargs):
         for key, value in kwargs.items():
@@ -93,13 +91,12 @@ class Notification(db.Model):
 
     def to_dict(self):
         return {
-            'id': self.id,
+            "id": self.id,
             "type": self.type.value,
-            "title": self.title,
             "body": self.body,
             "read": self.read,
-            "created_at": self.created_at,
-            "updated_at": self.updated_at
+            "created_at": self.createdAt,
+            "updated_at": self.updatedAt
         }
     
 

@@ -53,7 +53,7 @@ class AdminSocialProfileController:
                 
                 profile: SocialMediaProfile = SocialMediaProfile.query.filter_by(id=profile_id).first()
                 platform: str = profile.platform
-                sender_id: int = profile.trendit3_user_id
+                recipient_id: int = profile.trendit3_user_id
                 sender: Trendit3User = profile.trendit3_user
                 body: str = f'Your {profile.platform} verification request has been approved'
                 
@@ -61,9 +61,8 @@ class AdminSocialProfileController:
                 # Approve and send notification
                 profile.status = SocialLinkStatus.VERIFIED
                 
-                Notification.send_notification(
-                    sender_id=sender_id,
-                    recipients=[sender] if not isinstance(sender, (list, tuple)) else sender,
+                Notification.add_notification(
+                    recipient_id=recipient_id,
                     body=body,
                     message_type=MessageType.NOTIFICATION,
                     commit=False
@@ -96,7 +95,7 @@ class AdminSocialProfileController:
                 
                 profile: SocialMediaProfile = SocialMediaProfile.query.filter_by(id=profile_id).first()
                 platform: str = profile.platform
-                sender_id: int = profile.trendit3_user_id
+                recipient_id: int = profile.trendit3_user_id
                 sender: Trendit3User = profile.trendit3_user
                 body: str = f'Your {profile.platform} verification request has been rejected'
                 
@@ -104,9 +103,8 @@ class AdminSocialProfileController:
                 # reject and send notification
                 profile.status = SocialLinkStatus.REJECTED
                 
-                Notification.send_notification(
-                    sender_id=sender_id,
-                    recipients=[sender] if not isinstance(sender, (list, tuple)) else sender,
+                Notification.add_notification(
+                    recipient_id=recipient_id,
                     body=body,
                     message_type=MessageType.NOTIFICATION,
                     commit=False
@@ -165,7 +163,7 @@ class AdminSocialProfileController:
             try:
                 data = request.get_json()
                 user_id = data.get('userId')
-                sender_id = int(get_jwt_identity())
+                recipient_id = int(get_jwt_identity())
                 type = data.get('type')
                 link = data.get('link')
                 social_verification_id = data.get('socialVerificationId') 
@@ -205,9 +203,8 @@ class AdminSocialProfileController:
                     
                 db.session.commit()
                 
-                Notification.send_notification(
-                    sender_id=sender_id,
-                    recipients=[user] if not isinstance(user, (list, tuple)) else user,
+                Notification.add_notification(
+                    recipient_id=recipient_id,
                     body=body,
                     message_type=MessageType.NOTIFICATION
                 )
@@ -238,7 +235,7 @@ class AdminSocialProfileController:
             try:
                 data = request.get_json()
                 user_id = int(data.get('userId'))
-                sender_id = int(get_jwt_identity())
+                recipient_id = int(get_jwt_identity())
                 type = data.get('type')
                 link = data.get('link', '')
                 social_verification_id = int(data.get('socialVerificationId'))
@@ -278,9 +275,8 @@ class AdminSocialProfileController:
                     
                 db.session.commit()
                 
-                Notification.send_notification(
-                    sender_id=sender_id,
-                    recipients=[user] if not isinstance(user, (list, tuple)) else user,
+                Notification.add_notification(
+                    recipient_id=recipient_id,
                     body=body,
                     message_type=MessageType.NOTIFICATION
                 )

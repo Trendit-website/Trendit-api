@@ -24,6 +24,7 @@ from .models.role import create_roles
 from .models.item import Item
 from .models.task import Task, AdvertTask, EngagementTask
 from .models.payment import Payment, Transaction, Wallet, Withdrawal
+from .models.notification import Notification, MessageType
 from .models.task_option import populate_task_options
 
 from .celery import make_celery
@@ -126,5 +127,10 @@ def create_app(config_name=Config.ENV):
     with flask_app.app_context():
         create_roles()  # Create roles for trendit3
         populate_task_options()
+        
+        # notifications: list[Notification] = Notification.query.all()
+        
+        # for notification in notifications:
+        #     notification.update(title=notification.body)
     
     return flask_app, celery
