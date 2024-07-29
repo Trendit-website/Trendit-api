@@ -120,7 +120,16 @@ def generate_random_task(task_type:str, filter_value:str) -> AdvertTask | Engage
     """
     try:
         current_user_id = int(get_jwt_identity())
-        performed_task = TaskPerformance.query.filter_by(status='pending', user_id=current_user_id).first()
+        performed_task = None
+        if task_type == "advert":
+            performed_task = TaskPerformance.query.filter_by(status='pending', task_type=task_type, user_id=current_user_id).first()
+        elif task_type == "engagement":
+            performed_tasks = TaskPerformance.query.filter_by(status='pending', user_id=current_user_id, task_type=task_type).all()
+            for performed_task in performed_tasks:
+                task = EngagementTask.query.filter_by(id=performed_task.task_id, goal=filter_value).first()
+                if task:
+                    raise PendingTaskError
+            
         
         if performed_task:
             raise PendingTaskError

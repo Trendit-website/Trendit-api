@@ -24,7 +24,7 @@ from .models.role import create_roles
 from .models.item import Item
 from .models.task import Task, AdvertTask, EngagementTask
 from .models.payment import Payment, Transaction, Wallet, Withdrawal
-from .models.notification import Notification, MessageType
+from .models.notification import Notification, NotificationType
 from .models.task_option import populate_task_options
 
 from .celery import make_celery
