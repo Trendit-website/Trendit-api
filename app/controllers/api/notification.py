@@ -5,7 +5,7 @@ from flask_jwt_extended import get_jwt_identity
 
 from ...extensions import db
 
-from ...models.notification import MessageStatus, MessageType, UserMessageStatus, Notification, SocialVerification, SocialVerificationStatus
+from ...models import Notification, NotificationType
 from ...models.user import Trendit3User
 
 from ...utils.helpers.basic_helpers import console_log, log_exception
@@ -19,13 +19,25 @@ class NotificationController:
         try:
             current_user_id = get_jwt_identity()
             page = request.args.get("page", 1, type=int)
+            notification_type = request.args.get("type", "")
             tasks_per_page = int(10)
-            pagination = Notification.query.filter_by(recipient_id=current_user_id) \
+            
+            notifications_query: list[Notification] = Notification.query
+            
+            if notification_type:
+                try:
+                    type_enum = NotificationType[notification_type.upper()]
+                except KeyError:
+                    return error_response("Invalid notification type", 400)
+                
+                notifications_query: list[Notification] = Notification.query.filter(Notification.type==type_enum)
+            
+            pagination = notifications_query.filter_by(type=type_enum, recipient_id=current_user_id) \
                 .order_by(Notification.created_at.desc()) \
                 .paginate(page=page, per_page=tasks_per_page, error_out=False)
             
             
-            notifications = pagination.items
+            notifications: list[Notification] = pagination.items
             current_notifications = [notification.to_dict() for notification in notifications]
             extra_data = {
                 'total': pagination.total,
@@ -36,7 +48,6 @@ class NotificationController:
             
             if not notifications:
                 return success_response(f'There are no notifications yet', 200, extra_data)
-            
             
             result = success_response('User notifications fetched successfully', 200, extra_data)
         
@@ -56,7 +67,7 @@ class NotificationController:
         
         try:
             current_user_id = get_jwt_identity()
-            message = get_notifications(current_user_id, MessageType.MESSAGE)
+            message = get_notifications(current_user_id, NotificationType.MESSAGE)
             extra_data = {'user_notification': message}
             return success_response('User messages fetched successfully', 200, extra_data)
         
@@ -73,7 +84,7 @@ class NotificationController:
         
         try:
             current_user_id = get_jwt_identity()
-            message = get_notifications(current_user_id, MessageType.ACTIVITY)
+            message = get_notifications(current_user_id, NotificationType.ACTIVITY)
             extra_data = {'user_notification': message}
             return success_response('User messages fetched successfully', 200, extra_data)
         
@@ -99,7 +110,7 @@ class NotificationController:
             Notification.add_notification(
                 recipient_id=recipient_id,
                 body=body,
-                message_type=MessageType.MESSAGE
+                message_type=NotificationType.MESSAGE
             )
             
             db.session.commit()
@@ -129,7 +140,7 @@ class NotificationController:
             Notification.add_notification(
                 recipient_id=recipient_id,
                 body=body,
-                message_type=MessageType.NOTIFICATION
+                message_type=NotificationType.NOTIFICATION
             )
 
             db.session.commit()
@@ -161,7 +172,7 @@ class NotificationController:
             Notification.add_notification(
                 recipient_id=recipient_id,
                 body=body,
-                message_type=MessageType.ACTIVITY
+                message_type=NotificationType.ACTIVITY
             )
 
             db.session.commit()
@@ -191,7 +202,7 @@ class NotificationController:
             if not query:
                 return error_response('No search query', 400)
             
-            results = Notification.query.filter(Notification.type == MessageType.ACTIVITY).filter(Notification.body.ilike(f'%{query}%')).all()
+            results = Notification.query.filter(Notification.type == NotificationType.ACTIVITY).filter(Notification.body.ilike(f'%{query}%')).all()
             
             extra_data = {"search_result": [result.to_dict() for result in results]}
 

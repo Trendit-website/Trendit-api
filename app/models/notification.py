@@ -15,7 +15,7 @@ class MessageStatus(Enum):
     READ = 'read'
     UNREAD = 'unread'
 
-class MessageType(Enum):
+class NotificationType(Enum):
     MESSAGE = 'message'
     NOTIFICATION = 'notification'
     ACTIVITY = 'activity'
@@ -47,7 +47,7 @@ class Notification(db.Model):
     __tablename__ = 'notification'
 
     id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
-    type = db.Column(db.Enum(MessageType), nullable=False, default=MessageType.MESSAGE)
+    type = db.Column(db.Enum(NotificationType), nullable=False, default=NotificationType.MESSAGE)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
     title = db.Column(db.String(255), nullable=True)
@@ -63,7 +63,7 @@ class Notification(db.Model):
         return f'<Notification {self.id}>'
 
     @classmethod
-    def add_notification(cls, recipient_id, body, message_type=MessageType.NOTIFICATION, commit=True):
+    def add_notification(cls, recipient_id, body, message_type=NotificationType.NOTIFICATION, commit=True):
         """
         Send a notification from an admin to multiple recipients.
 
@@ -71,7 +71,7 @@ class Notification(db.Model):
             admin (User): The admin user sending the notification.
             recipients (list of User): List of recipient users.
             body (str): Body of the notification message.
-            message_type (MessageType): Type of the notification message.
+            message_type (NotificationType): Type of the notification message.
         """
         message = cls(recipient_id=recipient_id, body=body, type=message_type)
         db.session.add(message)
@@ -132,7 +132,7 @@ class SocialVerification(db.Model):
             recipients (list of User): List of recipient users.
             body (str): Body of the notification message.
             type (str): Type of the notification message.
-            message_type (MessageType): Type of the notification message.
+            message_type (NotificationType): Type of the notification message.
         """
         message = cls(sender_id=sender_id, body=body, status=status, type=type)
         db.session.add(message)
