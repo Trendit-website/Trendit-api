@@ -78,7 +78,7 @@ class Notification(db.Model):
             body (str): Body of the notification message.
             message_type (NotificationType): Type of the notification message.
         """
-        message = cls(recipient_id=recipient_id, body=body, type=message_type)
+        message = cls(recipient_id=recipient_id, body=body, notification_type=message_type)
         db.session.add(message)
         
         if commit:
@@ -99,7 +99,7 @@ class Notification(db.Model):
     def to_dict(self):
         return {
             'id': self.id,
-            "type": self.type.value,
+            "type": self.notification_type.value,
             "title": self.title,
             "body": self.body,
             "read": self.read,
