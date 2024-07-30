@@ -2,6 +2,7 @@ import requests
 
 from config import Config
 from ...utils.helpers import console_log
+from ...models.user import Trendit3User, Profile
 from ...models.task import Task, AdvertTask, EngagementTask, TaskPerformance
 from ...models.social import SocialMediaPlatform, SocialMediaProfile
 
@@ -61,9 +62,10 @@ def notify_telegram_admins_new_task(task: Task | AdvertTask | EngagementTask):
     console_log("response_data", response.json())
 
 def notify_telegram_admins_new_performed_task(performed_task: TaskPerformance):
-    user = performed_task.trendit3_user
+    user: Trendit3User = performed_task.trendit3_user
+    user_profile: Profile = user.profile
     username = user.username
-    full_name = f"{user.profile.firstname} {user.profile.lastname}"
+    full_name = f"{user_profile.firstname} {user_profile.lastname}"
     
     performed_task_id = performed_task.id
     performed_task_key = performed_task.key
@@ -113,9 +115,10 @@ def notify_telegram_admins_new_performed_task(performed_task: TaskPerformance):
     console_log("response_data", response.json())
 
 def notify_telegram_admins_new_profile(social_profile : SocialMediaProfile):
-    user = social_profile.trendit3_user
+    user: Trendit3User = social_profile.trendit3_user
+    user_profile: Profile = user.profile
     username = user.username
-    full_name = f"{user.profile.firstname} {user.profile.lastname}"
+    full_name = f"{user_profile.firstname} {user_profile.lastname}"
     
     profile_id = social_profile.id
     profile_link = social_profile.link
