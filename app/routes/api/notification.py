@@ -10,6 +10,11 @@ from app.controllers.api import NotificationController
 def get_user_notifications():
     return NotificationController.get_user_notifications()
 
+@api.route('/notifications/<notification_id>', methods=["PATCH"])
+@jwt_required()
+def mark_notification_read(notification_id):
+    return NotificationController.mark_notification_read(notification_id)
+
 
 @api.route('/messages', methods=["POST"])
 @jwt_required()

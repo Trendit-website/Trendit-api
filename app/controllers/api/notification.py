@@ -64,6 +64,40 @@ class NotificationController:
 
 
     @staticmethod
+    def mark_notification_read(notification_id):
+        try:
+            current_user_id = get_jwt_identity()
+            notification: Notification = Notification.query.filter_by(id=notification_id, user_id=current_user_id).first()
+            
+            if not notification:
+                return error_response(f"This notification doesn't exist or has been deleted", 404)
+            
+            data = request.get_json()
+            if not "is_read" in data:
+                return error_response("Invalid request", 400)
+            
+            is_read = data.get("is_read", False)
+            
+            notification.update(read=is_read)
+            
+            extra_data = {
+                "notification": notification.to_dict(),
+            }
+            api_response = success_response('notifications updated successfully', 200, extra_data)
+            
+        except (DataError, DatabaseError) as e:
+            db.session.rollback()
+            log_exception('Database error occurred during updating notification read status', e)
+            return error_response('Error interacting to the database.', 500)
+        except Exception as e:
+            db.session.rollback()
+            log_exception("An exception occurred while updating notification.", e)
+            api_response = error_response('An unexpected error. Our developers are already looking into it.', 500)
+
+        return api_response
+    
+    
+    @staticmethod
     def get_user_messages():
         
         try:
