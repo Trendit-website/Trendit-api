@@ -32,6 +32,8 @@ class NotificationController:
                 
                 notifications_query: list[Notification] = Notification.query.filter(Notification.notification_type==type_enum)
             
+            console_log("notifications_query", notifications_query)
+            
             pagination = notifications_query.filter_by(recipient_id=current_user_id) \
                 .order_by(Notification.created_at.desc()) \
                 .paginate(page=page, per_page=tasks_per_page, error_out=False)
@@ -49,17 +51,16 @@ class NotificationController:
             if not notifications:
                 return success_response(f'There are no notifications yet', 200, extra_data)
             
-            result = success_response('User notifications fetched successfully', 200, extra_data)
+            api_response = success_response('User notifications fetched successfully', 200, extra_data)
         
         except Exception as e:
             msg = f'An error occurred while getting user notifications: {e}'
             # Log the error details for debugging
             logging.exception("An exception occurred while getting user notifications.")
             status_code = 500
-            result = error_response(msg, status_code)
+            api_response = error_response(msg, status_code)
 
-        finally:
-            return result            
+        return api_response            
 
 
     @staticmethod
