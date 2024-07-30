@@ -38,10 +38,10 @@ class Config:
     
     # Telegram variables
     TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
-    TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID") or '-1002237256556'
+    TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
     TELEGRAM_SEND_MSG_URL = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-    APP_BOT_PASSWORD: Final = os.environ.get("APP_BOT_USERNAME") or "Trendit3Bot"
-    APP_BOT_PASSWORD: Final = os.environ.get("APP_BOT_PASSWORD") or "TrenditBot1"
+    APP_BOT_PASSWORD: Final = os.environ.get("APP_BOT_USERNAME")
+    APP_BOT_PASSWORD: Final = os.environ.get("APP_BOT_PASSWORD")
     
     # Constants
     TASKS_PER_PAGE = os.environ.get('TASKS_PER_PAGE') or 10
@@ -49,30 +49,30 @@ class Config:
     PAYMENT_TYPES = ['task-creation', 'membership-fee', 'credit-wallet', 'item-upload']
     
     # JWT configurations
-    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY') or "super-secret" # Change This
+    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY')
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=30)
     
     
-    PAYMENT_GATEWAY = os.environ.get('PAYMENT_GATEWAY') or "Flutterwave"
+    PAYMENT_GATEWAY = os.environ.get('PAYMENT_GATEWAY')
     # Paystack Configurations
-    PAYSTACK_API_URL = os.environ.get('PAYSTACK_API_URL') or "https://api.paystack.co"
-    PAYSTACK_INITIALIZE_URL = os.environ.get('PAYSTACK_INITIALIZE_URL') or "https://api.paystack.co/transaction/initialize"
-    PAYSTACK_RECIPIENT_URL = os.environ.get('PAYSTACK_RECIPIENT_URL') or "https://api.paystack.co/transferrecipient"
-    PAYSTACK_TRANSFER_URL = os.environ.get('PAYSTACK_RECIPIENT_URL') or "https://api.paystack.co/transfer"
-    PAYSTACK_COUNTIES_URL = os.environ.get('PAYSTACK_COUNTIES_URL') or "https://api.paystack.co/country"
-    PAYSTACK_STATES_URL = os.environ.get('PAYSTACK_STATES_URL') or "https://api.paystack.co/address_verification/states"
-    PAYSTACK_BANKS_URL = os.environ.get('PAYSTACK_BANKS_URL') or "https://api.paystack.co/bank"
-    PAYSTACK_SECRET_KEY = os.environ.get('PAYSTACK_SECRET_KEY') or "sk_test_a8784e4f50809b0ee5cba711046090b0df20d413"
-    PAYSTACK_PUBLIC_KEY = os.environ.get('PAYSTACK_PUBLIC_KEY') or "pk_test_b6409653e947befe40cbacc78f7338de0e0764c3"
+    PAYSTACK_API_URL = "https://api.paystack.co"
+    PAYSTACK_INITIALIZE_URL = "https://api.paystack.co/transaction/initialize"
+    PAYSTACK_RECIPIENT_URL = "https://api.paystack.co/transferrecipient"
+    PAYSTACK_TRANSFER_URL = "https://api.paystack.co/transfer"
+    PAYSTACK_COUNTIES_URL = "https://api.paystack.co/country"
+    PAYSTACK_STATES_URL = "https://api.paystack.co/address_verification/states"
+    PAYSTACK_BANKS_URL = "https://api.paystack.co/bank"
+    PAYSTACK_SECRET_KEY = os.environ.get('PAYSTACK_SECRET_KEY')
+    PAYSTACK_PUBLIC_KEY = os.environ.get('PAYSTACK_PUBLIC_KEY')
     
     # Flutterwave Configurations
-    FLW_INITIALIZE_URL = os.environ.get('FLW_INITIALIZE_URL') or "https://api.flutterwave.com/v3/payments"
-    FLW_BANKS_URL = os.environ.get('FLW_BANKS_URL') or "https://api.flutterwave.com/v3/banks"
-    FLW_TRANSFER_URL = os.environ.get('FLW_TRANSFER_URL') or "https://api.flutterwave.com/v3/transfers"
-    FLW_VERIFY_BANK_ACCOUNT_URL = os.environ.get('FLW_VERIFY_BANK_ACCOUNT_URL') or "https://api.flutterwave.com/v3/accounts/resolve"
-    FLW_SECRET_KEY = os.environ.get('FLW_SECRET_KEY') or "FLWSECK_TEST-42411bcec771ba0d9a6cfbb21c9a3ca1-X"
-    FLW_PUBLIC_KEY = os.environ.get('FLW_PUBLIC_KEY') or "FLWPUBK_TEST-0db308be49b1ea25ba4e320ae778f04a-X"
-    FLW_SECRET_HASH = os.environ.get('FLW_SECRET_HASH') or "42cf4e6d9d8c728003ae3361d5268c23"
+    FLW_INITIALIZE_URL = "https://api.flutterwave.com/v3/payments"
+    FLW_BANKS_URL = "https://api.flutterwave.com/v3/banks"
+    FLW_TRANSFER_URL = "https://api.flutterwave.com/v3/transfers"
+    FLW_VERIFY_BANK_ACCOUNT_URL = "https://api.flutterwave.com/v3/accounts/resolve"
+    FLW_SECRET_KEY = os.environ.get('FLW_SECRET_KEY')
+    FLW_PUBLIC_KEY = os.environ.get('FLW_PUBLIC_KEY')
+    FLW_SECRET_HASH = os.environ.get('FLW_SECRET_HASH')
     
     
     # mail configurations
@@ -85,9 +85,9 @@ class Config:
     MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER')
     
     # Cloudinary configurations
-    CLOUDINARY_CLOUD_NAME = os.environ.get('CLOUDINARY_CLOUD_NAME') or "dcozguaw3"
-    CLOUDINARY_API_KEY = os.environ.get('CLOUDINARY_API_KEY') or "798295575458768"
-    CLOUDINARY_API_SECRET = os.environ.get('CLOUDINARY_API_SECRET') or "HwXtPdaC5M1zepKZUriKCYZ9tsI"
+    CLOUDINARY_CLOUD_NAME = os.environ.get('CLOUDINARY_CLOUD_NAME')
+    CLOUDINARY_API_KEY = os.environ.get('CLOUDINARY_API_KEY')
+    CLOUDINARY_API_SECRET = os.environ.get('CLOUDINARY_API_SECRET')
     
     # Celery
     CELERY_BROKER_URL = REDIS_URL
@@ -98,8 +98,8 @@ class Config:
     CELERY_RESULT_SERIALIZER = 'json'
     
     #  ExchangeRate-API
-    EXCHANGE_RATE_API_KEY = os.environ.get('EXCHANGE_RATE_API_KEY') or "c997678ed19c3c9bb53ed2af"
-    EXCHANGE_RATE_API_URL = os.environ.get('EXCHANGE_RATE_API_KEY') or f"https://v6.exchangerate-api.com/v6/{EXCHANGE_RATE_API_KEY}/latest"
+    EXCHANGE_RATE_API_KEY = os.environ.get('EXCHANGE_RATE_API_KEY')
+    EXCHANGE_RATE_API_URL = f"https://v6.exchangerate-api.com/v6/{EXCHANGE_RATE_API_KEY}/latest"
     
     # Rate limit
     RATELIMIT_STORAGE_URI = REDIS_URL
