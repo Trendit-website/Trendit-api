@@ -32,7 +32,7 @@ class NotificationController:
                 
                 notifications_query: list[Notification] = Notification.query.filter(Notification.notification_type==type_enum)
             
-            pagination = notifications_query.filter_by(notification_type=type_enum, recipient_id=current_user_id) \
+            pagination = notifications_query.filter_by(recipient_id=current_user_id) \
                 .order_by(Notification.created_at.desc()) \
                 .paginate(page=page, per_page=tasks_per_page, error_out=False)
             
