@@ -50,6 +50,7 @@ PyJWT==2.8.0
 pyotp==2.9.0
 pypng==0.20220715.0
 python-dateutil==2.8.2
+python-dotenv==1.0.1
 python-slugify==8.0.3
 python-telegram-bot==21.3
 pytz==2023.4

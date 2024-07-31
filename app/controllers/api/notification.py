@@ -67,7 +67,7 @@ class NotificationController:
     def mark_notification_read(notification_id):
         try:
             current_user_id = get_jwt_identity()
-            notification: Notification = Notification.query.filter_by(id=notification_id, user_id=current_user_id).first()
+            notification: Notification = Notification.query.filter_by(id=notification_id, recipient_id=current_user_id).first()
             
             if not notification:
                 return error_response(f"This notification doesn't exist or has been deleted", 404)
