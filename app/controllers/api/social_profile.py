@@ -62,7 +62,7 @@ class SocialProfileController:
         try:
             user_id = int(get_jwt_identity())
             
-            user = Trendit3User.query.filter_by(id=user_id).first()
+            user: Trendit3User = Trendit3User.query.filter_by(id=user_id).first()
             if not user:
                 return error_response("User not found", 404)
             
@@ -77,7 +77,7 @@ class SocialProfileController:
             profile = get_social_profile(platform, user_id)
             
             if not profile:
-                new_profile = SocialMediaProfile.add_profile(trendit3_user=user, platform=platform, link=link)
+                new_profile:SocialMediaProfile = SocialMediaProfile.add_profile(trendit3_user=user, platform=platform, link=link)
                 db.session.commit()
                 msg = f"Your {platform} profile has been submitted for review"
                 notify_telegram_admins_new_profile(new_profile)
@@ -87,7 +87,7 @@ class SocialProfileController:
                 msg = f"{platform} profile already added"
                 return error_response(msg, 400)
             elif profile.status == SocialLinkStatus.PENDING:
-                msg = f"please wait! Your {platform} profile already submitted and awaiting review."
+                msg = f"please wait! Your {platform} profile was already submitted and awaiting review."
                 return error_response(msg, 400)
             elif profile.status == SocialLinkStatus.REJECTED or profile.status == SocialLinkStatus.IDLE:
                 profile.link = link
@@ -139,11 +139,11 @@ class SocialProfileController:
         try:
             user_id = int(get_jwt_identity())
 
-            user = Trendit3User.query.filter_by(id=user_id).first()
+            user:Trendit3User = Trendit3User.query.filter_by(id=user_id).first()
             if not user:
                 return error_response("User not found", 404)
             
-            social_profile = SocialMediaProfile.query.filter_by(platform=platform, trendit3_user_id=user_id)
+            social_profile: SocialMediaProfile = SocialMediaProfile.query.filter_by(platform=platform, trendit3_user_id=user_id).first()
             
             if not social_profile:
                 return error_response(f"No social media profile for {platform}", 404)
@@ -159,6 +159,8 @@ class SocialProfileController:
             db.session.rollback()
             log_exception(f"An unexpected error occurred sending verification request", e)
             api_response = error_response('An unexpected error. Our developers are already looking into it.', 500)
+        finally:
+            db.session.close()
         
         return api_response
 

@@ -315,9 +315,9 @@ def mark_as_read(user_id, message_id):
         user_message_status.status = MessageStatus.READ
         db.session.commit()
 
-def get_social_profile(platform: str, user_id: int):
+def get_social_profile(platform: str, user_id: int) -> SocialMediaProfile:
     try:
-        profile = SocialMediaProfile.query.filter(SocialMediaProfile.platform==platform, SocialMediaProfile.trendit3_user_id==user_id).first()
+        profile: SocialMediaProfile = SocialMediaProfile.query.filter(SocialMediaProfile.platform==platform, SocialMediaProfile.trendit3_user_id==user_id).first()
         return profile
     except (DataError, DatabaseError) as e:
         raise e

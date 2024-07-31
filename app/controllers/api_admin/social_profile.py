@@ -8,7 +8,7 @@ from ...utils.helpers import log_exception, console_log
 from ...utils.helpers.response_helpers import error_response, success_response
 from ...utils.helpers.mail_helpers import send_social_profile_status_email
 from ...models import SocialLinkStatus, SocialLinks, SocialMediaProfile
-from ...models.notification import SocialVerification, SocialVerificationStatus, Notification, MessageType
+from ...models.notification import SocialVerification, SocialVerificationStatus, Notification, NotificationType
 from ...models.user import Trendit3User
 from ...utils.helpers.mail_helpers import send_other_emails
 
@@ -64,7 +64,7 @@ class AdminSocialProfileController:
                 Notification.add_notification(
                     recipient_id=recipient_id,
                     body=body,
-                    message_type=MessageType.NOTIFICATION,
+                    message_type=NotificationType.NOTIFICATION,
                     commit=False
                 )
 
@@ -106,7 +106,7 @@ class AdminSocialProfileController:
                 Notification.add_notification(
                     recipient_id=recipient_id,
                     body=body,
-                    message_type=MessageType.NOTIFICATION,
+                    message_type=NotificationType.NOTIFICATION,
                     commit=False
                 )
 
@@ -206,7 +206,7 @@ class AdminSocialProfileController:
                 Notification.add_notification(
                     recipient_id=recipient_id,
                     body=body,
-                    message_type=MessageType.NOTIFICATION
+                    message_type=NotificationType.NOTIFICATION
                 )
 
                 db.session.close()
@@ -278,7 +278,7 @@ class AdminSocialProfileController:
                 Notification.add_notification(
                     recipient_id=recipient_id,
                     body=body,
-                    message_type=MessageType.NOTIFICATION
+                    message_type=NotificationType.NOTIFICATION
                 )
 
                 db.session.close()
