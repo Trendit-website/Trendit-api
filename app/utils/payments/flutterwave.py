@@ -368,10 +368,12 @@ def get_banks(country:str = None) -> list:
         response.raise_for_status()  # raise an exception if the request failed
         response_data = response.json()
         
+        
         if 'status' in response_data and response_data['status'] == 'success':
             supported_banks = response_data['data']
+            console_log("supported_banks", supported_banks)
+            
             names_to_exclude = {"opay", "palmpay"}
-
             filtered_banks = (bank for bank in supported_banks if bank["name"].lower() not in names_to_exclude)
 
             # convert the generator to a list
@@ -472,6 +474,8 @@ def get_iso_code(country_name: str) -> str:
 
 def flutterwave_verify_bank_account(account_no: str, bank_code: str) -> dict:
     try:
+        bank_code = "999992" if bank_code == "305" else bank_code
+        
         data = {
             "account_number": account_no,
             "account_bank": bank_code
