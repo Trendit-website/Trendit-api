@@ -371,13 +371,6 @@ def get_banks(country:str = None) -> list:
         
         if 'status' in response_data and response_data['status'] == 'success':
             supported_banks = response_data['data']
-            console_log("supported_banks", supported_banks)
-            
-            names_to_exclude = {"opay", "palmpay"}
-            filtered_banks = (bank for bank in supported_banks if bank["name"].lower() not in names_to_exclude)
-
-            # convert the generator to a list
-            supported_banks = list(filtered_banks)
         else:
             supported_banks = None
     
@@ -491,10 +484,21 @@ def flutterwave_verify_bank_account(account_no: str, bank_code: str) -> dict:
             }
             return account_info
         else:
-            if bank_code == "305":
+            # a fallback logic with paystack if the check with flutter wave fails
+            # the bank_mapping is put in place because 
+            # flutterwave appears to have a problem with OPay and PalmPay bank codes
+            bank_mapping = {
+                "305": "OPay Digital Services Limited (OPay)",
+                "100004": "OPay Digital Services Limited (OPay)",
+                "100033": "PalmPay",
+                "090405": "Moniepoint MFB"
+            }
+            bank_name = bank_mapping.get(bank_code, None)
+            
+            if bank_name:
                 from .paystack import get_bank_code as paystack_get_bank_code
-                bank_name = "Paycom"
                 bank_code = paystack_get_bank_code(bank_name, "nigeria")
+            
             fallback_url = f"https://api.paystack.co/bank/resolve?account_number={account_no}&bank_code={bank_code}"
             paystack_response = requests.get(fallback_url, headers=paystack_headers)
             paystack_response_data = paystack_response.json()
