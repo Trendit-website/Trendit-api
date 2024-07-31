@@ -491,6 +491,10 @@ def flutterwave_verify_bank_account(account_no: str, bank_code: str) -> dict:
             }
             return account_info
         else:
+            if bank_code == "305":
+                from .paystack import get_bank_code as paystack_get_bank_code
+                bank_name = "Paycom"
+                bank_code = paystack_get_bank_code(bank_name, "nigeria")
             fallback_url = f"https://api.paystack.co/bank/resolve?account_number={account_no}&bank_code={bank_code}"
             paystack_response = requests.get(fallback_url, headers=paystack_headers)
             paystack_response_data = paystack_response.json()
