@@ -474,8 +474,6 @@ def get_iso_code(country_name: str) -> str:
 
 def flutterwave_verify_bank_account(account_no: str, bank_code: str) -> dict:
     try:
-        bank_code = "999992" if bank_code == "305" else bank_code
-        
         data = {
             "account_number": account_no,
             "account_bank": bank_code
@@ -483,6 +481,8 @@ def flutterwave_verify_bank_account(account_no: str, bank_code: str) -> dict:
         
         response = requests.post(Config.FLW_VERIFY_BANK_ACCOUNT_URL, headers=headers, json=data)
         response_data = response.json()
+        
+        console_log("fwl_response_data", response_data)
         
         if 'status' in response_data and response_data['status'] == 'success':
             account_info =  {
@@ -494,6 +494,8 @@ def flutterwave_verify_bank_account(account_no: str, bank_code: str) -> dict:
             fallback_url = f"https://api.paystack.co/bank/resolve?account_number={account_no}&bank_code={bank_code}"
             paystack_response = requests.get(fallback_url, headers=paystack_headers)
             paystack_response_data = paystack_response.json()
+            
+            console_log("paystack_response_data", paystack_response_data)
             
             if paystack_response_data['status']:
                 account_info =  {
