@@ -4,7 +4,7 @@ from flask_jwt_extended import get_jwt_identity
 from psycopg2.errors import StringDataRightTruncation
 
 from ...extensions import db
-from ...models import Trendit3User
+from ...models import Trendit3User, Notification, NotificationType
 from ...models.task import TaskPerformance, Task, AdvertTask, EngagementTask
 from ...utils.helpers.task_helpers import update_performed_task, fetch_task, generate_random_task, initiate_task, fetch_performed_task
 from ...utils.helpers.response_helpers import error_response, success_response
@@ -106,6 +106,16 @@ class TaskPerformanceController:
             
             api_response = success_response(msg, 201, extra_data)
             notify_telegram_admins_new_performed_task(new_performed_task)
+            
+            # Send a notification to the user
+            Notification.add_notification(
+                recipient_id=current_user_id,
+                body="You just performed a task successfully and it's being reviewed",
+                notification_type=NotificationType.ACTIVITY,
+                commit=False
+            )
+            
+            db.session.commit()
         except ValueError as e:
             msg = f'error occurred performing task: {str(e)}'
             log_exception("An exception occurred trying to perform task", e)

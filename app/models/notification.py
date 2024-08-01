@@ -68,7 +68,7 @@ class Notification(db.Model):
         return f'<Notification {self.id}>'
 
     @classmethod
-    def add_notification(cls, recipient_id, body, message_type=NotificationType.NOTIFICATION, commit=True):
+    def add_notification(cls, recipient_id, body, notification_type=NotificationType.NOTIFICATION, commit=True):
         """
         Send a notification from an admin to multiple recipients.
 
@@ -76,9 +76,9 @@ class Notification(db.Model):
             admin (User): The admin user sending the notification.
             recipients (list of User): List of recipient users.
             body (str): Body of the notification message.
-            message_type (NotificationType): Type of the notification message.
+            notification_type (NotificationType): Type of the notification message.
         """
-        message = cls(recipient_id=recipient_id, body=body, notification_type=message_type)
+        message = cls(recipient_id=recipient_id, body=body, notification_type=notification_type)
         db.session.add(message)
         
         if commit:
@@ -128,7 +128,7 @@ class SocialVerification(db.Model):
         return f'<Notification {self.id}>'
     
     @classmethod
-    def send_notification(cls, sender_id, body, type, status=SocialVerificationStatus.PENDING, commit=True):
+    def add_notification(cls, sender_id, body, type, status=SocialVerificationStatus.PENDING, commit=True):
         """
         Send a notification from an admin to multiple recipients.
 
@@ -137,7 +137,7 @@ class SocialVerification(db.Model):
             recipients (list of User): List of recipient users.
             body (str): Body of the notification message.
             type (str): Type of the notification message.
-            message_type (NotificationType): Type of the notification message.
+            notification_type (NotificationType): Type of the notification message.
         """
         message = cls(sender_id=sender_id, body=body, status=status, type=type)
         db.session.add(message)

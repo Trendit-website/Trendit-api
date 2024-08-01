@@ -6,7 +6,7 @@ from flask_jwt_extended import get_jwt_identity
 from ...extensions import db
 from ...utils.helpers.telegram_bot import notify_telegram_admins_new_profile
 from ...utils.helpers.response_helpers import error_response, success_response
-from ...models.notification import SocialVerification, SocialVerificationStatus, Notification, MessageType
+from ...models.notification import SocialVerification, SocialVerificationStatus, Notification, NotificationType
 from ...models.social import SocialLinks, SocialLinkStatus, SocialMediaProfile
 from ...models.user import Trendit3User
 from ...utils.helpers.mail_helpers import send_other_emails
@@ -94,8 +94,8 @@ class SocialProfileController:
                 profile.status = SocialLinkStatus.PENDING
             
             # Send verification notification
-            SocialVerification.send_notification(
-                sender_id=user_id,
+            SocialVerification.add_notification(
+                recipient_id=user_id,
                 body=link,
                 type=platform,
                 status=SocialVerificationStatus.PENDING,
@@ -103,11 +103,10 @@ class SocialProfileController:
             )
 
             # Send a notification to the user that the admin has received their request
-            Notification.send_notification(
-                sender_id=user_id,
+            Notification.add_notification(
+                recipient_id=user_id,
                 body='Your social media verification request has been received and is pending approval.',
-                recipients=[user] if not isinstance(user, (list, tuple)) else user,
-                message_type=MessageType.NOTIFICATION,
+                notification_type=NotificationType.NOTIFICATION,
                 commit=False
             )
             
@@ -227,10 +226,10 @@ class SocialProfileController:
             data = request.get_json()
             link = data.get('link')
             platform = data.get('type')
-            sender_id = int(get_jwt_identity())
+            recipient_id = int(get_jwt_identity())
 
             # Fetch the user
-            user = Trendit3User.query.filter_by(id=sender_id).first()
+            user = Trendit3User.query.filter_by(id=recipient_id).first()
             if not user:
                 return error_response('User not found', 404)
 
@@ -257,8 +256,8 @@ class SocialProfileController:
             setattr(user.social_links, field_mapping[platform][0], SocialLinkStatus.PENDING)
 
             # Send verification notification
-            SocialVerification.send_notification(
-                sender_id=sender_id,
+            SocialVerification.add_notification(
+                recipient_id=recipient_id,
                 body=link,
                 type=platform,
                 status=SocialVerificationStatus.PENDING,
@@ -266,11 +265,10 @@ class SocialProfileController:
             )
 
             # Send a notification to the user that the admin has received their request
-            Notification.send_notification(
-                sender_id=sender_id,
+            Notification.add_notification(
+                recipient_id=recipient_id,
                 body='Your social verification request has been received and is pending approval.',
-                recipients=[user] if not isinstance(user, (list, tuple)) else user,
-                message_type=MessageType.NOTIFICATION,
+                notification_type=NotificationType.NOTIFICATION,
                 commit=False
             )
 
