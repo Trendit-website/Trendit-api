@@ -6,9 +6,10 @@
 from decimal import Decimal
 
 from ...extensions import db
-from ...models import Payment, Transaction, TransactionType, Withdrawal, Trendit3User
+from ...models import Payment, Transaction, TransactionType, Withdrawal, Trendit3User, Notification, NotificationType
 from ...utils.helpers.basic_helpers import console_log, log_exception, generate_random_string
 from ...utils.helpers.mail_helpers import send_other_emails, send_transaction_alert_email
+from .rates import convert_amount
 
 
 def debit_wallet(user_id: int, amount: int, payment_type=None) -> float:
@@ -47,7 +48,7 @@ def debit_wallet(user_id: int, amount: int, payment_type=None) -> float:
         raise e
 
 
-def credit_wallet(user_id: int, amount: int | float | Decimal, credit_type="task-performance") -> Decimal:
+def credit_wallet(user_id: int, amount: int | float | Decimal, credit_type="task-performance", record_txt=False) -> Decimal:
     user: Trendit3User = Trendit3User.query.get(user_id)
     
     if user is None:
@@ -63,8 +64,25 @@ def credit_wallet(user_id: int, amount: int | float | Decimal, credit_type="task
         wallet.balance += Decimal(amount)
         db.session.commit()
         
+        if record_txt:
+            key = generate_random_string(16)
+            description = "Credit for Social Task Completion" if credit_type=="task-performance" else "Funded wallet"
+            transaction = Transaction(key=key, amount=amount, transaction_type=TransactionType.CREDIT, status='complete', description=description, trendit3_user=user)
+        
         if credit_type in ["task-performance", "funded-wallet"]:
             send_transaction_alert_email(user.email, reason=credit_type, amount=amount, tx_type="credit")
+        
+        if credit_type=="task-performance":
+            currency_code = user.wallet.currency_code
+            converted_amount = convert_amount(amount_in_naira=amount, target_currency=currency_code)
+            Notification.add_notification(
+                recipient_id=user_id,
+                body=f"You have been credited with the sum of {currency_code} {converted_amount} to your Trendit³ account for the completion of the social task you engaged in.",
+                notification_type=NotificationType.MESSAGE,
+                commit=False
+            )
+            
+        db.session.commit()
         
         return wallet.balance
     except Exception as e:
