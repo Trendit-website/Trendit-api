@@ -1,6 +1,7 @@
 from flask import request
 from sqlalchemy import not_
 from flask_jwt_extended import get_jwt_identity
+from psycopg2.errors import StringDataRightTruncation
 
 from ...extensions import db
 from ...models import Trendit3User
@@ -108,10 +109,13 @@ class TaskPerformanceController:
         except ValueError as e:
             msg = f'error occurred performing task: {str(e)}'
             log_exception("An exception occurred trying to perform task", e)
-            return success_response(str(e), 404)
+            return error_response(str(e), 400)
+        except StringDataRightTruncation as e:
+            log_exception("An exception occurred trying to create performed tasks", e)
+            return error_response("account name too long", 400)
         except Exception as e:
             log_exception("An exception occurred trying to create performed tasks", e)
-            return success_response(f'Error performing task: {e}', 500)
+            return error_response(f'Error performing task', 500)
         finally:
             db.session.close()
         
