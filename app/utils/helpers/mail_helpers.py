@@ -44,7 +44,7 @@ def send_code_async_email(app, user_email:str, six_digit_code:int | str, code_ty
         
         subject = 'Verify Your Email'
         template = render_template("mail/verify-email.html", verification_code=six_digit_code)
-        msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
+        msg = Message(subject, sender=Config.MAIL_ALIAS, recipients=[user_email], html=template)
         
         if code_type == 'pwd_reset':
             subject = 'Reset your password'
@@ -55,7 +55,7 @@ def send_code_async_email(app, user_email:str, six_digit_code:int | str, code_ty
                 user=user,
                 firstname=firstname,
                 username=username)
-            msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
+            msg = Message(subject, sender=Config.MAIL_ALIAS, recipients=[user_email], html=template)
 
         elif code_type == '2FA':
             subject = 'One Time Password'
@@ -65,7 +65,7 @@ def send_code_async_email(app, user_email:str, six_digit_code:int | str, code_ty
                 user_email=user_email,
                 user=user,
                 firstname=firstname)
-            msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
+            msg = Message(subject, sender=Config.MAIL_ALIAS, recipients=[user_email], html=template)
         try:
             mail.send(msg)
         except Exception as e:
@@ -118,12 +118,12 @@ def send_async_other_email(app, user_email, email_type, task_type, task_time, ta
         
         subject = 'membership'
         template = render_template("mail/membership-paid.html", redirect_link=f"{Config.APP_DOMAIN_NAME}", user_email=user_email, username=username)
-        msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
+        msg = Message(subject, sender=Config.MAIL_ALIAS, recipients=[user_email], html=template)
         
         if email_type == 'welcome':
             subject = 'Welcome'
             template = render_template("mail/welcome.html", redirect_link=f"{Config.APP_DOMAIN_NAME}", user_email=user_email, firstname=firstname, username=username)
-            msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
+            msg = Message(subject, sender=Config.MAIL_ALIAS, recipients=[user_email], html=template)
 
         elif email_type == 'task_approved':
             subject = 'Task Approved'
@@ -138,7 +138,7 @@ def send_async_other_email(app, user_email, email_type, task_type, task_time, ta
                 task_description=task_description
             )
             print(task_description, task_time, task_type)
-            msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
+            msg = Message(subject, sender=Config.MAIL_ALIAS, recipients=[user_email], html=template)
 
         elif email_type == 'task_rejected':
             subject = 'Task Rejected'
@@ -149,7 +149,7 @@ def send_async_other_email(app, user_email, email_type, task_type, task_time, ta
                 firstname=firstname,
                 username=username
             )
-            msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
+            msg = Message(subject, sender=Config.MAIL_ALIAS, recipients=[user_email], html=template)
 
         elif email_type == 'credit':
             subject = 'Account Credited'
@@ -161,7 +161,7 @@ def send_async_other_email(app, user_email, email_type, task_type, task_time, ta
                 username=username,
                 amount=amount
             )
-            msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
+            msg = Message(subject, sender=Config.MAIL_ALIAS, recipients=[user_email], html=template)
 
         elif email_type == 'debit':
             subject = 'Account Debited'
@@ -173,7 +173,7 @@ def send_async_other_email(app, user_email, email_type, task_type, task_time, ta
                 username=username,
                 amount=amount
             )
-            msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
+            msg = Message(subject, sender=Config.MAIL_ALIAS, recipients=[user_email], html=template)
 
         elif email_type == 'new_admin':
             subject = 'Admin Approved'
@@ -184,7 +184,7 @@ def send_async_other_email(app, user_email, email_type, task_type, task_time, ta
                 firstname=firstname,
                 username=username,
                 amount=amount)
-            msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
+            msg = Message(subject, sender=Config.MAIL_ALIAS, recipients=[user_email], html=template)
 
         elif email_type == 'admin_login':
             subject = 'Admin Login'
@@ -194,7 +194,7 @@ def send_async_other_email(app, user_email, email_type, task_type, task_time, ta
                 firstname=firstname,
                 user_email=user_email
             )
-            msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
+            msg = Message(subject, sender=Config.MAIL_ALIAS, recipients=[user_email], html=template)
 
         
         try:
@@ -242,7 +242,7 @@ def send_async_transaction_alert_email(app: Flask, tx_type: str, user_email: str
                 reason=reason
             )
         
-        msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
+        msg = Message(subject, sender=Config.MAIL_ALIAS, recipients=[user_email], html=template)
         
         try:
             mail.send(msg)
@@ -275,7 +275,7 @@ def send_async_social_profile_status_email(app: Flask, user_email, platform, sta
                 social_profile=social_profile
             )
         
-        msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
+        msg = Message(subject, sender=Config.MAIL_ALIAS, recipients=[user_email], html=template)
         
         try:
             mail.send(msg)
@@ -323,7 +323,7 @@ def send_async_task_performance_email(app: Flask, pt_id):
                 performed_task=performed_task
             )
         
-        msg = Message(subject, sender=Config.MAIL_DEFAULT_SENDER, recipients=[user_email], html=template)
+        msg = Message(subject, sender=Config.MAIL_ALIAS, recipients=[user_email], html=template)
         
         try:
             mail.send(msg)
