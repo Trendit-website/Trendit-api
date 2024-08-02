@@ -117,13 +117,16 @@ class TaskPerformanceController:
             
             db.session.commit()
         except ValueError as e:
+            db.session.rollback()
             msg = f'error occurred performing task: {str(e)}'
             log_exception("An exception occurred trying to perform task", e)
             return error_response(str(e), 400)
         except StringDataRightTruncation as e:
+            db.session.rollback()
             log_exception("An exception occurred trying to create performed tasks", e)
             return error_response("account name too long", 400)
         except Exception as e:
+            db.session.rollback()
             log_exception("An exception occurred trying to create performed tasks", e)
             return error_response(f'Error performing task', 500)
         finally:

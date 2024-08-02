@@ -64,7 +64,7 @@ class AdminSocialProfileController:
                 Notification.add_notification(
                     recipient_id=recipient_id,
                     body=body,
-                    message_type=NotificationType.NOTIFICATION,
+                    notification_type=NotificationType.NOTIFICATION,
                     commit=False
                 )
 
@@ -106,7 +106,7 @@ class AdminSocialProfileController:
                 Notification.add_notification(
                     recipient_id=recipient_id,
                     body=body,
-                    message_type=NotificationType.NOTIFICATION,
+                    notification_type=NotificationType.NOTIFICATION,
                     commit=False
                 )
 
@@ -206,7 +206,7 @@ class AdminSocialProfileController:
                 Notification.add_notification(
                     recipient_id=recipient_id,
                     body=body,
-                    message_type=NotificationType.NOTIFICATION
+                    notification_type=NotificationType.NOTIFICATION
                 )
 
                 db.session.close()
@@ -278,7 +278,7 @@ class AdminSocialProfileController:
                 Notification.add_notification(
                     recipient_id=recipient_id,
                     body=body,
-                    message_type=NotificationType.NOTIFICATION
+                    notification_type=NotificationType.NOTIFICATION
                 )
 
                 db.session.close()
