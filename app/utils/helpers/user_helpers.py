@@ -121,8 +121,11 @@ def get_user_info(user_id: int) -> dict:
     if user_id is None:
         userInfo = {}
     else:
-        trendit3_user = Trendit3User.query.get(user_id)
-        userInfo = trendit3_user.to_dict()
+        user: Trendit3User = Trendit3User.query.get(user_id)
+        if not user:
+            raise ValueError("User does not exist")
+        
+        userInfo = user.to_dict()
     
     for key in userInfo:
         if userInfo[key] is None:

@@ -24,7 +24,17 @@ class ProfileController:
         
         try:
             current_user_id = get_jwt_identity()
-            user_info = get_user_info(int(current_user_id))
+            user: Trendit3User = Trendit3User.query.get(current_user_id)
+            
+            if not user:
+                return error_response("user not found", 400)
+            
+            user_info = user.to_dict()
+    
+            for key in user_info:
+                if user_info[key] is None:
+                    user_info[key] = ''
+            
             extra_data = {'user_profile': user_info}
             api_response = success_response("User profile fetched successfully", 200, extra_data)
         except Exception as e:

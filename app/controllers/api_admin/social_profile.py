@@ -55,7 +55,7 @@ class AdminSocialProfileController:
                 platform: str = profile.platform
                 recipient_id: int = profile.trendit3_user_id
                 sender: Trendit3User = profile.trendit3_user
-                body: str = f'Your {profile.platform} verification request has been approved'
+                body: str = f"Your {profile.platform.capitalize()} verification request has been approved"
                 
                 
                 # Approve and send notification
@@ -97,7 +97,7 @@ class AdminSocialProfileController:
                 platform: str = profile.platform
                 recipient_id: int = profile.trendit3_user_id
                 sender: Trendit3User = profile.trendit3_user
-                body: str = f'Your {profile.platform} verification request has been rejected'
+                body: str = f"Your {profile.platform.capitalize()} verification request has been rejected"
                 
                 
                 # reject and send notification

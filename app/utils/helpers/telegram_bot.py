@@ -80,6 +80,8 @@ def notify_telegram_admins_new_performed_task(performed_task: TaskPerformance):
     date_started = performed_task.started_at
     date_completed = performed_task.date_completed
     
+    console_log(data="constructing message...")
+    
     label = f"{username} Just performed a task, and is expecting a review:"
     
     screenshot_txt = F"• Proof Screenshot: {image_url}" if performed_task.proof_screenshot_id else ""
@@ -110,6 +112,7 @@ def notify_telegram_admins_new_performed_task(performed_task: TaskPerformance):
             'inline_keyboard': inline_keyboard
         }
     }
+    console_log(data="sending message...")
     response = requests.post(send_msg_url, json=payload)
     console_log("response", response)
     console_log("response_data", response.json())
