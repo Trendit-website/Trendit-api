@@ -146,6 +146,7 @@ def generate_random_task(task_type:str, filter_value:str) -> AdvertTask | Engage
             task_model.payment_status == TaskPaymentStatus.COMPLETE,
             task_model.status == TaskStatus.APPROVED,
             getattr(task_model, count_field) > getattr(task_model, 'total_success'),
+            task_model.trendit3_user_id != current_user_id,  # Exclude tasks created by the current user
             ~TaskPerformance.query.filter(
                 TaskPerformance.task_id == task_model.id,
                 TaskPerformance.user_id == current_user_id
