@@ -30,61 +30,79 @@
     </head>
 
     <body style="color: #fff;">
-        <div class="wrapper" style="max-width: 600px; padding-left: 25px; border: 1px solid black; margin: auto; border-radius: 20px; padding-bottom: 3px; background-color: #020102;">
-            
+        <div style="max-width: 600px; padding-left: 25px; border: 1px solid black; margin: auto; border-radius: 20px; padding-bottom: 3px; background-color: #020102;">
             <table role="presentation" style="width:100%;border:0;border-spacing:0; padding-top: 40px; padding-bottom: 60px;">
                 <tr>
                     <td align="center">
                         <img src="https://res.cloudinary.com/dvgthwhdn/image/upload/v1721120256/mail/t-logo.png" />
                     </td>
                 </tr>
-            </table>  
+            </table>
 
             {% block content %}{% endblock %}
 
 
-            <div class="spacer" style="line-height:200px;height:200px;mso-line-height-rule:exactly;">&nbsp;</div>
-            <footer style="width: 95%; font-size: 9px; font-weight: 400; margin-top: 35px; color: #B1B1B1; font-family: 'Inter', 'sans-serif';">
-                <table role="presentation" style="width:60%; margin: auto; border:0;border-spacing:0; padding-top: 40px; padding-bottom: 60px; border-collapse: collapse;">
+            <div class="spacer" style="line-height:40px;height:40px;mso-line-height-rule:exactly;">&nbsp;</div>
+
+            <footer style="width: 95%; font-size: 9px; font-weight: 400; margin-top: 40px; color: #B1B1B1; font-family: 'Inter', 'sans-serif';">
+                <table role="presentation" style="width:40%; margin: auto; border:0;border-spacing:0; padding-top: 40px; padding-bottom: 60px; border-collapse: collapse;">
                         <tr>
                             <td align="center">
-                                <li>Privacy Policy</li>  
+                                <a href="" style="color: white; text-decoration: none;">
+                                    <li>Privacy Policy</li>
+                                </a>
                             </td>
                             <td align="center"style="">
-                                <li>Contact us</li>
-                            </td>  
-                            <td align="center" style="">
-                                <li>Read our blog</li>
-                            </td>                    
+                                <a href="emailto:support@trendit3.com" style="color: white; text-decoration: none;">
+                                    <li>Contact us</li>
+                                </a>
+                            </td>                  
                         </tr>
                 </table> 
                 <div>
-                    <p style="text-align: center;">
+                    <p style="text-align: center; margin-bottom: 15px;">
                         Copyright 2024 Trendit3 Technology. All rights reserved. 
                     </p>
-                    <div style="display: flex; flex-direction: row; align-items: center; gap: 7px; max-width: 100px; margin: auto;">
-                        <a href="https://www.facebook.com/TrenditHQ/" style="margin-right: 3px;">
-                            <img src="https://res.cloudinary.com/dvgthwhdn/image/upload/v1722529681/mail/facebook.png" />
-                        </a>
-                        <a href="https://instagram.com/trendithq" style="margin-right: 3px;">
-                        <img src="https://res.cloudinary.com/dvgthwhdn/image/upload/v1722529681/mail/instagram.png" />                           
-                        </a>
-                        <a href="https://www.youtube.com/@Trendithq?sub_confirmation=1" style="margin-right: 3px;">
-                        <img src="https://res.cloudinary.com/dvgthwhdn/image/upload/v1722529681/mail/youtube.png" />                         
-                        </a>
-                        <a href="https://x.com/trenditHQ" style="margin-right: 3px;">
-                        <img src="https://res.cloudinary.com/dvgthwhdn/image/upload/v1722529681/mail/x.png" />
-                        </a> 
-                        <a href="https://www.linkedin.com/company/trendithq/" style="margin-right: 3px;">
-                            <img src="https://res.cloudinary.com/dvgthwhdn/image/upload/v1722529681/mail/linkedin-icon.png" />    
-                        </a>  
-                        <a href="https://www.tiktok.com/@trendithq" style="margin-right: 3px;">
-                        <img src="https://res.cloudinary.com/dvgthwhdn/image/upload/v1722529681/mail/tiktok.png" />                         
-                        </a>          
-                        <a href="https://t.me/trendithq" style="margin-right: 3px;">
-                        <img src="https://res.cloudinary.com/dvgthwhdn/image/upload/v1722529681/mail/Telegram.png" />
-                        </a> 
-                    </div>
+
+                    <table role="presentation" style="width:40%; margin: auto; border:0;border-spacing:0; padding-top: 40px; padding-bottom: 60px; border-collapse: collapse;">
+                        <tr>
+                            <td align="center">
+                                <a href="https://www.facebook.com/TrenditHQ/" style="margin-right: 10px;">
+                                    <img src="https://res.cloudinary.com/dvgthwhdn/image/upload/v1722529681/mail/facebook.png" width="24px" height="24px"/>
+                                </a>
+                            </td>
+                            <td align="center"style="">
+                                <a href="https://instagram.com/trendithq" style="margin-right: 10px;">
+                                    <img src="https://res.cloudinary.com/dvgthwhdn/image/upload/v1722529681/mail/instagram.png" width="24px" height="24px"/>                           
+                                </a>
+                            </td> 
+                            <td align="center"style="">
+                                <a href="https://www.youtube.com/@Trendithq?sub_confirmation=1" style="margin-right: 10px;">
+                                    <img src="https://res.cloudinary.com/dvgthwhdn/image/upload/v1722529681/mail/youtube.png" width="24px" height="24px"/>                         
+                                </a>
+                            </td> 
+                            <td align="center" style="padding-top: 7px;">
+                                <a href="https://x.com/trenditHQ" style="margin-right: 10px;">
+                                    <img src="https://res.cloudinary.com/dvgthwhdn/image/upload/v1722529681/mail/x.png" width="24px" height="24px"/>
+                                </a> 
+                            </td> 
+                            <td align="center" style="padding-top: 7px;">
+                                <a href="https://www.linkedin.com/company/trendithq/" style="margin-right: 10px; margin-top: 5px;">
+                                    <img src="https://res.cloudinary.com/dvgthwhdn/image/upload/v1722529681/mail/linkedin-icon.png" width="24px" height="24px"/>    
+                                </a>  
+                            </td> 
+                            <td align="center" style="padding-top: 7px;">
+                                <a href="https://www.tiktok.com/@trendithq" style="margin-right: 10px;">
+                                    <img src="https://res.cloudinary.com/dvgthwhdn/image/upload/v1722529681/mail/tiktok.png" width="24px" height="24px"/>                           
+                                </a>
+                            </td>    
+                            <td align="center" style="padding-top: 7px;">
+                                <a href="https://t.me/trendithq" style="margin-right: 10px; margin-top: 5px;">
+                                    <img src="https://res.cloudinary.com/dvgthwhdn/image/upload/v1722529681/mail/Telegram.png" width="24px" height="24px"/>
+                                </a>
+                            </td>               
+                        </tr>
+                    </table>
                 </div>
             </footer>
         
