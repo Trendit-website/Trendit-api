@@ -10,6 +10,7 @@ These functions perform common tasks that are used throughout the application.
 import random, string, logging, time
 from flask import current_app, abort, request
 from slugify import slugify
+from typing import Any
 
 from ...models.item import Item
 from ...exceptions import UniqueSlugError
@@ -173,7 +174,7 @@ def generate_slug(name: str, type: str, existing_obj=None) -> str:
     return slug
 
 
-def console_log(label: str ='Label', data: any =None, app=current_app) -> None:
+def console_log(label: str ="INFO", data: Any =None) -> None:
     """
     Print a formatted message to the console for visual clarity.
 
@@ -182,11 +183,12 @@ def console_log(label: str ='Label', data: any =None, app=current_app) -> None:
         data: The data to be printed. Can be of any type. Defaults to None.
     """
     
+    app = current_app
     logger = app.logger
-    logger.info(f'\n\n{label:-^50}\n {data} \n{"//":-^50}\n\n')
+    logger.info(f"\n\n{label:-^50}\n {data} \n{'//':-^50}\n\n", stacklevel=2)
 
 
-def log_exception(label: str ='EXCEPTION', data='Nothing', app=current_app) -> None:
+def log_exception(label: str ="EXCEPTION", data: Any = "Nothing") -> None:
     """
     Log an exception with details to a logging handler for debugging.
 
@@ -195,7 +197,6 @@ def log_exception(label: str ='EXCEPTION', data='Nothing', app=current_app) -> N
         data: Additional data to be logged along with the exception. Defaults to 'Nothing'.
     """
 
+    app = current_app
     logger = app.logger
-    logger.exception(f'\n\n{label:-^50}\n {str(data)} \n {"//":-^50}\n\n')  # Log the error details for debugging
-
-
+    logger.exception(f"\n\n{label:-^50}\n {str(data)} \n {'//':-^50}\n\n", stacklevel=2)

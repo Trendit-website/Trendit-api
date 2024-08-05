@@ -155,8 +155,12 @@ config_class = DevelopmentConfig if Config.ENV == "development" else (
 )
 
 def configure_logging(app):
-    formatter = logging.Formatter('[%(asctime)s] ==> %(levelname)s in %(module)s: %(message)s')
-    handler = logging.StreamHandler()
-    handler.setFormatter(formatter)
-    app.logger.addHandler(handler)
-    app.logger.setLevel(logging.DEBUG)  # Set the desired logging level
+    if not app.logger.handlers:
+        formatter = logging.Formatter("[%(asctime)s] ==> %(levelname)s in %(module)s: %(message)s")
+        
+        # Stream handler
+        stream_handler = logging.StreamHandler()
+        stream_handler.setFormatter(formatter)
+        app.logger.addHandler(stream_handler)
+        
+        app.logger.setLevel(logging.DEBUG)  # Set the desired logging level
