@@ -69,7 +69,7 @@ def credit_wallet(user_id: int, amount: int | float | Decimal, credit_type="task
             description = "Credit for Social Task Completion" if credit_type=="task-performance" else "Funded wallet"
             transaction = Transaction(key=key, amount=amount, transaction_type=TransactionType.CREDIT, status='complete', description=description, trendit3_user=user)
         
-        if credit_type in ["task-performance", "funded-wallet"]:
+        if credit_type in ["funded-wallet"]:
             send_transaction_alert_email(user.email, reason=credit_type, amount=amount, tx_type="credit")
         
         if credit_type=="task-performance":
