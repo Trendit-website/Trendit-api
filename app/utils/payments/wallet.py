@@ -33,7 +33,7 @@ def debit_wallet(user_id: int, amount: int, payment_type=None) -> float:
     try:
         # Debit the wallet
         wallet.balance -= amount
-        key = generate_random_string(16)
+        key = f"{generate_random_string(20)}-{generate_random_string(10)}"
         payment = Payment(key=key, amount=amount, payment_type=payment_type, payment_method='wallet', status='complete', trendit3_user=user)
         transaction = Transaction(key=key, amount=amount, transaction_type=TransactionType.DEBIT, status='complete', description=f'payment for {service_paid_for}', trendit3_user=user)
         
