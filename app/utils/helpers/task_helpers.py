@@ -196,7 +196,7 @@ def initiate_task(task: Task, status='pending') -> dict:
         raise e
 
 
-def get_task_by_key(task_key):
+def get_task_by_key(task_key) -> Task | AdvertTask | EngagementTask:
     task = EngagementTask.query.filter_by(task_key=task_key).first()
 
     if task is None:

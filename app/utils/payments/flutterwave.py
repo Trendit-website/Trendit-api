@@ -13,6 +13,7 @@ from ...models import Payment, Transaction, TransactionType, Withdrawal, Trendit
 from ...utils.helpers.basic_helpers import console_log, log_exception, generate_random_string
 from ...utils.helpers.task_helpers import get_task_by_key
 from ...utils.helpers.mail_helpers import send_other_emails
+from ...utils.mailing import send_task_order_review_email
 from ..helpers.telegram_bot import notify_telegram_admins_new_task
 from .exceptions import TransactionMissingError, CreditWalletError, SignatureError
 from .wallet import credit_wallet
@@ -98,8 +99,8 @@ def verify_flutterwave_payment(data):
             payment_status = response_data['data']['status'].lower()
             extra_data = {'payment_status': payment_status}
             
-            transaction = Transaction.query.filter_by(key=reference).first()
-            payment = Payment.query.filter_by(key=reference).first()
+            transaction: Transaction = Transaction.query.filter_by(key=reference).first()
+            payment: Payment = Payment.query.filter_by(key=reference).first()
             
             if not transaction:
                 raise TransactionMissingError
@@ -136,7 +137,7 @@ def verify_flutterwave_payment(data):
                         task_dict = task.to_dict()
                         msg = 'Payment verified and Task has been created successfully'
                         extra_data.update({'task': task_dict})
-                        
+                        send_task_order_review_email(task.id)
                     elif payment_type == 'credit-wallet':
                         # Credit user's wallet
                         try:

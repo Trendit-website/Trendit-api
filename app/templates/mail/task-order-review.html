@@ -1,0 +1,32 @@
+{% extends 'mail/base/base.html' %}
+{% block title %} Task Order in review {% endblock %}
+
+
+{% block content %}
+        <p style="font-weight: bold; font-family: 'Inter', 'sans-serif'; font-size: 20px; font-weight: 700;">
+            Hello {% if user.firstname %} {{ user.firstname }} {% else %} {{ user.username }} {% endif %},
+        </p>
+
+        <div style="width: 95%; font-family: 'Inter', 'sans-serif'; margin-bottom: 40px; font-size: 16px; font-weight: 400; color: #B1B1B1;">
+            <p style="width: 90%;">
+                Your payment has been successfully processed. We are currently reviewing your order to ensure it meets our standards. This review will be completed within 24 hours, after which your order will be activated and assigned to members of the community.
+            </p>         
+        </div>
+        
+        <div class="spacer" style="line-height:15px;height:15px;mso-line-height-rule:exactly;">&nbsp;</div>
+
+        <div style="width: 95%; font-size: 16px; font-weight: 400; margin-top: 45px; color: #B1B1B1; font-family: 'Inter', 'sans-serif';">
+            <p>
+                For further enquires, please contact our customers support through the following channels:
+            </p>
+        </div>
+
+        <div style="width: 95%; font-size: 16px; font-weight: 400; color: #B1B1B1; font-family: 'Inter', 'sans-serif';">
+            <p>Email: <a href="mailto:{{ config.SUPPORT_EMAIL }}" style="color: blue;">{{ config.SUPPORT_EMAIL }}</a></p>
+            <div class="spacer" style="line-height:15px;height:15px;mso-line-height-rule:exactly;">&nbsp;</div>
+            <p>
+                Thanks for choosing Trendit³.
+            </p>
+        </div>
+{% endblock %}
+

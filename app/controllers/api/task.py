@@ -12,6 +12,7 @@ from ...utils.helpers.basic_helpers import console_log, log_exception
 from ...utils.helpers.telegram_bot import notify_telegram_admins_new_task
 from ...utils.payments.utils import initialize_payment
 from ...utils.payments.wallet import debit_wallet, credit_wallet
+from ...utils.mailing import send_task_order_review_email
 
 
 
@@ -738,7 +739,7 @@ class TaskController:
                 return api_response
             
             if payment_method == 'trendit_wallet':
-                new_task = save_task(data, payment_status=TaskPaymentStatus.PENDING)
+                new_task: Task | EngagementTask | AdvertTask = save_task(data, payment_status=TaskPaymentStatus.PENDING)
                 if new_task is None:
                     return error_response('Error creating new task', 500)
                 
@@ -758,6 +759,7 @@ class TaskController:
                 
                 api_response = success_response(msg, 201, extra_data)
                 notify_telegram_admins_new_task(new_task)
+                send_task_order_review_email(new_task.id)
         except ValueError as e:
             db.session.rollback()
             log_exception(f"ValueError occurred", e)
