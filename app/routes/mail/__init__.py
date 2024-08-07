@@ -8,12 +8,14 @@ A Flask blueprint named 'mail' is created to group these routes.
 @package: Trendit³
 '''
 from flask import Blueprint, render_template
+from ...models import Trendit3User
 
 mail_bp = Blueprint('mail', __name__, url_prefix='/mail')
 
 @mail_bp.route("/welcome", methods=['GET'])
 def welcome():
-    return render_template('mail/welcome.html', firstname="Emmanuel", username="zeddy")
+    user = Trendit3User.query.get(16)
+    return render_template('mail/welcome.html', user=user, firstname="Emmanuel", username="zeddy")
 
 @mail_bp.route("/otp", methods=['GET'])
 def otp():
