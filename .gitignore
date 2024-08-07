@@ -1,6 +1,7 @@
 **/__pycache__/
 .vscode/
 env/
+venv/
 wsl_env/
 migrations/
 migrations-s/
@@ -9,4 +10,4 @@ migrations-staging/
 migrations_local/
 migrations_live/
 .env
-.env_staging
+.env_*
