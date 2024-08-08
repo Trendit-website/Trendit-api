@@ -7,6 +7,5 @@ migrations-s/
 migrations-p/
 migrations-staging/
 migrations_local/
-migrations_live/
 .env
 .env_staging

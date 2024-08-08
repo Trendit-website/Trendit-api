@@ -9,8 +9,8 @@ A Flask blueprint named 'main' is created to group these routes.
 '''
 from flask import Blueprint, render_template
 
-main = Blueprint('main', __name__)
+main_bp = Blueprint('main', __name__)
 
-@main.route("/", methods=['GET'])
+@main_bp.route("/", methods=['GET'])
 def index():
     return render_template('api/index.jinja-html')

@@ -34,7 +34,7 @@ def database_overview():
 
         total_tables = len(table_names) # Count the number of tables in the database
 
-        # TODO: add more database-related information here if needed
+        # TODO: add more database-related information
 
         overview_data = {
             'total_tables': total_tables,
