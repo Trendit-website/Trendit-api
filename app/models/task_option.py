@@ -37,7 +37,7 @@ class TaskOption(db.Model):
         description = self.advertiser_description if user_type == "advertiser" else self.earner_description
         price = self.advertiser_price if user_type == "advertiser" else self.earner_price
         
-        amount = convert_amount(price, currency_code),
+        amount = convert_amount(price, currency_code)
         
         return {
             "name": name,
