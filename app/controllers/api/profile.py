@@ -64,6 +64,11 @@ class ProfileController:
             
             # Get the request data
             data = request.form.to_dict()
+            
+            prof_data = (f"firstname: {data.get('firstname')}\n lastname: {data.get('lastname')}\n username:{data.get('username')}\n gender:{data.get('gender')}\n phone{data.get('phone')}\n country{data.get('country')}\n state{data.get('state')}\n")
+            
+            console_log("received profile data", prof_data)
+            
             firstname = data.get('firstname', user_profile.firstname if user_profile else '')
             lastname = data.get('lastname', user_profile.lastname if user_profile else '')
             username = data.get('username', current_user.username if current_user else '')
@@ -76,6 +81,7 @@ class ProfileController:
             profile_picture = request.files.get('profile_picture', '')
             profile_picture = request.files.getlist('profile_picture') or profile_picture
             
+            console_log("profile data", f"firstname: {firstname}\n lastname: {lastname}\n username{username}\n gender{gender}\n phone{phone}\n country{country}\n state{state}\n")
             
             currency_info = {}
             if country != user_address.country:
