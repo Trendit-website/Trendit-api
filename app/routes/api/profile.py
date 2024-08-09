@@ -9,12 +9,12 @@ from app.controllers.api import ProfileController
 def get_user_profile():
     return ProfileController.get_profile()
 
-@api.route('/profile/edit', methods=['POST'])
+@api.route('/profile/edit', methods=['POST', 'PUT', 'PATCH'])
 @jwt_required()
 def edit_profile():
     return ProfileController.edit_profile()
 
-@api.route('/profile/update', methods=['POST'])
+@api.route('/profile/update', methods=['POST', 'PUT', 'PATCH'])
 def update_profile():
     return ProfileController.update_profile()
 
