@@ -264,7 +264,7 @@ class Profile(db.Model):
     
     @property
     def referral_link(self):
-        return f'{Config.DOMAIN_NAME}/signup/{self.trendit3_user.username}'
+        return f'{Config.APP_DOMAIN_NAME}/signup?referral={self.trendit3_user.username}'
     
     def update(self, **kwargs):
         for key, value in kwargs.items():
